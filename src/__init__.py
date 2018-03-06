@@ -4,41 +4,73 @@
 from Creature import Creature
 from UI import AttributeLabel
 from UI import Button
+from UI import Panel
 from UI import UI
 
 from functools import partial
 import pyglet
-import random
 
 
 def build_ui(creature):
     ui = UI()
-    button = Button(125, 50, 150, 50, 'Feed')
-    button.register_handler(partial(creature.eat, 10))
-    ui.add_button(button)
+    # Right panel
+    panel = Panel(550, 150, 250, 450)
 
-    button = Button(325, 50, 150, 50, 'Sleep')
-    button.register_handler(partial(creature.sleep, 10))
-    ui.add_button(button)
+    label = AttributeLabel(15, panel.rect.height - 20, pre='HP:')
+    panel.add_label(label)
+    label = AttributeLabel(15, panel.rect.height - 45, pre='Strength:')
+    panel.add_label(label)
+    label = AttributeLabel(15, panel.rect.height - 70, pre='Agility:')
+    panel.add_label(label)
+    label = AttributeLabel(15, panel.rect.height - 95, pre='Stamina:')
+    panel.add_label(label)
+    label = AttributeLabel(15, panel.rect.height - 120, pre='Speed:')
+    panel.add_label(label)
+    label = AttributeLabel(15, panel.rect.height - 145, pre='Hunger:')
+    panel.add_label(label)
+    label = AttributeLabel(15, panel.rect.height - 170, pre='Sleep:')
+    panel.add_label(label)
 
-    button = Button(525, 50, 150, 50, 'Adventure')
-    button.register_handler(lambda: print('Adventure'))
-    ui.add_button(button)
+    ui.add_panel(panel)
+    panel.show()
 
-    label = AttributeLabel(600, 550, pre='HP:')
-    ui.add_label(label)
-    label = AttributeLabel(600, 525, pre='Strength:')
-    ui.add_label(label)
-    label = AttributeLabel(600, 500, pre='Agility:')
-    ui.add_label(label)
-    label = AttributeLabel(600, 475, pre='Stamina:')
-    ui.add_label(label)
-    label = AttributeLabel(600, 450, pre='Speed:')
-    ui.add_label(label)
-    label = AttributeLabel(600, 425, pre='Hunger:')
-    ui.add_label(label)
-    label = AttributeLabel(600, 400, pre='Sleep:')
-    ui.add_label(label)
+    # Bottom panel
+    panel = Panel(0, 0, 800, 150)
+
+    button = Button(20, panel.rect.height - 70, 150, 50, 'Creatures')
+    # button.register_handler(partial(creature.eat, 10))
+    panel.add_button(button)
+
+    button = Button(180, panel.rect.height - 70, 150, 50, 'Inventory')
+    # button.register_handler(lambda: print('Adventure'))
+    panel.add_button(button)
+
+    button = Button(340, panel.rect.height - 70, 150, 50, 'Cook')
+    # button.register_handler(lambda: print('Adventure'))
+    panel.add_button(button)
+
+    button = Button(500, panel.rect.height - 70, 150, 50, 'Build')
+    # button.register_handler(lambda: print('Adventure'))
+    panel.add_button(button)
+
+    button = Button(20, panel.rect.height - 130, 150, 50, 'Feed')
+    # button.register_handler(partial(creature.sleep, 10))
+    panel.add_button(button)
+
+    button = Button(180, panel.rect.height - 130, 150, 50, 'Equip')
+    # button.register_handler(partial(creature.sleep, 10))
+    panel.add_button(button)
+
+    button = Button(340, panel.rect.height - 130, 150, 50, 'Mutate')
+    # button.register_handler(lambda: print('Adventure'))
+    panel.add_button(button)
+
+    button = Button(500, panel.rect.height - 130, 150, 50, 'Adventure')
+    # button.register_handler(partial(creature.sleep, 10))
+    panel.add_button(button)
+
+    ui.add_panel(panel)
+    panel.show()
 
     return ui
 
@@ -52,41 +84,6 @@ if __name__ == '__main__':
     @window.event
     def on_draw():
         window.clear()
-
-        # Draw ui bg
-        pyglet.graphics.draw_indexed(
-            4, pyglet.gl.GL_TRIANGLES,
-            [0, 1, 2, 2, 1, 3],
-            ('v2i', (
-                550, 600,
-                800, 600,
-                550, 0,
-                800, 0
-            )),
-            ('c3B', (
-                40, 40, 40,
-                40, 40, 40,
-                40, 40, 40,
-                40, 40, 40
-            ))
-        )
-        pyglet.graphics.draw_indexed(
-            4, pyglet.gl.GL_TRIANGLES,
-            [0, 1, 2, 2, 1, 3],
-            ('v2i', (
-                0, 150,
-                800, 150,
-                0, 0,
-                800, 0
-            )),
-            ('c3B', (
-                30, 30, 30,
-                30, 30, 30,
-                30, 30, 30,
-                30, 30, 30
-            ))
-        )
-
         ui.draw()
 
     @window.event

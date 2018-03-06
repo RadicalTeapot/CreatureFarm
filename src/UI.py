@@ -20,14 +20,9 @@ class Rect(object):
 
 
 class Button(object):
-    def __init__(self, x, y, width, height, text, parent=None):
-        self.parent = parent
-
+    def __init__(self, x, y, width, height, text):
+        self._parent = None
         self.rect = Rect(x, y, width, height)
-
-        if self.parent:
-            self.rect.x += self.parent.x
-            self.rect.y += self.parent.y
 
         self.text = pyglet.text.Label(
             text,
@@ -36,6 +31,21 @@ class Button(object):
             anchor_x='center', anchor_y='center'
         )
         self.handler = None
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        if self._parent is not None:
+            raise RuntimeError('Cannot reparent.')
+
+        self._parent = parent
+
+        if parent is not None:
+            self.rect.x += parent.rect.x
+            self.rect.y += parent.rect.y
 
     def register_handler(self, function):
         self.handler = function
@@ -51,32 +61,25 @@ class Button(object):
             4, pyglet.gl.GL_TRIANGLES,
             [0, 1, 2, 2, 1, 3],
             ('v2i', (
-                self.x, self.y,
-                self.x + self.width, self.y,
-                self.x, self.y + self.height,
-                self.x + self.width, self.y + self.height
+                self.rect.x, self.rect.y,
+                self.rect.x + self.rect.width, self.rect.y,
+                self.rect.x, self.rect.y + self.rect.height,
+                self.rect.x + self.rect.width, self.rect.y + self.rect.height
             )),
             ('c3B', (
-                128, 196, 255,
-                128, 196, 255,
-                128, 196, 255,
-                128, 196, 255,
+                100, 150, 200,
+                100, 150, 200,
+                100, 150, 200,
+                100, 150, 200,
             ))
         )
         self.text.draw()
 
 
 class AttributeLabel(object):
-    def __init__(
-        self, x, y, obj=None, attribute=None, pre='', post='', parent=None
-    ):
-        self.parent = parent
-
+    def __init__(self, x, y, obj=None, attribute=None, pre='', post=''):
+        self._parent = None
         self.rect = Rect(x, y, 0, 0)
-
-        if self.parent:
-            self.rect.x += self.parent.x
-            self.rect.y += self.parent.y
 
         self.pre = pre
         self.post = post
@@ -90,6 +93,24 @@ class AttributeLabel(object):
             x=self.rect.x, y=self.rect.y,
             anchor_x='left', anchor_y='center'
         )
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        if self._parent is not None:
+            raise RuntimeError('Cannot reparent.')
+
+        self._parent = parent
+
+        if parent is not None:
+            self.rect.x += parent.rect.x
+            self.rect.y += parent.rect.y
+
+            self.label.x = self.rect.x
+            self.label.y = self.rect.y
 
     def set_attribute(self, obj, attribute):
         self.obj = obj
@@ -114,14 +135,8 @@ class AttributeLabel(object):
 
 
 class Panel(object):
-    def __init__(self, x, y, width, height, is_main=False, parent=None):
-        self.parent = parent
-
+    def __init__(self, x, y, width, height, is_main=False):
         self.rect = Rect(x, y, width, height)
-
-        if self.parent:
-            self.rect.x += self.parent.x
-            self.rect.y += self.parent.y
 
         self.displayed = False
         self.is_main = is_main
@@ -130,9 +145,11 @@ class Panel(object):
         self.labels = []
 
     def add_button(self, button):
+        button.parent = self
         self.buttons.append(button)
 
     def add_label(self, label):
+        label.parent = self
         self.labels.append(label)
 
     def show(self):
@@ -163,17 +180,20 @@ class Panel(object):
             )
 
         for i in range(0, 3):
-            margin = i * 5
-            color = (1 - (i % 2)) * 255
+            margin = i * 3
+            color = (i % 2) * 128
 
             pyglet.graphics.draw_indexed(
                 4, pyglet.gl.GL_TRIANGLES,
                 [0, 1, 2, 2, 1, 3],
                 ('v2i', (
                     self.rect.x + margin, self.rect.y + margin,
-                    self.rect.x + self.rect.width - margin, self.rect.y + margin,
-                    self.rect.x + margin, self.rect.y + self.rect.height - margin,
-                    self.rect.x + self.rect.width - margin, self.rect.y + self.rect.height - margin
+                    self.rect.x + self.rect.width - margin,
+                    self.rect.y + margin,
+                    self.rect.x + margin,
+                    self.rect.y + self.rect.height - margin,
+                    self.rect.x + self.rect.width - margin,
+                    self.rect.y + self.rect.height - margin
                 )),
                 ('c3B', (
                     color, color, color,
