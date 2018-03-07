@@ -2,6 +2,7 @@
 """DOCSTRING."""
 
 from Creature import Creature
+from Game import Game
 from UI import AttributeLabel
 from UI import Button
 from UI import Panel
@@ -10,11 +11,19 @@ from UI import UI
 from functools import partial
 import pyglet
 
+WIDTH, HEIGHT = 800, 600
 
-def build_ui(creature):
+
+def build_ui(game):
     ui = UI()
+    # Creatures panel
+    creatures_panel = Panel(
+        WIDTH // 2 - 200, HEIGHT // 2 - 250, 400, 500, True, 10
+    )
+    ui.add_panel(creatures_panel)
+
     # Right panel
-    panel = Panel(550, 150, 250, 450)
+    panel = Panel(WIDTH - 250, HEIGHT - 450, 250, 450)
 
     label = AttributeLabel(15, panel.rect.height - 20, pre='HP:')
     panel.add_label(label)
@@ -35,10 +44,10 @@ def build_ui(creature):
     panel.show()
 
     # Bottom panel
-    panel = Panel(0, 0, 800, 150)
+    panel = Panel(0, 0, WIDTH, 150)
 
     button = Button(20, panel.rect.height - 70, '(c) Creatures')
-    # button.register_handler(partial(creature.eat, 10))
+    button.register_handler(partial(game.show_creatures, creatures_panel))
     panel.add_button(button)
 
     button = Button(180, panel.rect.height - 70, '(i) Inventory')
@@ -76,10 +85,17 @@ def build_ui(creature):
 
 
 if __name__ == '__main__':
-    creature = Creature()
-    ui = build_ui(creature)
+    pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
+    pyglet.gl.glBlendFunc(
+        pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA
+    )
+    window = pyglet.window.Window(width=WIDTH, height=HEIGHT)
 
-    window = pyglet.window.Window(width=800, height=600)
+    game = Game()
+    game.add_creature(Creature())
+    game.add_creature(Creature())
+    game.add_creature(Creature())
+    ui = build_ui(game)
 
     @window.event
     def on_draw():
