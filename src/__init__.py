@@ -37,35 +37,35 @@ def build_ui(creature):
     # Bottom panel
     panel = Panel(0, 0, 800, 150)
 
-    button = Button(20, panel.rect.height - 70, 150, 50, 'Creatures')
+    button = Button(20, panel.rect.height - 70, '(c) Creatures')
     # button.register_handler(partial(creature.eat, 10))
     panel.add_button(button)
 
-    button = Button(180, panel.rect.height - 70, 150, 50, 'Inventory')
+    button = Button(180, panel.rect.height - 70, '(i) Inventory')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(340, panel.rect.height - 70, 150, 50, 'Cook')
+    button = Button(340, panel.rect.height - 70, '(o) Cook')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(500, panel.rect.height - 70, 150, 50, 'Build')
+    button = Button(500, panel.rect.height - 70, '(b) Build')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(20, panel.rect.height - 130, 150, 50, 'Feed')
+    button = Button(20, panel.rect.height - 130, '(f) Feed')
     # button.register_handler(partial(creature.sleep, 10))
     panel.add_button(button)
 
-    button = Button(180, panel.rect.height - 130, 150, 50, 'Equip')
+    button = Button(180, panel.rect.height - 130, '(e) Equip')
     # button.register_handler(partial(creature.sleep, 10))
     panel.add_button(button)
 
-    button = Button(340, panel.rect.height - 130, 150, 50, 'Mutate')
+    button = Button(340, panel.rect.height - 130, '(m) Mutate')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(500, panel.rect.height - 130, 150, 50, 'Adventure')
+    button = Button(500, panel.rect.height - 130, '(a) Adventure')
     # button.register_handler(partial(creature.sleep, 10))
     panel.add_button(button)
 
@@ -85,6 +85,10 @@ if __name__ == '__main__':
     def on_draw():
         window.clear()
         ui.draw()
+
+    @window.event
+    def on_mouse_motion(x, y, dx, dy):
+        ui.mouse_motion(x, y)
 
     @window.event
     def on_mouse_release(x, y, button, modifiers):
