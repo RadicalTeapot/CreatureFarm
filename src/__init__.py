@@ -49,7 +49,7 @@ def build_ui(game):
     panel.set_layout(0)
 
     button = Button('(c) Creatures')
-    # button.register_handler(partial(creature.eat, 10))
+    button.register_handler(partial(game.show_creatures, creatures_panel))
     panel.add_button(button)
 
     button = Button('(i) Inventory')
