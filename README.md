@@ -1,4 +1,4 @@
-# Tamagochi
+# Creature Farm
 
 ## Ideas:
 - ASCII graphics

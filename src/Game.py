@@ -15,9 +15,8 @@ class Game(object):
     def add_creature(self, creature):
         self.creatures.append(creature)
 
-    def pick_creature(self):
-        # TODO: UI panel to pick creature
-        pass
+    def show_creatures(self, panel):
+        panel.show()
 
     def do_adventure(self):
         # TODO: pick adventure here
