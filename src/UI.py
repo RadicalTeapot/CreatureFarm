@@ -11,25 +11,35 @@ class Rect(object):
         self.width = width
         self.height = height
 
-    def click(self, x, y):
+    def contains(self, x, y):
         return (
-            x >= self.x and y <= self.y and
+            x >= self.x and y >= self.y and
             x <= self.x + self.width and
             y <= self.y + self.height
         )
 
 
 class Button(object):
-    def __init__(self, x, y, width, height, text):
+    margin = 5
+    hover_color = (100, 150, 200)
+    regular_color = (0, 0, 0)
+
+    def __init__(self, x, y, text):
         self._parent = None
-        self.rect = Rect(x, y, width, height)
+        self.rect = Rect(x, y, 0, 0)
 
         self.text = pyglet.text.Label(
             text,
-            x=self.rect.x + self.rect.width // 2,
-            y=self.rect.y + self.rect.height // 2,
-            anchor_x='center', anchor_y='center'
+            x=self.rect.x + self.margin,
+            y=self.rect.y + self.margin,
+            anchor_x='left', anchor_y='bottom'
         )
+
+        self.rect.width = self.text.content_width + 2 * self.margin
+        self.rect.height = self.text.content_height + 2 * self.margin
+
+        self.color = self.regular_color
+
         self.handler = None
 
     @property
@@ -50,8 +60,14 @@ class Button(object):
     def register_handler(self, function):
         self.handler = function
 
+    def hover(self, x, y):
+        if self.rect.contains(x, y):
+            self.color = self.hover_color
+        else:
+            self.color = self.regular_color
+
     def click(self, x, y):
-        if self.rect.click(x, y):
+        if self.rect.contains(x, y):
             if self.handler is not None:
                 self.handler()
             return True
@@ -67,10 +83,10 @@ class Button(object):
                 self.rect.x + self.rect.width, self.rect.y + self.rect.height
             )),
             ('c3B', (
-                100, 150, 200,
-                100, 150, 200,
-                100, 150, 200,
-                100, 150, 200,
+                *self.color,
+                *self.color,
+                *self.color,
+                *self.color
             ))
         )
         self.text.draw()
@@ -117,7 +133,7 @@ class AttributeLabel(object):
         self.attribute = attribute
 
     def click(self, x, y):
-        return self.rect.click(x, y)
+        return self.rect.contains(x, y)
 
     def draw(self):
         if self.obj and self.attribute:
@@ -211,11 +227,18 @@ class Panel(object):
         for label in self.labels:
             label.draw()
 
+    def mouse_motion(self, x, y):
+        if not self.displayed:
+            return
+
+        for button in self.buttons:
+            button.hover(x, y)
+
     def click(self, x, y):
         if not self.displayed:
             return False
 
-        if self.rect.click(x, y):
+        if self.rect.contains(x, y):
             for button in self.buttons:
                 if button.click(x, y):
                     return True
@@ -228,6 +251,11 @@ class UI(object):
 
     def add_panel(self, panel):
         self.panels.append(panel)
+
+    def mouse_motion(self, x, y):
+        for panel in self.panels:
+            if panel.mouse_motion(x, y):
+                break
 
     def click(self, x, y):
         for panel in self.panels:
