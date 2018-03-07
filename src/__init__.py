@@ -15,20 +15,21 @@ def build_ui(creature):
     ui = UI()
     # Right panel
     panel = Panel(550, 150, 250, 450)
+    panel.set_layout(1)
 
-    label = AttributeLabel(15, panel.rect.height - 20, pre='HP:')
+    label = AttributeLabel(pre='HP:')
     panel.add_label(label)
-    label = AttributeLabel(15, panel.rect.height - 45, pre='Strength:')
+    label = AttributeLabel(pre='Strength:')
     panel.add_label(label)
-    label = AttributeLabel(15, panel.rect.height - 70, pre='Agility:')
+    label = AttributeLabel(pre='Agility:')
     panel.add_label(label)
-    label = AttributeLabel(15, panel.rect.height - 95, pre='Stamina:')
+    label = AttributeLabel(pre='Stamina:')
     panel.add_label(label)
-    label = AttributeLabel(15, panel.rect.height - 120, pre='Speed:')
+    label = AttributeLabel(pre='Speed:')
     panel.add_label(label)
-    label = AttributeLabel(15, panel.rect.height - 145, pre='Hunger:')
+    label = AttributeLabel(pre='Hunger:')
     panel.add_label(label)
-    label = AttributeLabel(15, panel.rect.height - 170, pre='Sleep:')
+    label = AttributeLabel(pre='Sleep:')
     panel.add_label(label)
 
     ui.add_panel(panel)
@@ -36,36 +37,37 @@ def build_ui(creature):
 
     # Bottom panel
     panel = Panel(0, 0, 800, 150)
+    panel.set_layout(0)
 
-    button = Button(20, panel.rect.height - 70, '(c) Creatures')
+    button = Button('(c) Creatures')
     # button.register_handler(partial(creature.eat, 10))
     panel.add_button(button)
 
-    button = Button(180, panel.rect.height - 70, '(i) Inventory')
+    button = Button('(i) Inventory')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(340, panel.rect.height - 70, '(o) Cook')
+    button = Button('(o) Cook')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(500, panel.rect.height - 70, '(b) Build')
+    button = Button('(b) Build')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(20, panel.rect.height - 130, '(f) Feed')
+    button = Button('(f) Feed')
     # button.register_handler(partial(creature.sleep, 10))
     panel.add_button(button)
 
-    button = Button(180, panel.rect.height - 130, '(e) Equip')
+    button = Button('(e) Equip')
     # button.register_handler(partial(creature.sleep, 10))
     panel.add_button(button)
 
-    button = Button(340, panel.rect.height - 130, '(m) Mutate')
+    button = Button('(m) Mutate')
     # button.register_handler(lambda: print('Adventure'))
     panel.add_button(button)
 
-    button = Button(500, panel.rect.height - 130, '(a) Adventure')
+    button = Button('(a) Adventure')
     # button.register_handler(partial(creature.sleep, 10))
     panel.add_button(button)
 

@@ -6,33 +6,10 @@ import pyglet
 
 class Rect(object):
     def __init__(self, x, y, width, height):
-        self._x = x
-        self._y = y
+        self.x = x
+        self.y = y
         self.width = width
         self.height = height
-
-        self.offset_x = 0
-        self.offset_y = 0
-
-    @property
-    def x(self):
-        return self._x + self.offset_x
-
-    @x.setter
-    def x(self, value):
-        self._x = value
-
-    @property
-    def y(self):
-        return self._y + self.offset_y
-
-    @y.setter
-    def y(self, value):
-        self._y = value
-
-    def set_offset(self, x, y):
-        self.offset_x = x
-        self.offset_y = y
 
     def contains(self, x, y):
         return (
@@ -42,14 +19,56 @@ class Rect(object):
         )
 
 
+class Layout(object):
+    def __init__(self, parent, direction, spacing):
+        self.rect = parent.rect
+        self.direction = direction
+        self.spacing = spacing
+        self.content = []
+
+    def add_content(self, content):
+        self.content.append(content)
+        self.reorganize()
+
+    def reorganize(self):
+        axis = 'width' if self.direction == 0 else 'height'
+        other_axis = 'width' if self.direction == 1 else 'height'
+        size = getattr(self.rect, axis)
+
+        pos = self.spacing
+        other_pos = self.spacing
+        # Track the largest item of the column
+        max_size = 0
+
+        for content in self.content:
+            content_size = getattr(content.rect, axis)
+            # If content doesn't fit, go to next column
+            if pos + content_size + self.spacing > size:
+                pos = self.spacing
+                other_pos += max_size + self.spacing
+                max_size = 0
+            else:
+                max_size = max(max_size, getattr(content.rect, other_axis))
+
+            content.set_pos(
+                self.rect.x + (pos if self.direction == 0 else other_pos),
+                # Flip y to simulate drawing content from top to bottom
+                (
+                    (self.rect.y + self.rect.height) -
+                    (other_pos if self.direction == 0 else pos) -
+                    content.rect.height
+                )
+            )
+            pos += content_size + self.spacing
+
+
 class Button(object):
     margin = 5
     hover_color = (100, 150, 200)
     regular_color = (0, 0, 0)
 
-    def __init__(self, x, y, text):
-        self._parent = None
-        self.rect = Rect(x, y, 0, 0)
+    def __init__(self, text):
+        self.rect = Rect(0, 0, 0, 0)
 
         self.text = pyglet.text.Label(
             text,
@@ -65,17 +84,12 @@ class Button(object):
 
         self.handler = None
 
-    @property
-    def parent(self):
-        return self._parent
+    def set_pos(self, x, y):
+        self.rect.x = x
+        self.rect.y = y
 
-    @parent.setter
-    def parent(self, parent):
-        self._parent = parent
-        if parent is not None:
-            self.rect.set_offset(parent.rect.x, parent.rect.y)
-        else:
-            self.rect.set_offset(0, 0)
+        self.text.x = self.rect.x + self.margin
+        self.text.y = self.rect.y + self.margin
 
     def register_handler(self, function):
         self.handler = function
@@ -113,9 +127,8 @@ class Button(object):
 
 
 class AttributeLabel(object):
-    def __init__(self, x, y, obj=None, attribute=None, pre='', post=''):
-        self._parent = None
-        self.rect = Rect(x, y, 0, 0)
+    def __init__(self, obj=None, attribute=None, pre='', post=''):
+        self.rect = Rect(0, 0, 0, 0)
 
         self.pre = pre
         self.post = post
@@ -127,20 +140,15 @@ class AttributeLabel(object):
                 self.post
             ),
             x=self.rect.x, y=self.rect.y,
-            anchor_x='left', anchor_y='center'
+            anchor_x='left', anchor_y='bottom'
         )
 
-    @property
-    def parent(self):
-        return self._parent
+        self.rect.width = self.label.content_width
+        self.rect.height = self.label.content_height
 
-    @parent.setter
-    def parent(self, parent):
-        self._parent = parent
-        if parent is not None:
-            self.rect.set_offset(parent.rect.x, parent.rect.y)
-        else:
-            self.rect.set_offset(0, 0)
+    def set_pos(self, x, y):
+        self.rect.x = x
+        self.rect.y = y
 
         self.label.x = self.rect.x
         self.label.y = self.rect.y
@@ -168,21 +176,39 @@ class AttributeLabel(object):
 
 
 class Panel(object):
+    border_margin = 3
+
     def __init__(self, x, y, width, height, is_main=False):
         self.rect = Rect(x, y, width, height)
 
         self.displayed = False
         self.is_main = is_main
+        self.layout = None
 
         self.buttons = []
         self.labels = []
 
+    def set_layout(self, direction=0, spacing=10):
+        self.layout = Layout(self, direction, spacing)
+
+        # Take panel border into account
+        self.layout.rect.x += 2 * self.border_margin
+        self.layout.rect.y += 2 * self.border_margin
+        self.layout.rect.width -= 4 * self.border_margin
+        self.layout.rect.height -= 4 * self.border_margin
+
     def add_button(self, button):
-        button.parent = self
+        if self.layout:
+            self.layout.add_content(button)
+        else:
+            button.parent = self
         self.buttons.append(button)
 
     def add_label(self, label):
-        label.parent = self
+        if self.layout:
+            self.layout.add_content(label)
+        else:
+            label.parent = self
         self.labels.append(label)
 
     def show(self):
@@ -213,7 +239,7 @@ class Panel(object):
             )
 
         for i in range(0, 3):
-            margin = i * 3
+            margin = i * self.border_margin
             color = (i % 2) * 128
 
             pyglet.graphics.draw_indexed(
