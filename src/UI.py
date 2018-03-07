@@ -6,10 +6,33 @@ import pyglet
 
 class Rect(object):
     def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
+        self._x = x
+        self._y = y
         self.width = width
         self.height = height
+
+        self.offset_x = 0
+        self.offset_y = 0
+
+    @property
+    def x(self):
+        return self._x + self.offset_x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y + self.offset_y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+
+    def set_offset(self, x, y):
+        self.offset_x = x
+        self.offset_y = y
 
     def contains(self, x, y):
         return (
@@ -48,14 +71,11 @@ class Button(object):
 
     @parent.setter
     def parent(self, parent):
-        if self._parent is not None:
-            raise RuntimeError('Cannot reparent.')
-
         self._parent = parent
-
         if parent is not None:
-            self.rect.x += parent.rect.x
-            self.rect.y += parent.rect.y
+            self.rect.set_offset(parent.rect.x, parent.rect.y)
+        else:
+            self.rect.set_offset(0, 0)
 
     def register_handler(self, function):
         self.handler = function
@@ -116,17 +136,14 @@ class AttributeLabel(object):
 
     @parent.setter
     def parent(self, parent):
-        if self._parent is not None:
-            raise RuntimeError('Cannot reparent.')
-
         self._parent = parent
-
         if parent is not None:
-            self.rect.x += parent.rect.x
-            self.rect.y += parent.rect.y
+            self.rect.set_offset(parent.rect.x, parent.rect.y)
+        else:
+            self.rect.set_offset(0, 0)
 
-            self.label.x = self.rect.x
-            self.label.y = self.rect.y
+        self.label.x = self.rect.x
+        self.label.y = self.rect.y
 
     def set_attribute(self, obj, attribute):
         self.obj = obj
