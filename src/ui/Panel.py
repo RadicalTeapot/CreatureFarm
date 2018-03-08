@@ -54,49 +54,117 @@ class Layout(object):
             pos += content_size + self.spacing
 
 
-class Panel(object):
-    border_margin = 3
+class Tab(object):
+    def __init__(self, title=''):
+        self.title = title
+        self.title_button = ui.Button(self.title)
 
-    def __init__(self, x, y, width, height, is_main=False, depth=-1):
-        self.rect = ui.Rect(x, y, width, height)
-
-        self.displayed = False
-        self.is_main = is_main
         self.layout = None
-        self.depth = depth
+        self.rect = ui.Rect(0, 0, 0, 0)
 
         self.buttons = []
         self.labels = []
 
+        self.active = False
+
     def set_layout(self, direction=0, spacing=10):
         self.layout = Layout(self, direction, spacing)
 
-        # Take panel border into account
-        self.layout.rect.x += 2 * self.border_margin
-        self.layout.rect.y += 2 * self.border_margin
-        self.layout.rect.width -= 4 * self.border_margin
-        self.layout.rect.height -= 4 * self.border_margin
+    def set_active(self, active):
+        self.active = active
 
     def add_button(self, button):
-        if self.layout:
-            self.layout.add_content(button)
+        self.layout.add_content(button)
         self.buttons.append(button)
 
     def add_buttons(self, buttons):
-        if self.layout:
-            self.layout.add_content(buttons)
+        self.layout.add_content(buttons)
         self.buttons.extend(buttons)
 
     def add_label(self, label):
-        if self.layout:
-            self.layout.add_content(label)
+        self.layout.add_content(label)
         self.labels.append(label)
 
-    def clear(self):
-        del self.buttons[:]
-        del self.labels[:]
-        if self.layout:
-            self.layout.clear()
+    def draw(self):
+        if not self.active:
+            return
+
+        for button in self.buttons:
+            button.draw()
+        for label in self.labels:
+            label.draw()
+
+    def mouse_motion(self, x, y):
+        if not self.active:
+            return
+
+        for button in self.buttons:
+            button.hover(x, y)
+
+    def click(self, x, y):
+        if not self.active:
+            return
+
+        for button in self.buttons:
+            if button.click(x, y):
+                break
+
+
+class Panel(object):
+    border_margin = 3
+    tab_spacing = 10
+
+    def __init__(self, x, y, width, height, is_dialog=False, depth=-1):
+        self.rect = ui.Rect(x, y, width, height)
+
+        self.is_dialog = is_dialog
+        self.displayed = False
+        self.depth = depth
+
+        self.tabs = []
+
+    def add_tab(self, active, title='', direction=0, spacing=10):
+        tab = Tab(title)
+        # Take panel border into account
+        tab.rect.x = self.rect.x + 2 * self.border_margin
+        tab.rect.y = self.rect.y + 2 * self.border_margin
+        tab.rect.width = self.rect.width - 4 * self.border_margin
+        tab.rect.height = self.rect.height - 4 * self.border_margin
+
+        if len(title):
+            tab.title_button.x = (
+                self.rect.x + self.tab_spacing * (len(self.tabs) + 1)
+            )
+            tab.title_button.y = (
+                self.rect.height + self.rect.y -
+                tab.title_button.rect.height + ui.Button.margin * 2
+            )
+
+        tab.set_layout(direction, spacing)
+        tab.set_active(active)
+        if active:
+            [tab.set_active(False) for tab in self.tabs]
+        self.tabs.append(tab)
+
+        return tab
+
+    def set_active_tab(self, title):
+        for tab in self.tabs:
+            tab.set_active(tab.title == title)
+
+    def add_button(self, tab, button):
+        tab.add_button(button)
+
+    def add_buttons(self, tab, buttons):
+        tab.add_buttons(buttons)
+
+    def add_label(self, tab, label):
+        tab.add_label(label)
+
+    def clear(self, tab):
+        del tab.buttons[:]
+        del tab.labels[:]
+        tab.layout.clear()
 
     def show(self):
         self.displayed = True
@@ -107,7 +175,7 @@ class Panel(object):
     def draw(self):
         if not self.displayed:
             return
-        if self.is_main:
+        if self.is_dialog:
             pyglet.graphics.draw_indexed(
                 4, pyglet.gl.GL_TRIANGLES,
                 [0, 1, 2, 2, 1, 3],
@@ -151,21 +219,17 @@ class Panel(object):
 
         self.draw_contents()
 
-    def draw_contents(self):
-        for button in self.buttons:
-            button.draw()
-        for label in self.labels:
-            label.draw()
-
     def mouse_motion(self, x, y):
         if not self.displayed:
             return False
 
-        if not self.is_main and not self.rect.contains(x, y):
+        if not self.is_dialog and not self.rect.contains(x, y):
             return False
 
-        for button in self.buttons:
-            button.hover(x, y)
+        for tab in self.tabs:
+            if len(tab.title):
+                tab.title_button.hover(x, y)
+            tab.mouse_motion(x, y)
 
         return True
 
@@ -174,11 +238,17 @@ class Panel(object):
             return False
 
         if self.rect.contains(x, y):
-            for button in self.buttons:
-                if button.click(x, y):
-                    return True
-            return True
-        elif self.is_main:
-            self.hide()
+            for tab in self.tabs:
+                if len(tab.title):
+                    if tab.title_button.click(x, y):
+                        return True
+                tab.click(x, y)
             return True
         return False
+
+    def draw_contents(self):
+        for tab in self.tabs:
+            if len(tab.title):
+                tab.title_button.draw()
+
+            tab.draw()

@@ -25,6 +25,24 @@ class Button(object):
         self.rect.width = self.text.content_width + 2 * self.margin
         self.rect.height = self.text.content_height + 2 * self.margin
 
+    @property
+    def x(self):
+        return self.rect.x
+
+    @x.setter
+    def x(self, value):
+        self.rect.x = value
+        self.text.x = self.rect.x + self.margin
+
+    @property
+    def y(self):
+        return self.rect.y
+
+    @y.setter
+    def y(self, value):
+        self.rect.y = value
+        self.text.y = self.rect.y + self.margin
+
     def set_pos(self, x, y):
         self.rect.x = x
         self.rect.y = y
