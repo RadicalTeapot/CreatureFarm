@@ -165,7 +165,7 @@ class AttributeLabel(object):
         if self.obj and self.attribute:
             self.label.text = '{} {} {}'.format(
                 self.pre,
-                int(getattr(self.obj, self.attribute)),
+                getattr(self.obj, self.attribute),
                 self.post
             )
         else:
@@ -217,6 +217,8 @@ class Panel(object):
     def clear(self):
         del self.buttons[:]
         del self.labels[:]
+        if self.layout:
+            self.layout.clear()
 
     def show(self):
         self.displayed = True

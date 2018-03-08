@@ -5,7 +5,9 @@ import random
 
 
 class Creature(object):
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
+
         self.hp = 0
 
         self.strength = 0

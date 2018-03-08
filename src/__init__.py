@@ -8,7 +8,6 @@ from UI import Button
 from UI import Panel
 from UI import UI
 
-from functools import partial
 import pyglet
 
 WIDTH, HEIGHT = 800, 600
@@ -17,29 +16,24 @@ WIDTH, HEIGHT = 800, 600
 def build_ui(game):
     ui = UI()
     # Creatures panel
-    creatures_panel = Panel(
+    game.creature_panel = Panel(
         WIDTH // 2 - 200, HEIGHT // 2 - 250, 400, 500, True, 10
     )
-    ui.add_panel(creatures_panel)
+    ui.add_panel(game.creature_panel)
+    game.creature_panel.set_layout(1)
 
     # Right panel
     panel = Panel(WIDTH - 250, HEIGHT - 450, 250, 450)
     panel.set_layout(1)
 
-    label = AttributeLabel(pre='HP:')
-    panel.add_label(label)
-    label = AttributeLabel(pre='Strength:')
-    panel.add_label(label)
-    label = AttributeLabel(pre='Agility:')
-    panel.add_label(label)
-    label = AttributeLabel(pre='Stamina:')
-    panel.add_label(label)
-    label = AttributeLabel(pre='Speed:')
-    panel.add_label(label)
-    label = AttributeLabel(pre='Hunger:')
-    panel.add_label(label)
-    label = AttributeLabel(pre='Sleep:')
-    panel.add_label(label)
+    panel.add_label(AttributeLabel(game, 'name'))
+    panel.add_label(AttributeLabel(game, 'hp', pre='HP:'))
+    panel.add_label(AttributeLabel(game, 'strength', pre='Strength:'))
+    panel.add_label(AttributeLabel(game, 'agility', pre='Agility:'))
+    panel.add_label(AttributeLabel(game, 'stamina', pre='Stamina:'))
+    panel.add_label(AttributeLabel(game, 'speed', pre='Speed:'))
+    panel.add_label(AttributeLabel(game, 'hunger', pre='Hunger:'))
+    panel.add_label(AttributeLabel(game, 'tired', pre='Sleep:'))
 
     ui.add_panel(panel)
     panel.show()
@@ -49,7 +43,7 @@ def build_ui(game):
     panel.set_layout(0)
 
     button = Button('(c) Creatures')
-    button.register_handler(partial(game.show_creatures, creatures_panel))
+    button.register_handler(game.show_creatures)
     panel.add_button(button)
 
     button = Button('(i) Inventory')
@@ -77,7 +71,7 @@ def build_ui(game):
     panel.add_button(button)
 
     button = Button('(a) Adventure')
-    # button.register_handler(partial(creature.sleep, 10))
+    button.register_handler(game.start_adventure)
     panel.add_button(button)
 
     ui.add_panel(panel)
@@ -94,9 +88,9 @@ if __name__ == '__main__':
     window = pyglet.window.Window(width=WIDTH, height=HEIGHT)
 
     game = Game()
-    game.add_creature(Creature())
-    game.add_creature(Creature())
-    game.add_creature(Creature())
+    game.add_creature(Creature('First'))
+    game.add_creature(Creature('Second'))
+    game.add_creature(Creature('Third'))
     ui = build_ui(game)
 
     @window.event

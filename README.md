@@ -15,3 +15,4 @@
 - Player has to manage stable
 - Can mate creatures for mutated offsprings
 - After adventure or higher level creatues, creatures get needs for special buildings/meals
+- Let player hatch eggs and make it look like opening a loot box
