@@ -1,7 +1,7 @@
 # Creature Farm
 
 ## Ideas:
-- ASCII graphics
+- All text, center panel describes action/creature/....
 - Can use mouse on menus
 - Player has no direct control over creature, can just give orders
 - Creature must hunt for food

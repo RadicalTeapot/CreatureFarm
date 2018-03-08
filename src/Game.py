@@ -2,7 +2,8 @@
 """DOCSTRING."""
 
 from Creature import Creature
-from UI import Button
+from ui import Button
+from ui import Ui
 from functools import partial
 import random
 
@@ -13,24 +14,24 @@ class Game(object):
         self.current = None
 
         self.food = 0
-        self.creature_panel = None
+        self.ui = Ui(self)
 
     def add_creature(self, creature):
         self.creatures.append(creature)
 
     def show_creatures(self):
-        self.creature_panel.clear()
+        self.ui.creature_panel.clear()
         buttons = []
         for creature in self.creatures:
             button = Button(creature.name)
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
-        self.creature_panel.add_buttons(buttons)
-        self.creature_panel.show()
+        self.ui.creature_panel.add_buttons(buttons)
+        self.ui.creature_panel.show()
 
     def select_creature(self, creature):
         self.current = creature
-        self.creature_panel.hide()
+        self.ui.creature_panel.hide()
 
     @property
     def name(self):
