@@ -26,8 +26,14 @@ class Layout(object):
         self.spacing = spacing
         self.content = []
 
+    def clear(self):
+        del self.content[:]
+
     def add_content(self, content):
-        self.content.append(content)
+        if isinstance(content, list):
+            self.content.extend(content)
+        else:
+            self.content.append(content)
         self.reorganize()
 
     def reorganize(self):
@@ -69,14 +75,18 @@ class Button(object):
 
     def __init__(self, text):
         self.rect = Rect(0, 0, 0, 0)
+        self.color = self.regular_color
 
         self.text = pyglet.text.Label(
             text,
-            x=self.rect.x + self.rect.width // 2,
-            y=self.rect.y + self.rect.height // 2,
-            anchor_x='center', anchor_y='center'
+            x=self.rect.x + self.margin,
+            y=self.rect.y + self.margin,
+            anchor_x='left', anchor_y='bottom'
         )
         self.handler = None
+
+        self.rect.width = self.text.content_width + 2 * self.margin
+        self.rect.height = self.text.content_height + 2 * self.margin
 
     def set_pos(self, x, y):
         self.rect.x = x
@@ -88,8 +98,14 @@ class Button(object):
     def register_handler(self, function):
         self.handler = function
 
+    def hover(self, x, y):
+        if self.rect.contains(x, y):
+            self.color = self.hover_color
+        else:
+            self.color = self.regular_color
+
     def click(self, x, y):
-        if self.rect.click(x, y):
+        if self.rect.contains(x, y):
             if self.handler is not None:
                 self.handler()
             return True
@@ -105,10 +121,7 @@ class Button(object):
                 self.rect.x + self.rect.width, self.rect.y + self.rect.height
             )),
             ('c3B', (
-                100, 150, 200,
-                100, 150, 200,
-                100, 150, 200,
-                100, 150, 200,
+                *self.color, *self.color, *self.color, *self.color
             ))
         )
         self.text.draw()
@@ -138,15 +151,15 @@ class AttributeLabel(object):
         self.rect.x = x
         self.rect.y = y
 
-            self.label.x = self.rect.x
-            self.label.y = self.rect.y
+        self.label.x = self.rect.x
+        self.label.y = self.rect.y
 
     def set_attribute(self, obj, attribute):
         self.obj = obj
         self.attribute = attribute
 
     def click(self, x, y):
-        return self.rect.click(x, y)
+        return self.rect.contains(x, y)
 
     def draw(self):
         if self.obj and self.attribute:
@@ -189,16 +202,21 @@ class Panel(object):
     def add_button(self, button):
         if self.layout:
             self.layout.add_content(button)
-        else:
-            button.parent = self
         self.buttons.append(button)
+
+    def add_buttons(self, buttons):
+        if self.layout:
+            self.layout.add_content(buttons)
+        self.buttons.extend(buttons)
 
     def add_label(self, label):
         if self.layout:
             self.layout.add_content(label)
-        else:
-            label.parent = self
         self.labels.append(label)
+
+    def clear(self):
+        del self.buttons[:]
+        del self.labels[:]
 
     def show(self):
         self.displayed = True
@@ -259,11 +277,23 @@ class Panel(object):
         for label in self.labels:
             label.draw()
 
+    def mouse_motion(self, x, y):
+        if not self.displayed:
+            return False
+
+        if not self.is_main and not self.rect.contains(x, y):
+            return False
+
+        for button in self.buttons:
+            button.hover(x, y)
+
+        return True
+
     def click(self, x, y):
         if not self.displayed:
             return False
 
-        if self.rect.click(x, y):
+        if self.rect.contains(x, y):
             for button in self.buttons:
                 if button.click(x, y):
                     return True
@@ -281,6 +311,11 @@ class UI(object):
     def add_panel(self, panel):
         self.panels.append(panel)
         self.panels = sorted(self.panels, key=lambda panel: panel.depth)
+
+    def mouse_motion(self, x, y):
+        for panel in self.panels:
+            if panel.mouse_motion(x, y):
+                break
 
     def click(self, x, y):
         for panel in self.panels:
