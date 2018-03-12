@@ -20,19 +20,18 @@ class Game(object):
         self.creatures.append(creature)
 
     def show_creatures(self):
-        tab = self.ui.creature_panel.tabs[0]
-        self.ui.creature_panel.clear(tab)
+        tab = self.ui.left_panel.tabs[0]
+        self.ui.left_panel.clear(tab)
         buttons = []
         for creature in self.creatures:
             button = Button(creature.name)
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
-        self.ui.creature_panel.add_buttons(tab, buttons)
-        self.ui.creature_panel.show()
+        self.ui.left_panel.add_buttons(tab, buttons)
+        self.ui.left_panel.show()
 
     def select_creature(self, creature):
         self.current = creature
-        self.ui.creature_panel.hide()
 
     @property
     def name(self):

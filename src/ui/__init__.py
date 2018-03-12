@@ -26,52 +26,60 @@ class Rect(object):
 class Ui(object):
     def __init__(self, game):
         self.game = game
-        self.creature_panel = None
+        self.left_panel = None
+        self.central_panel = None
         self.right_panel = None
         self.bottom_panel = None
         self.build()
 
         self.panels = sorted([
-            self.creature_panel,
+            self.left_panel,
+            self.central_panel,
             self.right_panel,
             self.bottom_panel
         ], key=lambda panel: panel.depth)
 
     def build(self):
-        self.creature_panel = Panel(
-            Settings.WIDTH // 2 - 200, Settings.HEIGHT // 2 - 250,
-            400, 500, True, 10
+        self.left_panel = Panel(
+            0, Settings.HEIGHT - 450, 150, 445, 10
         )
-        self.creature_panel.add_tab(True, 'Creatures', 1)
+        self.left_panel.add_tab(True, 'Creatures', 1)
+        self.left_panel.show()
 
-        self.right_panel = Panel(
-            Settings.WIDTH - 250, Settings.HEIGHT - 450, 250, 450
+        self.central_panel = Panel(
+            150, Settings.HEIGHT - 450, 250, 445
         )
-        tab = self.right_panel.add_tab(True)
+        tab = self.central_panel.add_tab(True, 'Stats', 1)
 
-        self.right_panel.add_label(tab, AttributeLabel(self.game, 'name'))
-        self.right_panel.add_label(
+        self.central_panel.add_label(tab, AttributeLabel(self.game, 'name'))
+        self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'hp', pre='HP:')
         )
-        self.right_panel.add_label(
+        self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'strength', pre='Strength:')
         )
-        self.right_panel.add_label(
+        self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'agility', pre='Agility:')
         )
-        self.right_panel.add_label(
+        self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'stamina', pre='Stamina:')
         )
-        self.right_panel.add_label(
+        self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'speed', pre='Speed:')
         )
-        self.right_panel.add_label(
+        self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'hunger', pre='Hunger:')
         )
-        self.right_panel.add_label(
+        self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'tired', pre='Sleep:')
         )
+        self.central_panel.show()
 
+        self.right_panel = Panel(
+            400, Settings.HEIGHT - 450, Settings.WIDTH - 400, 445
+        )
+        self.right_panel.add_tab(True, 'Equipment', 1)
+        self.right_panel.add_tab(True, 'Description', 1)
         self.right_panel.show()
 
         self.bottom_panel = Panel(0, 0, Settings.WIDTH, 150)
@@ -113,8 +121,7 @@ class Ui(object):
 
     def mouse_motion(self, x, y):
         for panel in self.panels:
-            if panel.mouse_motion(x, y):
-                break
+            panel.mouse_motion(x, y)
 
     def click(self, x, y):
         for panel in self.panels:

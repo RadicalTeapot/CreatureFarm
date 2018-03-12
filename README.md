@@ -2,6 +2,7 @@
 
 ## Ideas:
 - All text, center panel describes action/creature/....
+- Chage layout of center to left/center/right panel contextual to what has been clicked in bottom panel (e.g creature select, creature stats/equip (as tabs) and creature description when clicking on creatures button)
 - Can use mouse on menus
 - Player has no direct control over creature, can just give orders
 - Creature must hunt for food

@@ -71,6 +71,7 @@ class Tab(object):
         self.layout = Layout(self, direction, spacing)
 
     def set_active(self, active):
+        # TODO: Gery out title when tab not active
         self.active = active
 
     def add_button(self, button):
@@ -112,7 +113,7 @@ class Tab(object):
 
 class Panel(object):
     border_margin = 3
-    tab_spacing = 10
+    tab_spacing = 20
 
     def __init__(self, x, y, width, height, is_dialog=False, depth=-1):
         self.rect = ui.Rect(x, y, width, height)
@@ -125,26 +126,29 @@ class Panel(object):
 
     def add_tab(self, active, title='', direction=0, spacing=10):
         tab = Tab(title)
+        self.tabs.append(tab)
+
         # Take panel border into account
         tab.rect.x = self.rect.x + 2 * self.border_margin
         tab.rect.y = self.rect.y + 2 * self.border_margin
         tab.rect.width = self.rect.width - 4 * self.border_margin
         tab.rect.height = self.rect.height - 4 * self.border_margin
 
-        if len(title):
-            tab.title_button.x = (
-                self.rect.x + self.tab_spacing * (len(self.tabs) + 1)
-            )
-            tab.title_button.y = (
-                self.rect.height + self.rect.y -
-                tab.title_button.rect.height + ui.Button.margin * 2
-            )
+        x = self.rect.x + self.tab_spacing
+        tab.title_button.y = (
+            self.rect.height + self.rect.y -
+            tab.title_button.rect.height + ui.Button.margin * 2
+        )
+        for tab in self.tabs:
+            if len(tab.title):
+                tab.title_button.x = x
+                x += tab.title_button.rect.width + self.tab_spacing
 
         tab.set_layout(direction, spacing)
         tab.set_active(active)
         if active:
             [tab.set_active(False) for tab in self.tabs]
-        self.tabs.append(tab)
+        tab.set_active(True)
 
         return tab
 
@@ -221,17 +225,16 @@ class Panel(object):
 
     def mouse_motion(self, x, y):
         if not self.displayed:
-            return False
+            return
 
+        # TODO: un-hover hovered buttons before returning
         if not self.is_dialog and not self.rect.contains(x, y):
-            return False
+            return
 
         for tab in self.tabs:
             if len(tab.title):
                 tab.title_button.hover(x, y)
             tab.mouse_motion(x, y)
-
-        return True
 
     def click(self, x, y):
         if not self.displayed:
