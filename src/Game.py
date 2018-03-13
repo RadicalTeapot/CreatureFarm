@@ -28,7 +28,10 @@ class Game(object):
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
         self.ui.left_panel.add_buttons(tab, buttons)
-        self.ui.left_panel.show()
+        # self.ui.left_panel.show()
+        self.ui.left_panel.set_current_group(self.ui.TAB_GROUPS.CREATURE)
+        self.ui.central_panel.set_current_group(self.ui.TAB_GROUPS.CREATURE)
+        self.ui.right_panel.set_current_group(self.ui.TAB_GROUPS.CREATURE)
 
     def select_creature(self, creature):
         self.current = creature

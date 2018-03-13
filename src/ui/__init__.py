@@ -7,6 +7,8 @@ from ui.Elements import Button
 
 from Settings import Settings
 
+from collections import namedtuple
+
 
 class Rect(object):
     def __init__(self, x, y, width, height):
@@ -24,6 +26,14 @@ class Rect(object):
 
 
 class Ui(object):
+    TAB_GROUPS = namedtuple('tab_groups', [
+        'CREATURE',
+        'ADVENTURE'
+    ])(
+        'creature',
+        'adventure'
+    )
+
     def __init__(self, game):
         self.game = game
         self.left_panel = None
@@ -43,13 +53,14 @@ class Ui(object):
         self.left_panel = Panel(
             0, Settings.HEIGHT - 450, 150, 445, 10
         )
-        self.left_panel.add_tab(True, 'Creatures', 1)
-        self.left_panel.show()
+        self.left_panel.add_tab(self.TAB_GROUPS.CREATURE, True, 'Creatures', 1)
 
         self.central_panel = Panel(
             150, Settings.HEIGHT - 450, 250, 445
         )
-        tab = self.central_panel.add_tab(True, 'Stats', 1)
+        tab = self.central_panel.add_tab(
+            self.TAB_GROUPS.CREATURE, True, 'Stats', 1
+        )
 
         self.central_panel.add_label(tab, AttributeLabel(self.game, 'name'))
         self.central_panel.add_label(
@@ -73,17 +84,19 @@ class Ui(object):
         self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'tired', pre='Sleep:')
         )
-        self.central_panel.show()
 
         self.right_panel = Panel(
             400, Settings.HEIGHT - 450, Settings.WIDTH - 400, 445
         )
-        self.right_panel.add_tab(True, 'Equipment', 1)
-        self.right_panel.add_tab(True, 'Description', 1)
-        self.right_panel.show()
+        self.right_panel.add_tab(
+            self.TAB_GROUPS.CREATURE, True, 'Equipment', 1
+        )
+        self.right_panel.add_tab(
+            self.TAB_GROUPS.CREATURE, True, 'Description', 1
+        )
 
         self.bottom_panel = Panel(0, 0, Settings.WIDTH, 150)
-        tab = self.bottom_panel.add_tab(True)
+        tab = self.bottom_panel.add_tab('bottom', True)
 
         button = Button('(c) Creatures')
         button.register_handler(self.game.show_creatures)
@@ -117,7 +130,7 @@ class Ui(object):
         button.register_handler(self.game.start_adventure)
         self.bottom_panel.add_button(tab, button)
 
-        self.bottom_panel.show()
+        self.bottom_panel.set_current_group('bottom')
 
     def mouse_motion(self, x, y):
         for panel in self.panels:
