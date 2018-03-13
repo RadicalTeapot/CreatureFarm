@@ -12,15 +12,20 @@ class Game(object):
     def __init__(self):
         self.creatures = []
         self.current = None
-
-        self.food = 0
         self.ui = Ui(self)
+
+        # Callbacks
+        self.ui.register_callback(
+            self.ui.TAB_GROUPS.CREATURE, self.show_creatures
+        )
 
     def add_creature(self, creature):
         self.creatures.append(creature)
 
     def show_creatures(self):
-        tab = self.ui.left_panel.tabs[0]
+        self.ui.show_tab_group(self.ui.TAB_GROUPS.CREATURE)
+
+        tab = self.ui.left_panel.get_tabs()[0]
         self.ui.left_panel.clear(tab)
         buttons = []
         for creature in self.creatures:
@@ -28,19 +33,9 @@ class Game(object):
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
         self.ui.left_panel.add_buttons(tab, buttons)
-        # self.ui.left_panel.show()
-        self.ui.left_panel.set_current_group(self.ui.TAB_GROUPS.CREATURE)
-        self.ui.central_panel.set_current_group(self.ui.TAB_GROUPS.CREATURE)
-        self.ui.right_panel.set_current_group(self.ui.TAB_GROUPS.CREATURE)
 
     def select_creature(self, creature):
         self.current = creature
-
-    @property
-    def name(self):
-        if self.current:
-            return self.current.name
-        return ''
 
     @property
     def hp(self):

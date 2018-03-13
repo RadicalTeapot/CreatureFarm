@@ -132,7 +132,6 @@ class Panel(object):
         self.displayed = not is_dialog
         self.depth = depth
 
-        self.tabs = []
         self.tab_groups = {}
         self.current_group = None
 
@@ -169,6 +168,12 @@ class Panel(object):
         return tab
 
     def set_active_tab(self, title, group=None):
+        tabs = self.get_tabs(group)
+
+        for tab in tabs:
+            tab.set_active(tab.title == title)
+
+    def get_tabs(self, group=None):
         if group is None:
             group = self.current_group
 
@@ -178,8 +183,7 @@ class Panel(object):
         else:
             [tabs.extend(value) for value in self.tab_groups.values()]
 
-        for tab in tabs:
-            tab.set_active(tab.title == title)
+        return tabs
 
     def set_current_group(self, group):
         if group is None:
@@ -261,11 +265,14 @@ class Panel(object):
         if not self.displayed:
             return
 
+        if self.current_group is None:
+            return
+
         # TODO: un-hover hovered buttons before returning
         if not self.is_dialog and not self.rect.contains(x, y):
             return
 
-        for tab in self.tabs:
+        for tab in self.tab_groups[self.current_group]:
             if len(tab.title):
                 tab.title_button.hover(x, y)
             tab.mouse_motion(x, y)
@@ -274,8 +281,11 @@ class Panel(object):
         if not self.displayed:
             return False
 
+        if self.current_group is None:
+            return False
+
         if self.rect.contains(x, y):
-            for tab in self.tabs:
+            for tab in self.tab_groups[self.current_group]:
                 if len(tab.title):
                     if tab.title_button.click(x, y):
                         return True

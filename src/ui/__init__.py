@@ -8,6 +8,7 @@ from ui.Elements import Button
 from Settings import Settings
 
 from collections import namedtuple
+from functools import partial
 
 
 class Rect(object):
@@ -36,33 +37,49 @@ class Ui(object):
 
     def __init__(self, game):
         self.game = game
-        self.left_panel = None
-        self.central_panel = None
-        self.right_panel = None
-        self.bottom_panel = None
+
+        self.panels = []
+        self.callbacks = dict([
+            (group, None) for group in self.TAB_GROUPS
+        ])
+
         self.build()
 
-        self.panels = sorted([
+    def register_callback(self, button_type, method):
+        if button_type not in self.TAB_GROUPS:
+            raise KeyError('Wrong group type')
+        self.callbacks[button_type] = method
+
+    def callback(self, button_type):
+        if callable(self.callbacks[button_type]):
+            self.callbacks[button_type]()
+
+    def build(self):
+        self.left_panel = Panel(0, Settings.HEIGHT - 450, 150, 445)
+        self.central_panel = Panel(150, Settings.HEIGHT - 450, 250, 445)
+        self.right_panel = Panel(
+            400, Settings.HEIGHT - 450, Settings.WIDTH - 400, 445
+        )
+        self.bottom_panel = Panel(0, 0, Settings.WIDTH, 150)
+
+        self.panels = [
             self.left_panel,
             self.central_panel,
             self.right_panel,
             self.bottom_panel
-        ], key=lambda panel: panel.depth)
+        ]
 
-    def build(self):
-        self.left_panel = Panel(
-            0, Settings.HEIGHT - 450, 150, 445, 10
-        )
-        self.left_panel.add_tab(self.TAB_GROUPS.CREATURE, True, 'Creatures', 1)
+        self.build_creature_ui()
+        self.build_bottom_ui()
 
-        self.central_panel = Panel(
-            150, Settings.HEIGHT - 450, 250, 445
-        )
-        tab = self.central_panel.add_tab(
-            self.TAB_GROUPS.CREATURE, True, 'Stats', 1
-        )
+    def build_creature_ui(self):
+        group = self.TAB_GROUPS.CREATURE
 
-        self.central_panel.add_label(tab, AttributeLabel(self.game, 'name'))
+        # Left panel
+        self.left_panel.add_tab(group, True, 'Creatures', 1)
+
+        # Central panel
+        tab = self.central_panel.add_tab(group, True, 'Stats', 1)
         self.central_panel.add_label(
             tab, AttributeLabel(self.game, 'hp', pre='HP:')
         )
@@ -85,52 +102,51 @@ class Ui(object):
             tab, AttributeLabel(self.game, 'tired', pre='Sleep:')
         )
 
-        self.right_panel = Panel(
-            400, Settings.HEIGHT - 450, Settings.WIDTH - 400, 445
-        )
-        self.right_panel.add_tab(
-            self.TAB_GROUPS.CREATURE, True, 'Equipment', 1
-        )
-        self.right_panel.add_tab(
-            self.TAB_GROUPS.CREATURE, True, 'Description', 1
-        )
+        # Right panel
+        self.right_panel.add_tab(group, True, 'Equipment', 1)
+        self.right_panel.add_tab(group, True, 'Description', 1)
 
-        self.bottom_panel = Panel(0, 0, Settings.WIDTH, 150)
+    def build_bottom_ui(self):
         tab = self.bottom_panel.add_tab('bottom', True)
 
-        button = Button('(c) Creatures')
-        button.register_handler(self.game.show_creatures)
-        self.bottom_panel.add_button(tab, button)
+        creature_button = Button('(c) Creatures')
+        self.bottom_panel.add_button(tab, creature_button)
 
-        button = Button('(i) Inventory')
-        # button.register_handler(lambda: print('Adventure'))
-        self.bottom_panel.add_button(tab, button)
+        inventory_button = Button('(i) Inventory')
+        self.bottom_panel.add_button(tab, inventory_button)
 
-        button = Button('(o) Cook')
-        # button.register_handler(lambda: print('Adventure'))
-        self.bottom_panel.add_button(tab, button)
+        cook_button = Button('(o) Cook')
+        self.bottom_panel.add_button(tab, cook_button)
 
-        button = Button('(b) Build')
-        # button.register_handler(lambda: print('Adventure'))
-        self.bottom_panel.add_button(tab, button)
+        build_button = Button('(b) Build')
+        self.bottom_panel.add_button(tab, build_button)
 
-        button = Button('(f) Feed')
-        # button.register_handler(partial(creature.sleep, 10))
-        self.bottom_panel.add_button(tab, button)
+        feed_button = Button('(f) Feed')
+        self.bottom_panel.add_button(tab, feed_button)
 
-        button = Button('(e) Equip')
-        # button.register_handler(partial(creature.sleep, 10))
-        self.bottom_panel.add_button(tab, button)
+        equip_button = Button('(e) Equip')
+        self.bottom_panel.add_button(tab, equip_button)
 
-        button = Button('(m) Mutate')
-        # button.register_handler(lambda: print('Adventure'))
-        self.bottom_panel.add_button(tab, button)
+        mutate_button = Button('(m) Mutate')
+        self.bottom_panel.add_button(tab, mutate_button)
 
-        button = Button('(a) Adventure')
-        button.register_handler(self.game.start_adventure)
-        self.bottom_panel.add_button(tab, button)
+        adventure_button = Button('(a) Adventure')
+        self.bottom_panel.add_button(tab, adventure_button)
 
         self.bottom_panel.set_current_group('bottom')
+
+        # Callbacks
+        creature_button.register_handler(
+            partial(self.callback, self.TAB_GROUPS.CREATURE)
+        )
+
+    def show_tab_group(self, tab_group):
+        if tab_group not in self.TAB_GROUPS:
+            raise KeyError('Wrong tab group')
+
+        self.left_panel.set_current_group(tab_group)
+        self.central_panel.set_current_group(tab_group)
+        self.right_panel.set_current_group(tab_group)
 
     def mouse_motion(self, x, y):
         for panel in self.panels:
