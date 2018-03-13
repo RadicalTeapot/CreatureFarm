@@ -116,9 +116,10 @@ class Tab(object):
         if not self.active or not self.visible:
             return
 
-        for button in self.buttons:
-            if button.click(x, y):
-                break
+        pressed = [button.click(x, y) for button in self.buttons]
+        if any(pressed):
+            for button, state in zip(self.buttons, pressed):
+                button.pressed = state
 
 
 class Panel(object):
@@ -268,8 +269,11 @@ class Panel(object):
         if self.current_group is None:
             return
 
-        # TODO: un-hover hovered buttons before returning
         if not self.is_dialog and not self.rect.contains(x, y):
+            for tab in self.tab_groups[self.current_group]:
+                for button in tab.buttons:
+                    button.hovered = False
+                tab.title_button.hovered = False
             return
 
         for tab in self.tab_groups[self.current_group]:
