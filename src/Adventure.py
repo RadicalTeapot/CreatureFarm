@@ -55,13 +55,14 @@ class Adventure(object):
         rewards = []
         for reward in self.rewards:
             if random.random() < reward.chance:
-                for name, quantity in reward.contents.items():
-                    # TODO: random to get qty and append
-                    rewards.append()
+                for name, qty in reward.contents.items():
+                    quantity = int(
+                        random.random() * (qty[1] - qty[0]) + qty[0]
+                    )
+                    rewards.append((name, quantity))
 
         if self.callback:
-            self.callback()
-
+            self.callback(rewards)
 
 
 class Reward(object):
