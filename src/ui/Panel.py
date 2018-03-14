@@ -55,7 +55,7 @@ class Layout(object):
 
 
 class Tab(object):
-    def __init__(self, title=''):
+    def __init__(self, title='', active=False, visible=True):
         self.title = title
         self.title_button = ui.Button(self.title)
 
@@ -65,14 +65,18 @@ class Tab(object):
         self.buttons = []
         self.labels = []
 
-        self.active = False
+        self.active = active
+        self.visible = visible
 
     def set_layout(self, direction=0, spacing=10):
         self.layout = Layout(self, direction, spacing)
 
     def set_active(self, active):
-        # TODO: Gery out title when tab not active
+        # TODO: Grey out title when tab not active
         self.active = active
+
+    def set_visible(self, visible):
+        self.visible = visible
 
     def add_button(self, button):
         self.layout.add_content(button)
@@ -87,6 +91,12 @@ class Tab(object):
         self.labels.append(label)
 
     def draw(self):
+        if not self.visible:
+            return
+
+        if len(self.title):
+            self.title_button.draw()
+
         if not self.active:
             return
 
@@ -96,19 +106,20 @@ class Tab(object):
             label.draw()
 
     def mouse_motion(self, x, y):
-        if not self.active:
+        if not self.active or not self.visible:
             return
 
         for button in self.buttons:
             button.hover(x, y)
 
     def click(self, x, y):
-        if not self.active:
+        if not self.active or not self.visible:
             return
 
-        for button in self.buttons:
-            if button.click(x, y):
-                break
+        pressed = [button.click(x, y) for button in self.buttons]
+        if any(pressed):
+            for button, state in zip(self.buttons, pressed):
+                button.pressed = state
 
 
 class Panel(object):
@@ -119,14 +130,18 @@ class Panel(object):
         self.rect = ui.Rect(x, y, width, height)
 
         self.is_dialog = is_dialog
-        self.displayed = False
+        self.displayed = not is_dialog
         self.depth = depth
 
-        self.tabs = []
+        self.tab_groups = {}
+        self.current_group = None
 
-    def add_tab(self, active, title='', direction=0, spacing=10):
+    def add_tab(self, group, active, title='', direction=0, spacing=10):
         tab = Tab(title)
-        self.tabs.append(tab)
+        tab_group = self.tab_groups.get(group, [])
+
+        tab_group.append(tab)
+        self.tab_groups[group] = tab_group
 
         # Take panel border into account
         tab.rect.x = self.rect.x + 2 * self.border_margin
@@ -134,12 +149,13 @@ class Panel(object):
         tab.rect.width = self.rect.width - 4 * self.border_margin
         tab.rect.height = self.rect.height - 4 * self.border_margin
 
+        # Set tab button position
         x = self.rect.x + self.tab_spacing
         tab.title_button.y = (
             self.rect.height + self.rect.y -
             tab.title_button.rect.height + ui.Button.margin * 2
         )
-        for tab in self.tabs:
+        for tab in tab_group:
             if len(tab.title):
                 tab.title_button.x = x
                 x += tab.title_button.rect.width + self.tab_spacing
@@ -147,14 +163,37 @@ class Panel(object):
         tab.set_layout(direction, spacing)
         tab.set_active(active)
         if active:
-            [tab.set_active(False) for tab in self.tabs]
+            [tab.set_active(False) for tab in tab_group]
         tab.set_active(True)
 
         return tab
 
-    def set_active_tab(self, title):
-        for tab in self.tabs:
+    def set_active_tab(self, title, group=None):
+        tabs = self.get_tabs(group)
+
+        for tab in tabs:
             tab.set_active(tab.title == title)
+
+    def get_tabs(self, group=None):
+        if group is None:
+            group = self.current_group
+
+        tabs = []
+        if group is not None and group in self.tab_groups:
+            tabs = self.tab_groups[group]
+        else:
+            [tabs.extend(value) for value in self.tab_groups.values()]
+
+        return tabs
+
+    def set_current_group(self, group):
+        if group is None:
+            self.current_group = None
+            return
+
+        if group not in self.tab_groups:
+            raise KeyError('{} not in tab_groups'.format(group))
+        self.current_group = group
 
     def add_button(self, tab, button):
         tab.add_button(button)
@@ -227,11 +266,17 @@ class Panel(object):
         if not self.displayed:
             return
 
-        # TODO: un-hover hovered buttons before returning
-        if not self.is_dialog and not self.rect.contains(x, y):
+        if self.current_group is None:
             return
 
-        for tab in self.tabs:
+        if not self.is_dialog and not self.rect.contains(x, y):
+            for tab in self.tab_groups[self.current_group]:
+                for button in tab.buttons:
+                    button.hovered = False
+                tab.title_button.hovered = False
+            return
+
+        for tab in self.tab_groups[self.current_group]:
             if len(tab.title):
                 tab.title_button.hover(x, y)
             tab.mouse_motion(x, y)
@@ -240,8 +285,11 @@ class Panel(object):
         if not self.displayed:
             return False
 
+        if self.current_group is None:
+            return False
+
         if self.rect.contains(x, y):
-            for tab in self.tabs:
+            for tab in self.tab_groups[self.current_group]:
                 if len(tab.title):
                     if tab.title_button.click(x, y):
                         return True
@@ -250,8 +298,8 @@ class Panel(object):
         return False
 
     def draw_contents(self):
-        for tab in self.tabs:
-            if len(tab.title):
-                tab.title_button.draw()
+        if self.current_group is None:
+            return
 
+        for tab in self.tab_groups[self.current_group]:
             tab.draw()

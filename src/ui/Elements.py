@@ -8,11 +8,14 @@ import ui
 class Button(object):
     margin = 5
     hover_color = (100, 150, 200)
+    pressed_color = (50, 75, 100)
     regular_color = (0, 0, 0)
 
     def __init__(self, text):
         self.rect = ui.Rect(0, 0, 0, 0)
-        self.color = self.regular_color
+        # self.color = self.regular_color
+        self.pressed = False
+        self.hovered = False
 
         self.text = pyglet.text.Label(
             text,
@@ -54,18 +57,21 @@ class Button(object):
         self.handler = function
 
     def hover(self, x, y):
-        if self.rect.contains(x, y):
-            self.color = self.hover_color
-        else:
-            self.color = self.regular_color
+        self.hovered = self.rect.contains(x, y)
 
     def click(self, x, y):
-        if self.rect.contains(x, y):
-            if self.handler is not None:
-                self.handler()
-            return True
+        pressed = self.rect.contains(x, y)
+        if pressed and self.handler is not None:
+            self.handler()
+        return pressed
 
     def draw(self):
+        color = self.regular_color
+        if self.pressed:
+            color = self.pressed_color
+        if self.hovered:
+            color = self.hover_color
+
         pyglet.graphics.draw_indexed(
             4, pyglet.gl.GL_TRIANGLES,
             [0, 1, 2, 2, 1, 3],
@@ -76,7 +82,7 @@ class Button(object):
                 self.rect.x + self.rect.width, self.rect.y + self.rect.height
             )),
             ('c3B', (
-                *self.color, *self.color, *self.color, *self.color
+                *color, *color, *color, *color
             ))
         )
         self.text.draw()
