@@ -70,6 +70,7 @@ class Ui(object):
         ]
 
         self.build_creature_ui()
+        self.build_adventure_ui()
         self.build_bottom_ui()
 
     def build_creature_ui(self):
@@ -106,6 +107,21 @@ class Ui(object):
         self.right_panel.add_tab(group, True, 'Equipment', 1)
         self.right_panel.add_tab(group, True, 'Description', 1)
 
+    def build_adventure_ui(self):
+        group = self.TAB_GROUPS.ADVENTURE
+
+        # Left panel
+        self.left_panel.add_tab(group, True, 'Creatures', 1)
+
+        # Central panel
+        self.central_panel.add_tab(group, True, 'Adventures', 1)
+
+        # Right panel
+        tab = self.right_panel.add_tab(group, True, 'Description', 1)
+        button = Button('Start')
+        button.register_handler(self.game.start_adventure)
+        self.right_panel.add_button(tab, button)
+
     def build_bottom_ui(self):
         tab = self.bottom_panel.add_tab('bottom', True)
 
@@ -138,6 +154,9 @@ class Ui(object):
         # Callbacks
         creature_button.register_handler(
             partial(self.callback, self.TAB_GROUPS.CREATURE)
+        )
+        adventure_button.register_handler(
+            partial(self.callback, self.TAB_GROUPS.ADVENTURE)
         )
 
     def show_tab_group(self, tab_group):

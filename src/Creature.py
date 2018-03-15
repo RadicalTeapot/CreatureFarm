@@ -17,6 +17,7 @@ class Creature(object):
 
         self.hunger = 0
         self.tired = 0
+        self.locked = False
 
         self.hatch()
 
@@ -37,3 +38,12 @@ class Creature(object):
 
     def sleep(self, duration):
         self.tired -= duration
+
+    def hit(self, quantity):
+        self.hp -= quantity
+
+    def lock(self):
+        self.locked = True
+
+    def free(self):
+        self.locked = False

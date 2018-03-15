@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
+from Adventure import Adventure
 from Creature import Creature
 from Game import Game
 from Settings import Settings
@@ -22,6 +23,10 @@ if __name__ == '__main__':
     game.add_creature(Creature('First'))
     game.add_creature(Creature('Second'))
     game.add_creature(Creature('Third'))
+
+    game.add_adventure(Adventure('First'))
+    game.add_adventure(Adventure('Second'))
+    game.add_adventure(Adventure('Third'))
 
     @window.event
     def on_draw():

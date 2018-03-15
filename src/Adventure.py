@@ -9,10 +9,14 @@ class Adventure(object):
     RUNING = 1
     FINISHED = 2
 
-    def __init__(self):
-        self.title = ''
+    def __init__(self, title=''):
+        self.title = title
         self.description = ''
-        self.rewards = None
+        self.rewards = [
+            Reward(1, ['food'], [[2, 5]]),
+            Reward(.1, ['sword'], [[1, 1]]),
+            Reward(.01, ['creaure egg'], [[1, 1]])
+        ]
 
         # Length in turns
         self.duration = 10
@@ -66,6 +70,6 @@ class Adventure(object):
 
 
 class Reward(object):
-    def __init__(self):
-        self.chance = .1
-        self.contents = {'food': (2, 5)}
+    def __init__(self, chance, items, quantity_ranges):
+        self.chance = chance
+        self.contents = dict(zip(items, quantity_ranges))
