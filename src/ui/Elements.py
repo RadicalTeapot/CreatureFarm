@@ -26,8 +26,11 @@ class Button(object):
         self.handler = None
         self.is_tristate = is_tristate
 
-        self.rect.width = self.text.content_width + 2 * self.margin
-        self.rect.height = self.text.content_height + 2 * self.margin
+        self.rect.update_position(
+            self.rect.x, self.rect.y,
+            self.text.content_width + 2 * self.margin,
+            self.text.content_height + 2 * self.margin
+        )
 
     @property
     def x(self):
@@ -36,6 +39,9 @@ class Button(object):
     @x.setter
     def x(self, value):
         self.rect.x = value
+        self.rect.update_position(
+            self.rect.x, self.rect.y, self.rect.width, self.rect.height
+        )
         self.text.x = self.rect.x + self.margin
 
     @property
@@ -45,11 +51,17 @@ class Button(object):
     @y.setter
     def y(self, value):
         self.rect.y = value
+        self.rect.update_position(
+            self.rect.x, self.rect.y, self.rect.width, self.rect.height
+        )
         self.text.y = self.rect.y + self.margin
 
     def set_pos(self, x, y):
         self.rect.x = x
         self.rect.y = y
+        self.rect.update_position(
+            self.rect.x, self.rect.y, self.rect.width, self.rect.height
+        )
 
         self.text.x = self.rect.x + self.margin
         self.text.y = self.rect.y + self.margin
@@ -67,25 +79,14 @@ class Button(object):
         return pressed
 
     def draw(self):
-        color = self.regular_color
-        if self.is_tristate and self.pressed:
-            color = self.pressed_color
         if self.hovered:
-            color = self.hover_color
+            self.rect.update_color(self.hover_color)
+        elif self.is_tristate and self.pressed:
+            self.rect.update_color(self.pressed_color)
+        else:
+            self.rect.update_color(self.regular_color)
 
-        pyglet.graphics.draw_indexed(
-            4, pyglet.gl.GL_TRIANGLES,
-            [0, 1, 2, 2, 1, 3],
-            ('v2i', (
-                self.rect.x, self.rect.y,
-                self.rect.x + self.rect.width, self.rect.y,
-                self.rect.x, self.rect.y + self.rect.height,
-                self.rect.x + self.rect.width, self.rect.y + self.rect.height
-            )),
-            ('c3B', (
-                *color, *color, *color, *color
-            ))
-        )
+        self.rect.draw()
         self.text.draw()
 
 

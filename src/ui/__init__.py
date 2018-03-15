@@ -10,6 +10,8 @@ from Settings import Settings
 from collections import namedtuple
 from functools import partial
 
+import pyglet
+
 
 class Rect(object):
     def __init__(self, x, y, width, height):
@@ -17,6 +19,39 @@ class Rect(object):
         self.y = y
         self.width = width
         self.height = height
+        self.color = (0, 0, 0)
+
+        self.vertex_list = pyglet.graphics.vertex_list_indexed(
+            4,
+            [0, 1, 2, 2, 1, 3],
+            ('v2i', self._build_vertices()),
+            ('c3B', self._build_color())
+        )
+
+    def _build_vertices(self):
+        return [
+            self.x, self.y,
+            self.x + self.width, self.y,
+            self.x, self.y + self.height,
+            self.x + self.width, self.y + self.height
+        ]
+
+    def _build_color(self):
+        return [
+            *self.color, *self.color, *self.color, *self.color
+        ]
+
+    def update_position(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+        self.vertex_list.vertices = self._build_vertices()
+
+    def update_color(self, color):
+        self.color = color
+        self.vertex_list.colors = self._build_color()
 
     def contains(self, x, y):
         return (
@@ -24,6 +59,9 @@ class Rect(object):
             x <= self.x + self.width and
             y <= self.y + self.height
         )
+
+    def draw(self):
+        self.vertex_list.draw(pyglet.gl.GL_TRIANGLES)
 
 
 class Ui(object):
@@ -154,11 +192,7 @@ class Ui(object):
 
     def click(self, x, y):
         for panel in self.panels:
-            if panel.is_dialog and panel.click(x, y):
-                return True
-
-        for panel in self.panels:
-            if not panel.is_dialog and panel.click(x, y):
+            if panel.click(x, y):
                 return True
         return False
 

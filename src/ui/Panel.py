@@ -126,12 +126,17 @@ class Panel(object):
     border_margin = 3
     tab_spacing = 20
 
-    def __init__(self, x, y, width, height, is_dialog=False, depth=-1):
+    def __init__(self, x, y, width, height):
         self.rect = ui.Rect(x, y, width, height)
-
-        self.is_dialog = is_dialog
-        self.displayed = not is_dialog
-        self.depth = depth
+        self.border_rect = ui.Rect(
+            x + self.border_margin, y + self.border_margin,
+            width - 2 * self.border_margin, height - 2 * self.border_margin
+        )
+        self.border_rect.update_color((200, 200, 200))
+        self.inner_rect = ui.Rect(
+            x + 2 * self.border_margin, y + 2 * self.border_margin,
+            width - 4 * self.border_margin, height - 4 * self.border_margin
+        )
 
         self.tab_groups = {}
         self.current_group = None
@@ -144,10 +149,7 @@ class Panel(object):
         self.tab_groups[group] = tab_group
 
         # Take panel border into account
-        tab.rect.x = self.rect.x + 2 * self.border_margin
-        tab.rect.y = self.rect.y + 2 * self.border_margin
-        tab.rect.width = self.rect.width - 4 * self.border_margin
-        tab.rect.height = self.rect.height - 4 * self.border_margin
+        tab.rect = self.inner_rect
 
         # Set tab button position
         x = self.rect.x + self.tab_spacing
@@ -209,67 +211,17 @@ class Panel(object):
         del tab.labels[:]
         tab.layout.clear()
 
-    def show(self):
-        self.displayed = True
-
-    def hide(self):
-        self.displayed = False
-
     def draw(self):
-        if not self.displayed:
-            return
-        if self.is_dialog:
-            pyglet.graphics.draw_indexed(
-                4, pyglet.gl.GL_TRIANGLES,
-                [0, 1, 2, 2, 1, 3],
-                ('v2i', (
-                    0, 0,
-                    800, 0,
-                    0, 600,
-                    800, 600
-                )),
-                ('c4B', (
-                    0, 0, 0, 75,
-                    0, 0, 0, 75,
-                    0, 0, 0, 75,
-                    0, 0, 0, 75
-                ))
-            )
-
-        for i in range(0, 3):
-            margin = i * self.border_margin
-            color = (i % 2) * 128
-
-            pyglet.graphics.draw_indexed(
-                4, pyglet.gl.GL_TRIANGLES,
-                [0, 1, 2, 2, 1, 3],
-                ('v2i', (
-                    self.rect.x + margin, self.rect.y + margin,
-                    self.rect.x + self.rect.width - margin,
-                    self.rect.y + margin,
-                    self.rect.x + margin,
-                    self.rect.y + self.rect.height - margin,
-                    self.rect.x + self.rect.width - margin,
-                    self.rect.y + self.rect.height - margin
-                )),
-                ('c3B', (
-                    color, color, color,
-                    color, color, color,
-                    color, color, color,
-                    color, color, color
-                ))
-            )
-
+        self.rect.draw()
+        self.border_rect.draw()
+        self.inner_rect.draw()
         self.draw_contents()
 
     def mouse_motion(self, x, y):
-        if not self.displayed:
-            return
-
         if self.current_group is None:
             return
 
-        if not self.is_dialog and not self.rect.contains(x, y):
+        if not self.rect.contains(x, y):
             for tab in self.tab_groups[self.current_group]:
                 for button in tab.buttons:
                     button.hovered = False
@@ -282,9 +234,6 @@ class Panel(object):
             tab.mouse_motion(x, y)
 
     def click(self, x, y):
-        if not self.displayed:
-            return False
-
         if self.current_group is None:
             return False
 
