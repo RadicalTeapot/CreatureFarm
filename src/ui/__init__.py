@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from ui.Panel import Panel
 from ui.Elements import AttributeLabel
 from ui.Elements import Button
+from ui.Panel import Dialog
+from ui.Panel import Panel
 
 from Settings import Settings
 
@@ -75,6 +76,7 @@ class Ui(object):
 
     def __init__(self, game):
         self.game = game
+        self.dialog = None
 
         self.panels = []
         self.callbacks = dict([
@@ -178,6 +180,12 @@ class Ui(object):
             partial(self.callback, self.TAB_GROUPS.CREATURE)
         )
 
+    def display_dialog(self, text):
+        self.dialog = Dialog(text, self.close_dialog)
+
+    def close_dialog(self):
+        self.dialog = None
+
     def show_tab_group(self, tab_group):
         if tab_group not in self.TAB_GROUPS:
             raise KeyError('Wrong tab group')
@@ -187,10 +195,16 @@ class Ui(object):
         self.right_panel.set_current_group(tab_group)
 
     def mouse_motion(self, x, y):
+        if self.dialog is not None:
+            return self.dialog.mouse_motion(x, y)
+
         for panel in self.panels:
             panel.mouse_motion(x, y)
 
     def click(self, x, y):
+        if self.dialog is not None:
+            return self.dialog.click(x, y)
+
         for panel in self.panels:
             if panel.click(x, y):
                 return True
@@ -199,3 +213,6 @@ class Ui(object):
     def draw(self):
         for panel in self.panels:
             panel.draw()
+
+        if self.dialog is not None:
+            self.dialog.draw()

@@ -260,8 +260,9 @@ class Dialog(object):
     border_margin = 3
     content_margin = 10
 
-    def __init__(self, text):
+    def __init__(self, text, callback=None):
         self.displayed = True
+        self.callback = callback
 
         document = pyglet.text.decode_text(text)
         document.set_style(0, len(text), dict(color=(255, 255, 255, 255)))
@@ -312,6 +313,8 @@ class Dialog(object):
 
     def accepted(self):
         self.displayed = False
+        if callable(self.callback):
+            self.callback()
 
     def draw(self):
         if self.displayed:
