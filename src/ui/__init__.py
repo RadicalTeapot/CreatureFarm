@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from ui.Panel import Panel
 from ui.Elements import AttributeLabel
 from ui.Elements import Button
+from ui.Panel import Dialog
+from ui.Panel import Panel
 
 from Settings import Settings
 
 from collections import namedtuple
 from functools import partial
+
+import pyglet
 
 
 class Rect(object):
@@ -17,6 +20,39 @@ class Rect(object):
         self.y = y
         self.width = width
         self.height = height
+        self.color = (0, 0, 0)
+
+        self.vertex_list = pyglet.graphics.vertex_list_indexed(
+            4,
+            [0, 1, 2, 2, 1, 3],
+            ('v2i', self._build_vertices()),
+            ('c3B', self._build_color())
+        )
+
+    def _build_vertices(self):
+        return [
+            self.x, self.y,
+            self.x + self.width, self.y,
+            self.x, self.y + self.height,
+            self.x + self.width, self.y + self.height
+        ]
+
+    def _build_color(self):
+        return [
+            *self.color, *self.color, *self.color, *self.color
+        ]
+
+    def update_position(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+        self.vertex_list.vertices = self._build_vertices()
+
+    def update_color(self, color):
+        self.color = color
+        self.vertex_list.colors = self._build_color()
 
     def contains(self, x, y):
         return (
@@ -24,6 +60,9 @@ class Rect(object):
             x <= self.x + self.width and
             y <= self.y + self.height
         )
+
+    def draw(self):
+        self.vertex_list.draw(pyglet.gl.GL_TRIANGLES)
 
 
 class Ui(object):
@@ -37,6 +76,7 @@ class Ui(object):
 
     def __init__(self, game):
         self.game = game
+        self.dialog = None
 
         self.panels = []
         self.callbacks = dict([
@@ -159,6 +199,12 @@ class Ui(object):
             partial(self.callback, self.TAB_GROUPS.ADVENTURE)
         )
 
+    def display_dialog(self, text):
+        self.dialog = Dialog(text, self.close_dialog)
+
+    def close_dialog(self):
+        self.dialog = None
+
     def show_tab_group(self, tab_group):
         if tab_group not in self.TAB_GROUPS:
             raise KeyError('Wrong tab group')
@@ -168,19 +214,24 @@ class Ui(object):
         self.right_panel.set_current_group(tab_group)
 
     def mouse_motion(self, x, y):
+        if self.dialog is not None:
+            return self.dialog.mouse_motion(x, y)
+
         for panel in self.panels:
             panel.mouse_motion(x, y)
 
     def click(self, x, y):
-        for panel in self.panels:
-            if panel.is_dialog and panel.click(x, y):
-                return True
+        if self.dialog is not None:
+            return self.dialog.click(x, y)
 
         for panel in self.panels:
-            if not panel.is_dialog and panel.click(x, y):
+            if panel.click(x, y):
                 return True
         return False
 
     def draw(self):
         for panel in self.panels:
             panel.draw()
+
+        if self.dialog is not None:
+            self.dialog.draw()
