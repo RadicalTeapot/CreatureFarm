@@ -11,7 +11,7 @@ class Button(object):
     pressed_color = (50, 75, 100)
     regular_color = (0, 0, 0)
 
-    def __init__(self, text):
+    def __init__(self, text, is_tristate=True):
         self.rect = ui.Rect(0, 0, 0, 0)
         # self.color = self.regular_color
         self.pressed = False
@@ -24,6 +24,7 @@ class Button(object):
             anchor_x='left', anchor_y='bottom'
         )
         self.handler = None
+        self.is_tristate = is_tristate
 
         self.rect.width = self.text.content_width + 2 * self.margin
         self.rect.height = self.text.content_height + 2 * self.margin
@@ -67,7 +68,7 @@ class Button(object):
 
     def draw(self):
         color = self.regular_color
-        if self.pressed:
+        if self.is_tristate and self.pressed:
             color = self.pressed_color
         if self.hovered:
             color = self.hover_color
