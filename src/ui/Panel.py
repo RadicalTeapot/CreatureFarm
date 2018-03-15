@@ -3,6 +3,8 @@
 
 import pyglet
 import ui
+from ui.Elements import Button
+from Settings import Settings
 
 
 class Layout(object):
@@ -252,3 +254,69 @@ class Panel(object):
 
         for tab in self.tab_groups[self.current_group]:
             tab.draw()
+
+
+class Dialog(object):
+    border_margin = 3
+    content_margin = 10
+
+    def __init__(self, text):
+        self.displayed = True
+
+        document = pyglet.text.decode_text(text)
+        document.set_style(0, len(text), dict(color=(255, 255, 255, 255)))
+        self.text = pyglet.text.layout.TextLayout(
+            document, multiline=True, wrap_lines=False
+        )
+
+        self.button = Button('Ok')
+
+        width = self.text.content_width + self.content_margin * 2
+        height = (
+            self.text.content_height +
+            self.button.rect.height + self.content_margin * 4
+        )
+        x = Settings.WIDTH // 2 - width // 2
+        y = Settings.HEIGHT // 2 - height // 2
+
+        self.rect = ui.Rect(
+            x - self.border_margin * 2, y - self.border_margin * 2,
+            width + self.border_margin * 4, height + self.border_margin * 4
+        )
+        self.border_rect = ui.Rect(
+            x - self.border_margin, y - self.border_margin,
+            width + self.border_margin * 2, height + self.border_margin * 2
+        )
+        self.border_rect.update_color((200, 200, 200))
+        self.inner_rect = ui.Rect(x, y, width, height)
+
+        self.text.x = x + self.content_margin
+        self.text.y = y + self.button.rect.height + self.content_margin * 3
+
+        self.button.set_pos(
+            x + width - self.button.rect.width - self.content_margin,
+            y + self.content_margin
+        )
+        self.button.register_handler(self.accepted)
+
+    def mouse_motion(self, x, y):
+        self.button.hover(x, y)
+
+    def click(self, x, y):
+        # Steal the mouse click focus from other panel by not checking rect
+        # containning click
+        if self.displayed:
+            self.button.click(x, y)
+            return True
+        return False
+
+    def accepted(self):
+        self.displayed = False
+
+    def draw(self):
+        if self.displayed:
+            self.rect.draw()
+            self.border_rect.draw()
+            self.inner_rect.draw()
+            self.text.draw()
+            self.button.draw()
