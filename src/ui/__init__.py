@@ -68,15 +68,21 @@ class Rect(object):
 class Ui(object):
     TAB_GROUPS = namedtuple('tab_groups', [
         'CREATURE',
-        'ADVENTURE'
+        'START_ADVENTURE',
+        'CURRENT_ADVENTURE'
     ])(
         'creature',
-        'adventure'
+        'start_adventure',
+        'current_adventure'
     )
+
+    BUTTONS = namedtuple('buttons', [
+        'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN'
+    ])(0, 1, 2, 3)
 
     def __init__(self, game):
         self.game = game
-        self.dialog = None
+        self.dialogs = []
 
         self.panels = []
         self.callbacks = dict([
@@ -86,8 +92,8 @@ class Ui(object):
         self.build()
 
     def register_callback(self, button_type, method):
-        if button_type not in self.TAB_GROUPS:
-            raise KeyError('Wrong group type')
+        if button_type not in self.BUTTONS:
+            raise KeyError('Wrong button type')
         self.callbacks[button_type] = method
 
     def callback(self, button_type):
@@ -148,7 +154,7 @@ class Ui(object):
         self.right_panel.add_tab(group, True, 'Description', 1)
 
     def build_adventure_ui(self):
-        group = self.TAB_GROUPS.ADVENTURE
+        group = self.TAB_GROUPS.START_ADVENTURE
 
         # Left panel
         self.left_panel.add_tab(group, True, 'Creatures', 1)
@@ -186,24 +192,33 @@ class Ui(object):
         mutate_button = Button('(m) Mutate')
         self.bottom_panel.add_button(tab, mutate_button)
 
-        adventure_button = Button('(a) Adventure')
-        self.bottom_panel.add_button(tab, adventure_button)
+        start_adventure_button = Button('(s) Start Adventure')
+        self.bottom_panel.add_button(tab, start_adventure_button)
+
+        current_adventures_button = Button('(u) Current Adventures')
+        self.bottom_panel.add_button(tab, current_adventures_button)
+
+        finish_turn_button = Button('(t) Finish Turn')
+        self.bottom_panel.add_button(tab, finish_turn_button)
 
         self.bottom_panel.set_current_group('bottom')
 
         # Callbacks
         creature_button.register_handler(
-            partial(self.callback, self.TAB_GROUPS.CREATURE)
+            partial(self.callback, self.BUTTONS.CREATURE)
         )
-        adventure_button.register_handler(
-            partial(self.callback, self.TAB_GROUPS.ADVENTURE)
+        start_adventure_button.register_handler(
+            partial(self.callback, self.BUTTONS.START_ADVENTURE)
+        )
+        finish_turn_button.register_handler(
+            partial(self.callback, self.BUTTONS.FINISH_TURN)
         )
 
     def display_dialog(self, text):
-        self.dialog = Dialog(text, self.close_dialog)
+        self.dialogs.append(Dialog(text, self.close_dialog))
 
     def close_dialog(self):
-        self.dialog = None
+        self.dialogs.pop()
 
     def show_tab_group(self, tab_group):
         if tab_group not in self.TAB_GROUPS:
@@ -214,15 +229,15 @@ class Ui(object):
         self.right_panel.set_current_group(tab_group)
 
     def mouse_motion(self, x, y):
-        if self.dialog is not None:
-            return self.dialog.mouse_motion(x, y)
+        if self.dialogs:
+            return self.dialogs[-1].mouse_motion(x, y)
 
         for panel in self.panels:
             panel.mouse_motion(x, y)
 
     def click(self, x, y):
-        if self.dialog is not None:
-            return self.dialog.click(x, y)
+        if self.dialogs:
+            return self.dialogs[-1].click(x, y)
 
         for panel in self.panels:
             if panel.click(x, y):
@@ -233,5 +248,5 @@ class Ui(object):
         for panel in self.panels:
             panel.draw()
 
-        if self.dialog is not None:
-            self.dialog.draw()
+        if self.dialogs:
+            self.dialogs[-1].draw()
