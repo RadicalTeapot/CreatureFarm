@@ -120,10 +120,11 @@ class Game(object):
 
     def start_adventure(self):
         if self.selected_adventure is None:
-            print('No adventure selected')
+            self.ui.display_dialog('No adventure selected')
             return
+
         if self.selected_creature is None:
-            print('No creature selected')
+            self.ui.display_dialog('No creature selected')
             return
 
         self.selected_adventure.assign_creature(self.selected_creature)
@@ -134,5 +135,9 @@ class Game(object):
             self.selected_adventure.update()
 
     def finish_adventure(self, rewards):
+        message = '{} just finished adventure {} !\n\nThey found:\n'.format(
+            self.selected_creature.name, self.selected_adventure.title
+        )
         for name, quantity in rewards:
-            print('{}: {}'.format(name, quantity))
+            message += '    {}: {}\n'.format(name, quantity)
+        self.ui.display_dialog(message)
