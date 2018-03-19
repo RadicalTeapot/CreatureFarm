@@ -6,7 +6,7 @@ import random
 
 class Adventure(object):
     NOT_STARTED = 0
-    RUNING = 1
+    RUNNING = 1
     FINISHED = 2
 
     def __init__(self, title=''):
@@ -40,9 +40,13 @@ class Adventure(object):
         if not self.creature:
             return
 
-        self.clock = 0
-        self.creature.lock()
-        self.state = self.RUNING
+        adventure = Adventure(self.title)
+        adventure.__dict__ = self.__dict__.copy()
+
+        adventure.clock = 0
+        adventure.creature.lock()
+        adventure.state = self.RUNNING
+        return adventure
 
     def update(self):
         self.clock += 1
