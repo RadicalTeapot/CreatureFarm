@@ -165,6 +165,7 @@ class Ui(object):
         # Right panel
         tab = self.right_panel.add_tab(group, True, 'Description', 1)
         button = Button('Start')
+        button.is_tristate = False
         button.register_handler(self.game.start_adventure)
         self.right_panel.add_button(tab, button)
 

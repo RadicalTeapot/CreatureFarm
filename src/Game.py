@@ -7,7 +7,9 @@ from functools import partial
 
 
 class Game(object):
-    def __init__(self):
+    def __init__(self, window):
+        self.window = window
+
         self.creatures = []
         self.selected_creature = None
 
@@ -43,8 +45,6 @@ class Game(object):
         buttons = []
         for creature in self.creatures:
             name = creature.name
-            if creature.locked:
-                name += ' (busy)'
             button = Button(name)
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
@@ -108,8 +108,6 @@ class Game(object):
         buttons = []
         for creature in self.creatures:
             name = creature.name
-            if creature.locked:
-                name += ' (busy)'
             button = Button(name)
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
@@ -151,6 +149,7 @@ class Game(object):
             self.finish_adventure, adventure=adventure
         )
         self.running_adventures.append(adventure)
+        self.set_adventure_mode()
 
     def finish_adventure(self, rewards, adventure):
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
@@ -164,3 +163,7 @@ class Game(object):
             for running in self.running_adventures
             if running != adventure
         ]
+
+    def draw(self):
+        self.window.clear()
+        self.ui.draw()

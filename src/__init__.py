@@ -19,7 +19,7 @@ if __name__ == '__main__':
         width=Settings.WIDTH, height=Settings.HEIGHT
     )
 
-    game = Game()
+    game = Game(window)
     game.add_creature(Creature('First'))
     game.add_creature(Creature('Second'))
     game.add_creature(Creature('Third'))
@@ -30,8 +30,7 @@ if __name__ == '__main__':
 
     @window.event
     def on_draw():
-        window.clear()
-        game.ui.draw()
+        game.draw()
 
     @window.event
     def on_mouse_motion(x, y, dx, dy):
