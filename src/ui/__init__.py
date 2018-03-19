@@ -200,6 +200,7 @@ class Ui(object):
         self.bottom_panel.add_button(tab, current_adventures_button)
 
         finish_turn_button = Button('(t) Finish Turn')
+        finish_turn_button.is_tristate = False
         self.bottom_panel.add_button(tab, finish_turn_button)
 
         self.bottom_panel.set_current_group('bottom')
