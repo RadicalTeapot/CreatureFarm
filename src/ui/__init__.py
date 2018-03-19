@@ -3,6 +3,8 @@
 
 from ui.Elements import AttributeLabel
 from ui.Elements import Button
+from ui.Elements import DescriptionLabel
+
 from ui.Panel import Dialog
 from ui.Panel import Panel
 
@@ -117,6 +119,7 @@ class Ui(object):
 
         self.build_creature_ui()
         self.build_adventure_ui()
+        self.build_current_adventure_ui()
         self.build_bottom_ui()
 
     def build_creature_ui(self):
@@ -169,6 +172,18 @@ class Ui(object):
         button.register_handler(self.game.start_adventure)
         self.right_panel.add_button(tab, button)
 
+    def build_current_adventure_ui(self):
+        group = self.TAB_GROUPS.CURRENT_ADVENTURE
+
+        # Left panel
+        self.left_panel.add_tab(group, True, 'Adventures', 1)
+
+        # Central panel
+        self.central_panel.add_tab(group, True, 'Creatures', 1)
+
+        # Right panel
+        self.right_panel.add_tab(group, True, 'Description', 1)
+
     def build_bottom_ui(self):
         tab = self.bottom_panel.add_tab('bottom', True)
 
@@ -211,6 +226,9 @@ class Ui(object):
         )
         start_adventure_button.register_handler(
             partial(self.callback, self.BUTTONS.START_ADVENTURE)
+        )
+        current_adventures_button.register_handler(
+            partial(self.callback, self.BUTTONS.CURRENT_ADVENTURE)
         )
         finish_turn_button.register_handler(
             partial(self.callback, self.BUTTONS.FINISH_TURN)

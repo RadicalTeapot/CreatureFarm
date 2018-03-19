@@ -113,6 +113,9 @@ class AttributeLabel(object):
     def set_pos(self, x, y):
         self.rect.x = x
         self.rect.y = y
+        self.rect.update_position(
+            self.rect.x, self.rect.y, self.rect.width, self.rect.height
+        )
 
         self.label.x = self.rect.x
         self.label.y = self.rect.y
@@ -137,3 +140,30 @@ class AttributeLabel(object):
                 self.post
             )
         self.label.draw()
+
+
+class DescriptionLabel(object):
+    def __init__(self, text, width):
+        self.document = pyglet.text.decode_text(text)
+        self.document.set_style(0, len(text), dict(color=(255, 255, 255, 255)))
+
+        self.text = pyglet.text.layout.TextLayout(
+            self.document, multiline=True, wrap_lines=True, width=width
+        )
+
+        self.rect = ui.Rect(
+            0, 0, width, self.text.content_height
+        )
+
+    def set_pos(self, x, y):
+        self.rect.x = x
+        self.rect.y = y
+        self.rect.update_position(
+            self.rect.x, self.rect.y, self.rect.width, self.rect.height
+        )
+
+        self.text.x = self.rect.x
+        self.text.y = self.rect.y
+
+    def draw(self):
+        self.text.draw()

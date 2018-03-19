@@ -2,7 +2,9 @@
 """DOCSTRING."""
 
 from ui import Button
+from ui import DescriptionLabel
 from ui import Ui
+
 from functools import partial
 
 
@@ -25,6 +27,9 @@ class Game(object):
         )
         self.ui.register_callback(
             self.ui.BUTTONS.START_ADVENTURE, self.set_adventure_mode
+        )
+        self.ui.register_callback(
+            self.ui.BUTTONS.CURRENT_ADVENTURE, self.set_current_adventure_mode
         )
         self.ui.register_callback(
             self.ui.BUTTONS.FINISH_TURN, self.update
@@ -163,6 +168,63 @@ class Game(object):
             for running in self.running_adventures
             if running != adventure
         ]
+
+    def set_current_adventure_mode(self):
+        tab = self.ui.central_panel.get_tabs()[0]
+        self.ui.central_panel.clear(tab)
+        tab = self.ui.right_panel.get_tabs()[0]
+        self.ui.right_panel.clear(tab)
+
+        tab = self.ui.left_panel.get_tabs()[0]
+        self.ui.left_panel.clear(tab)
+        buttons = []
+        for adventure in self.adventures:
+            count = len([
+                running
+                for running in self.running_adventures
+                if running.title == adventure.title
+            ])
+            if count == 0:
+                continue
+            button = Button('{} ({})'.format(adventure.title, count))
+            button.register_handler(
+                partial(self.select_current_adventure, adventure)
+            )
+            buttons.append(button)
+        self.ui.left_panel.add_buttons(tab, buttons)
+
+    def select_current_adventure(self, adventure):
+        creatures = [
+            running.creature
+            for running in self.running_adventures
+            if adventure.title == running.title
+        ]
+
+        tab = self.ui.central_panel.get_tabs()[0]
+        self.ui.central_panel.clear(tab)
+        buttons = []
+        for creature in creatures:
+            name = creature.name
+            button = Button(name)
+            button.register_handler(
+                partial(self.select_adventure_creature, adventure, creature)
+            )
+            buttons.append(button)
+        self.ui.central_panel.add_buttons(tab, buttons)
+
+    def select_adventure_creature(self, adventure, creature):
+        # FIXME: adventure is a copy and not a reference to the one updated in
+        # running_adventures (because of the way partial works), get the
+        # updated one
+        tab = self.ui.right_panel.get_tabs()[0]
+        self.ui.right_panel.clear(tab)
+        # TODO: Also display a log of the adventure using multiple pages
+        # if necessary
+        label = DescriptionLabel((
+            '{} turns left'.format(adventure.duration - adventure.clock)
+        ), tab.rect.width
+        )
+        self.ui.right_panel.add_label(tab, label)
 
     def draw(self):
         self.window.clear()
