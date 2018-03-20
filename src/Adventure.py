@@ -10,6 +10,7 @@ class Adventure(object):
     FINISHED = 2
 
     def __init__(self, title=''):
+        self.id = -1
         self.title = title
         self.description = ''
         self.rewards = [

@@ -16,6 +16,14 @@ class Creature(object):
     # ####################################################################### #
 
     @property
+    def id(self):
+        return self._model.id
+
+    @id.setter
+    def id(self, value):
+        self._model.id = value
+
+    @property
     def name(self):
         if not self.locked:
             return self._model.name
@@ -121,6 +129,7 @@ class Creature(object):
 
 class Model(object):
     def __init__(self):
+        self.id = -1
         self.name = ''
 
         self.hp = 0

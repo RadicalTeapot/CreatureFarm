@@ -35,11 +35,23 @@ class Game(object):
             self.ui.BUTTONS.FINISH_TURN, self.update
         )
 
+    def get_unique_id(self):
+        # HACK: This could be avoided by finding a way to store/pass pointers
+        # to functions instead of values
+        unique_id = 0
+        ids = [creature.id for creature in self.creatures]
+        ids.extend([adventure.id for adventure in self.adventures])
+        ids = set(ids)
+        while unique_id in ids:
+            unique_id += 1
+        return unique_id
+
     def update(self):
         for adventure in self.running_adventures:
             adventure.update()
 
     def add_creature(self, creature):
+        creature.id = self.get_unique_id()
         self.creatures.append(creature)
 
     def show_creatures(self):
@@ -103,6 +115,7 @@ class Game(object):
         return '-'
 
     def add_adventure(self, adventure):
+        adventure.id = self.get_unique_id()
         self.adventures.append(adventure)
 
     def set_adventure_mode(self):
@@ -182,22 +195,22 @@ class Game(object):
             count = len([
                 running
                 for running in self.running_adventures
-                if running.title == adventure.title
+                if running.id == adventure.id
             ])
             if count == 0:
                 continue
             button = Button('{} ({})'.format(adventure.title, count))
             button.register_handler(
-                partial(self.select_current_adventure, adventure)
+                partial(self.select_current_adventure, adventure.id)
             )
             buttons.append(button)
         self.ui.left_panel.add_buttons(tab, buttons)
 
-    def select_current_adventure(self, adventure):
+    def select_current_adventure(self, adventure_id):
         creatures = [
             running.creature
             for running in self.running_adventures
-            if adventure.title == running.title
+            if adventure_id == running.id
         ]
 
         tab = self.ui.central_panel.get_tabs()[0]
@@ -207,17 +220,23 @@ class Game(object):
             name = creature.name
             button = Button(name)
             button.register_handler(
-                partial(self.select_adventure_creature, adventure, creature)
+                partial(
+                    self.select_adventure_creature,
+                    adventure_id,
+                    creature.id
+                )
             )
             buttons.append(button)
         self.ui.central_panel.add_buttons(tab, buttons)
 
-    def select_adventure_creature(self, adventure, creature):
-        # FIXME: adventure is a copy and not a reference to the one updated in
-        # running_adventures (because of the way partial works), get the
-        # updated one
+    def select_adventure_creature(self, adventure_id, creature_id):
         tab = self.ui.right_panel.get_tabs()[0]
         self.ui.right_panel.clear(tab)
+        adventure = [
+            adventure
+            for adventure in self.running_adventures
+            if adventure.id == adventure_id
+        ][0]
         # TODO: Also display a log of the adventure using multiple pages
         # if necessary
         label = DescriptionLabel((
