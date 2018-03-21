@@ -146,6 +146,8 @@ class CreatureState(UiState):
 class NewAdventureState(UiState):
     def __init__(self, ui):
         super().__init__(ui)
+        self.selected_creature = None
+        self.selected_adventure = None
 
     def enter(self):
         super().enter()
@@ -156,12 +158,11 @@ class NewAdventureState(UiState):
         for creature in self.ui.game.creatures:
             name = creature.name
             button = Button(name)
-            # button.register_handler(
-            #     partial(self.ui.game.select_creature, creature)
-            # )
+            button.register_handler(
+                partial(self.select_creature, creature)
+            )
             buttons.append(button)
-            # if creature == self.selected_creature:
-            #     button.pressed = True
+            button.pressed = (creature == self.selected_creature)
         self.ui.left_panel.add_buttons(tab, buttons)
 
         # Central panel
@@ -175,11 +176,10 @@ class NewAdventureState(UiState):
             ])
             button = Button('{} ({})'.format(adventure.title, count))
             button.register_handler(
-                partial(self.ui.game.select_adventure, adventure)
+                partial(self.select_adventure, adventure)
             )
             buttons.append(button)
-            # if adventure == self.selected_adventure:
-            #     adventure.pressed = True
+            button.pressed = (adventure == self.selected_adventure)
         self.ui.central_panel.add_buttons(tab, buttons)
 
         # Right panel
@@ -188,6 +188,12 @@ class NewAdventureState(UiState):
         button.is_tristate = False
         button.register_handler(self.ui.game.start_adventure)
         self.ui.right_panel.add_button(tab, button)
+
+    def select_creature(self, creature):
+        self.selected_creature = creature
+
+    def select_adventure(self, adventure):
+        self.selected_adventure = adventure
 
 
 class CurrentAdventureState(UiState):

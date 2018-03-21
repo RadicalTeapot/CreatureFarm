@@ -13,17 +13,15 @@ class Game(object):
         self.window = window
 
         self.creatures = []
-        self.selected_creature = None
 
         self.adventures = []
         self.running_adventures = []
-        self.selected_adventure = None
 
         self.ui = Ui(self)
 
         # Callbacks
         self.ui.register_callback(
-            self.ui.BUTTONS.CREATURE, self.show_creatures
+            self.ui.BUTTONS.CREATURE, self.set_creature_mode
         )
         self.ui.register_callback(
             self.ui.BUTTONS.START_ADVENTURE, self.set_adventure_mode
@@ -55,7 +53,7 @@ class Game(object):
         creature.id = self.get_unique_id()
         self.creatures.append(creature)
 
-    def show_creatures(self):
+    def set_creature_mode(self):
         self.ui.set_state(self.ui.STATE.CREATURE)
 
     def add_adventure(self, adventure):
@@ -65,24 +63,24 @@ class Game(object):
     def set_adventure_mode(self):
         self.ui.set_state(self.ui.STATE.NEW_ADVENTURE)
 
-    def select_adventure(self, adventure):
-        self.selected_adventure = adventure
-
     def start_adventure(self):
-        if self.selected_adventure is None:
+        creature = self.ui._state.selected_creature
+        adventure = self.ui._state.selected_adventure
+        if adventure is None:
             self.ui.display_dialog('No adventure selected')
             return
 
-        if self.selected_creature is None or self.selected_creature.locked:
+        if creature is None or creature.locked:
             self.ui.display_dialog('Invalid creature selection')
             return
 
-        self.selected_adventure.assign_creature(self.selected_creature)
-        adventure = self.selected_adventure.start()
-        adventure.callback = partial(
-            self.finish_adventure, adventure=adventure
+        adventure.assign_creature(creature)
+        new_adventure = adventure.start()
+        # TODO: use adventure id instead of the object itself
+        new_adventure.callback = partial(
+            self.finish_adventure, adventure=new_adventure
         )
-        self.running_adventures.append(adventure)
+        self.running_adventures.append(new_adventure)
         self.ui.refresh()
 
     def finish_adventure(self, rewards, adventure):
