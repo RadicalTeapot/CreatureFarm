@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from ui import Button
-from ui import DescriptionLabel
 from ui import Ui
 
 from functools import partial
@@ -99,65 +97,6 @@ class Game(object):
 
     def set_current_adventure_mode(self):
         self.ui.set_state(self.ui.STATE.CURRENT_ADVENTURE)
-
-        tab = self.ui.left_panel.get_tabs()[0]
-        buttons = []
-        for adventure in self.adventures:
-            count = len([
-                running
-                for running in self.running_adventures
-                if running.id == adventure.id
-            ])
-            if count == 0:
-                continue
-            button = Button('{} ({})'.format(adventure.title, count))
-            button.register_handler(
-                partial(self.select_current_adventure, adventure.id)
-            )
-            buttons.append(button)
-        self.ui.left_panel.add_buttons(tab, buttons)
-
-    def select_current_adventure(self, adventure_id):
-        creatures = [
-            running.creature
-            for running in self.running_adventures
-            if adventure_id == running.id
-        ]
-
-        tab = self.ui.central_panel.get_tabs()[0]
-        tab.clear()
-        buttons = []
-        for creature in creatures:
-            name = creature.name
-            button = Button(name)
-            button.register_handler(
-                partial(
-                    self.select_adventure_creature,
-                    adventure_id,
-                    creature.id
-                )
-            )
-            buttons.append(button)
-        self.ui.central_panel.add_buttons(tab, buttons)
-
-        tab = self.ui.right_panel.get_tabs()[0]
-        tab.clear()
-
-    def select_adventure_creature(self, adventure_id, creature_id):
-        tab = self.ui.right_panel.get_tabs()[0]
-        tab.clear()
-        adventure = [
-            adventure
-            for adventure in self.running_adventures
-            if adventure.id == adventure_id
-        ][0]
-        # TODO: Also display a log of the adventure using multiple pages
-        # if necessary
-        label = DescriptionLabel((
-            '{} turns left'.format(adventure.duration - adventure.clock)
-        ), tab.rect.width
-        )
-        self.ui.right_panel.add_label(tab, label)
 
     def draw(self):
         self.window.clear()
