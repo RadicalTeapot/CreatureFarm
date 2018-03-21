@@ -49,6 +49,7 @@ class Game(object):
     def update(self):
         for adventure in self.running_adventures:
             adventure.update()
+        self.ui.refresh()
 
     def add_creature(self, creature):
         creature.id = self.get_unique_id()
@@ -57,97 +58,12 @@ class Game(object):
     def show_creatures(self):
         self.ui.set_state(self.ui.STATE.CREATURE)
 
-        tab = self.ui.left_panel.get_tabs()[0]
-        self.ui.left_panel.clear(tab)
-        buttons = []
-        for creature in self.creatures:
-            name = creature.name
-            button = Button(name)
-            button.register_handler(partial(self.select_creature, creature))
-            buttons.append(button)
-            if creature == self.selected_creature:
-                button.pressed = True
-        self.ui.left_panel.add_buttons(tab, buttons)
-
-    def select_creature(self, creature):
-        self.selected_creature = creature
-
-    @property
-    def hp(self):
-        if self.selected_creature:
-            return self.selected_creature.hp
-        return '-'
-
-    @property
-    def strength(self):
-        if self.selected_creature:
-            return self.selected_creature.strength
-        return '-'
-
-    @property
-    def agility(self):
-        if self.selected_creature:
-            return self.selected_creature.agility
-        return '-'
-
-    @property
-    def stamina(self):
-        if self.selected_creature:
-            return self.selected_creature.stamina
-        return '-'
-
-    @property
-    def speed(self):
-        if self.selected_creature:
-            return self.selected_creature.speed
-        return '-'
-
-    @property
-    def hunger(self):
-        if self.selected_creature:
-            return self.selected_creature.hunger
-        return '-'
-
-    @property
-    def tired(self):
-        if self.selected_creature:
-            return self.selected_creature.tired
-        return '-'
-
     def add_adventure(self, adventure):
         adventure.id = self.get_unique_id()
         self.adventures.append(adventure)
 
     def set_adventure_mode(self):
         self.ui.set_state(self.ui.STATE.NEW_ADVENTURE)
-
-        tab = self.ui.left_panel.get_tabs()[0]
-        self.ui.left_panel.clear(tab)
-        buttons = []
-        for creature in self.creatures:
-            name = creature.name
-            button = Button(name)
-            button.register_handler(partial(self.select_creature, creature))
-            buttons.append(button)
-            if creature == self.selected_creature:
-                button.pressed = True
-        self.ui.left_panel.add_buttons(tab, buttons)
-
-        tab = self.ui.central_panel.get_tabs()[0]
-        self.ui.central_panel.clear(tab)
-        buttons = []
-        for adventure in self.adventures:
-            count = len([
-                running
-                for running in self.running_adventures
-                if running.title == adventure.title
-            ])
-            button = Button('{} ({})'.format(adventure.title, count))
-            button.register_handler(partial(self.select_adventure, adventure))
-            buttons.append(button)
-            if adventure == self.selected_adventure:
-                adventure.pressed = True
-        self.ui.central_panel.add_buttons(tab, buttons)
 
     def select_adventure(self, adventure):
         self.selected_adventure = adventure
@@ -167,7 +83,7 @@ class Game(object):
             self.finish_adventure, adventure=adventure
         )
         self.running_adventures.append(adventure)
-        self.set_adventure_mode()
+        self.ui.refresh()
 
     def finish_adventure(self, rewards, adventure):
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
@@ -181,15 +97,12 @@ class Game(object):
             for running in self.running_adventures
             if running != adventure
         ]
+        self.ui.refresh()
 
     def set_current_adventure_mode(self):
-        tab = self.ui.central_panel.get_tabs()[0]
-        self.ui.central_panel.clear(tab)
-        tab = self.ui.right_panel.get_tabs()[0]
-        self.ui.right_panel.clear(tab)
+        self.ui.set_state(self.ui.STATE.CURRENT_ADVENTURE)
 
         tab = self.ui.left_panel.get_tabs()[0]
-        self.ui.left_panel.clear(tab)
         buttons = []
         for adventure in self.adventures:
             count = len([
@@ -214,7 +127,7 @@ class Game(object):
         ]
 
         tab = self.ui.central_panel.get_tabs()[0]
-        self.ui.central_panel.clear(tab)
+        tab.clear()
         buttons = []
         for creature in creatures:
             name = creature.name
@@ -229,9 +142,12 @@ class Game(object):
             buttons.append(button)
         self.ui.central_panel.add_buttons(tab, buttons)
 
+        tab = self.ui.right_panel.get_tabs()[0]
+        tab.clear()
+
     def select_adventure_creature(self, adventure_id, creature_id):
         tab = self.ui.right_panel.get_tabs()[0]
-        self.ui.right_panel.clear(tab)
+        tab.clear()
         adventure = [
             adventure
             for adventure in self.running_adventures

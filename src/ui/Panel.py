@@ -70,6 +70,11 @@ class Tab(object):
         self.active = active
         self.visible = visible
 
+    def clear(self):
+        del self.buttons[:]
+        del self.labels[:]
+        self.layout.clear()
+
     def set_layout(self, direction=0, spacing=10):
         self.layout = Layout(self, direction, spacing)
 
@@ -189,9 +194,8 @@ class Panel(object):
         if tab:
             tabs = [tab]
         for tab in tabs:
-            del tab.buttons[:]
-            del tab.labels[:]
-            tab.layout.clear()
+            tab.clear()
+        del self.tabs[:]
 
     def draw(self):
         self.rect.draw()
