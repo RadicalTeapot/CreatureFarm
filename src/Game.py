@@ -55,7 +55,7 @@ class Game(object):
         self.creatures.append(creature)
 
     def show_creatures(self):
-        self.ui.show_tab_group(self.ui.TAB_GROUPS.CREATURE)
+        self.ui.set_state(self.ui.STATE.CREATURE)
 
         tab = self.ui.left_panel.get_tabs()[0]
         self.ui.left_panel.clear(tab)
@@ -119,7 +119,7 @@ class Game(object):
         self.adventures.append(adventure)
 
     def set_adventure_mode(self):
-        self.ui.show_tab_group(self.ui.TAB_GROUPS.START_ADVENTURE)
+        self.ui.set_state(self.ui.STATE.NEW_ADVENTURE)
 
         tab = self.ui.left_panel.get_tabs()[0]
         self.ui.left_panel.clear(tab)

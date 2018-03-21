@@ -67,28 +67,102 @@ class Rect(object):
         self.vertex_list.draw(pyglet.gl.GL_TRIANGLES)
 
 
+class UiState(object):
+    @staticmethod
+    def enter(ui):
+        ui.left_panel.clear()
+        ui.central_panel.clear()
+        ui.right_panel.clear()
+
+    @classmethod
+    def refresh(cls, ui):
+        return cls.enter(ui)
+
+
+class CreatureState(UiState):
+    @staticmethod
+    def enter(ui):
+        UiState.enter(ui)
+        # Left panel
+        ui.left_panel.add_tab(True, 'Creatures', 1)
+
+        # Central panel
+        tab = ui.central_panel.add_tab(True, 'Stats', 1)
+        ui.central_panel.add_label(
+            tab, AttributeLabel(ui.game, 'hp', pre='HP:')
+        )
+        ui.central_panel.add_label(
+            tab, AttributeLabel(ui.game, 'strength', pre='Strength:')
+        )
+        ui.central_panel.add_label(
+            tab, AttributeLabel(ui.game, 'agility', pre='Agility:')
+        )
+        ui.central_panel.add_label(
+            tab, AttributeLabel(ui.game, 'stamina', pre='Stamina:')
+        )
+        ui.central_panel.add_label(
+            tab, AttributeLabel(ui.game, 'speed', pre='Speed:')
+        )
+        ui.central_panel.add_label(
+            tab, AttributeLabel(ui.game, 'hunger', pre='Hunger:')
+        )
+        ui.central_panel.add_label(
+            tab, AttributeLabel(ui.game, 'tired', pre='Sleep:')
+        )
+
+        # Right panel
+        ui.right_panel.add_tab(True, 'Equipment', 1)
+        ui.right_panel.add_tab(True, 'Description', 1)
+
+
+class NewAdventureState(UiState):
+    @staticmethod
+    def enter(ui):
+        # Left panel
+        ui.left_panel.add_tab(True, 'Creatures', 1)
+
+        # Central panel
+        ui.central_panel.add_tab(True, 'Adventures', 1)
+
+        # Right panel
+        tab = ui.right_panel.add_tab(True, 'Description', 1)
+        button = Button('Start')
+        button.is_tristate = False
+        button.register_handler(ui.game.start_adventure)
+        ui.right_panel.add_button(tab, button)
+
+
+class CurrentAdventureState(UiState):
+    @staticmethod
+    def enter(ui):
+        # Left panel
+        ui.left_panel.add_tab(True, 'Adventures', 1)
+
+        # Central panel
+        ui.central_panel.add_tab(True, 'Creatures', 1)
+
+        # Right panel
+        ui.right_panel.add_tab(True, 'Description', 1)
+
+
 class Ui(object):
-    TAB_GROUPS = namedtuple('tab_groups', [
-        'CREATURE',
-        'START_ADVENTURE',
-        'CURRENT_ADVENTURE'
-    ])(
-        'creature',
-        'start_adventure',
-        'current_adventure'
-    )
+    STATE = namedtuple('state', [
+        'CREATURE', 'NEW_ADVENTURE', 'CURRENT_ADVENTURE'
+    ])(CreatureState, NewAdventureState, CurrentAdventureState)
 
     BUTTONS = namedtuple('buttons', [
         'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN'
     ])(0, 1, 2, 3)
 
     def __init__(self, game):
+        self._state = self.STATE.CREATURE
+
         self.game = game
         self.dialogs = []
 
         self.panels = []
         self.callbacks = dict([
-            (group, None) for group in self.TAB_GROUPS
+            (button, None) for button in self.BUTTONS
         ])
 
         self.build()
@@ -117,75 +191,14 @@ class Ui(object):
             self.bottom_panel
         ]
 
-        self.build_creature_ui()
-        self.build_adventure_ui()
-        self.build_current_adventure_ui()
+        self.refresh()
         self.build_bottom_ui()
 
-    def build_creature_ui(self):
-        group = self.TAB_GROUPS.CREATURE
-
-        # Left panel
-        self.left_panel.add_tab(group, True, 'Creatures', 1)
-
-        # Central panel
-        tab = self.central_panel.add_tab(group, True, 'Stats', 1)
-        self.central_panel.add_label(
-            tab, AttributeLabel(self.game, 'hp', pre='HP:')
-        )
-        self.central_panel.add_label(
-            tab, AttributeLabel(self.game, 'strength', pre='Strength:')
-        )
-        self.central_panel.add_label(
-            tab, AttributeLabel(self.game, 'agility', pre='Agility:')
-        )
-        self.central_panel.add_label(
-            tab, AttributeLabel(self.game, 'stamina', pre='Stamina:')
-        )
-        self.central_panel.add_label(
-            tab, AttributeLabel(self.game, 'speed', pre='Speed:')
-        )
-        self.central_panel.add_label(
-            tab, AttributeLabel(self.game, 'hunger', pre='Hunger:')
-        )
-        self.central_panel.add_label(
-            tab, AttributeLabel(self.game, 'tired', pre='Sleep:')
-        )
-
-        # Right panel
-        self.right_panel.add_tab(group, True, 'Equipment', 1)
-        self.right_panel.add_tab(group, True, 'Description', 1)
-
-    def build_adventure_ui(self):
-        group = self.TAB_GROUPS.START_ADVENTURE
-
-        # Left panel
-        self.left_panel.add_tab(group, True, 'Creatures', 1)
-
-        # Central panel
-        self.central_panel.add_tab(group, True, 'Adventures', 1)
-
-        # Right panel
-        tab = self.right_panel.add_tab(group, True, 'Description', 1)
-        button = Button('Start')
-        button.is_tristate = False
-        button.register_handler(self.game.start_adventure)
-        self.right_panel.add_button(tab, button)
-
-    def build_current_adventure_ui(self):
-        group = self.TAB_GROUPS.CURRENT_ADVENTURE
-
-        # Left panel
-        self.left_panel.add_tab(group, True, 'Adventures', 1)
-
-        # Central panel
-        self.central_panel.add_tab(group, True, 'Creatures', 1)
-
-        # Right panel
-        self.right_panel.add_tab(group, True, 'Description', 1)
+    def refresh(self):
+        self._state.enter(self)
 
     def build_bottom_ui(self):
-        tab = self.bottom_panel.add_tab('bottom', True)
+        tab = self.bottom_panel.add_tab(True)
 
         creature_button = Button('(c) Creatures')
         self.bottom_panel.add_button(tab, creature_button)
@@ -218,8 +231,6 @@ class Ui(object):
         finish_turn_button.is_tristate = False
         self.bottom_panel.add_button(tab, finish_turn_button)
 
-        self.bottom_panel.set_current_group('bottom')
-
         # Callbacks
         creature_button.register_handler(
             partial(self.callback, self.BUTTONS.CREATURE)
@@ -240,13 +251,11 @@ class Ui(object):
     def close_dialog(self):
         self.dialogs.pop()
 
-    def show_tab_group(self, tab_group):
-        if tab_group not in self.TAB_GROUPS:
-            raise KeyError('Wrong tab group')
-
-        self.left_panel.set_current_group(tab_group)
-        self.central_panel.set_current_group(tab_group)
-        self.right_panel.set_current_group(tab_group)
+    def set_state(self, state):
+        if state not in self.STATE:
+            raise KeyError('Wrong state')
+        self._state = state
+        self.refresh()
 
     def mouse_motion(self, x, y):
         if self.dialogs:

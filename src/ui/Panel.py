@@ -140,15 +140,11 @@ class Panel(object):
             width - 4 * self.border_margin, height - 4 * self.border_margin
         )
 
-        self.tab_groups = {}
-        self.current_group = None
+        self.tabs = []
 
-    def add_tab(self, group, active, title='', direction=0, spacing=10):
+    def add_tab(self, active, title='', direction=0, spacing=10):
         tab = Tab(title)
-        tab_group = self.tab_groups.get(group, [])
-
-        tab_group.append(tab)
-        self.tab_groups[group] = tab_group
+        self.tabs.append(tab)
 
         # Take panel border into account
         tab.rect = self.inner_rect
@@ -159,7 +155,7 @@ class Panel(object):
             self.rect.height + self.rect.y -
             tab.title_button.rect.height + ui.Button.margin * 2
         )
-        for tab in tab_group:
+        for tab in self.tabs:
             if len(tab.title):
                 tab.title_button.x = x
                 x += tab.title_button.rect.width + self.tab_spacing
@@ -167,37 +163,17 @@ class Panel(object):
         tab.set_layout(direction, spacing)
         tab.set_active(active)
         if active:
-            [tab.set_active(False) for tab in tab_group]
+            [tab.set_active(False) for tab in self.tabs]
         tab.set_active(True)
 
         return tab
 
-    def set_active_tab(self, title, group=None):
-        tabs = self.get_tabs(group)
-
-        for tab in tabs:
+    def set_active_tab(self, title):
+        for tab in self.tabs:
             tab.set_active(tab.title == title)
 
-    def get_tabs(self, group=None):
-        if group is None:
-            group = self.current_group
-
-        tabs = []
-        if group is not None and group in self.tab_groups:
-            tabs = self.tab_groups[group]
-        else:
-            [tabs.extend(value) for value in self.tab_groups.values()]
-
-        return tabs
-
-    def set_current_group(self, group):
-        if group is None:
-            self.current_group = None
-            return
-
-        if group not in self.tab_groups:
-            raise KeyError('{} not in tab_groups'.format(group))
-        self.current_group = group
+    def get_tabs(self):
+        return self.tabs
 
     def add_button(self, tab, button):
         tab.add_button(button)
@@ -208,10 +184,14 @@ class Panel(object):
     def add_label(self, tab, label):
         tab.add_label(label)
 
-    def clear(self, tab):
-        del tab.buttons[:]
-        del tab.labels[:]
-        tab.layout.clear()
+    def clear(self, tab=None):
+        tabs = self.get_tabs()
+        if tab:
+            tabs = [tab]
+        for tab in tabs:
+            del tab.buttons[:]
+            del tab.labels[:]
+            tab.layout.clear()
 
     def draw(self):
         self.rect.draw()
@@ -220,27 +200,21 @@ class Panel(object):
         self.draw_contents()
 
     def mouse_motion(self, x, y):
-        if self.current_group is None:
-            return
-
         if not self.rect.contains(x, y):
-            for tab in self.tab_groups[self.current_group]:
+            for tab in self.tabs:
                 for button in tab.buttons:
                     button.hovered = False
                 tab.title_button.hovered = False
             return
 
-        for tab in self.tab_groups[self.current_group]:
+        for tab in self.tabs:
             if len(tab.title):
                 tab.title_button.hover(x, y)
             tab.mouse_motion(x, y)
 
     def click(self, x, y):
-        if self.current_group is None:
-            return False
-
         if self.rect.contains(x, y):
-            for tab in self.tab_groups[self.current_group]:
+            for tab in self.tabs:
                 if len(tab.title):
                     if tab.title_button.click(x, y):
                         return True
@@ -249,10 +223,7 @@ class Panel(object):
         return False
 
     def draw_contents(self):
-        if self.current_group is None:
-            return
-
-        for tab in self.tab_groups[self.current_group]:
+        for tab in self.tabs:
             tab.draw()
 
 
