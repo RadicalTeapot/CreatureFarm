@@ -7,6 +7,8 @@ from ui.Elements import DescriptionLabel
 from ui.Panel import Dialog
 from ui.Panel import Panel
 
+from Inventory import Item
+
 from Settings import Settings
 
 from collections import namedtuple
@@ -186,8 +188,7 @@ class NewAdventureState(UiState):
 
         # Right panel
         tab = self.ui.right_panel.add_tab(True, 'Description', 1)
-        button = Button('Start')
-        button.is_tristate = False
+        button = Button('Start', False)
         button.register_handler(self.ui.game.start_adventure)
         self.ui.right_panel.add_button(tab, button)
 
@@ -287,19 +288,88 @@ class CurrentAdventureState(UiState):
             self.ui.right_panel.add_label(tab, label)
 
 
+class InventoryState(UiState):
+    def __init__(self, ui):
+        super().__init__(ui)
+        self.selected_category = None
+        self.selected_item = None
+
+    def enter(self):
+        super().enter()
+
+        tab = self.ui.left_panel.add_tab(True, 'Categories', 1)
+        self.ui.central_panel.add_tab(True, 'Items', 1)
+        self.ui.right_panel.add_tab(True, 'Description', 1)
+
+        if self.selected_category is None:
+            self.selected_category = Item.CATEGORY[0]
+
+        for category in Item.CATEGORY:
+            button = Button(category)
+            button.register_handler(partial(self.select_category, category))
+            self.ui.left_panel.add_button(tab, button)
+            button.pressed = (self.selected_category == category)
+
+        self.select_category(self.selected_category)
+
+    def select_category(self, category):
+        self.category = category
+
+        items = self.ui.game.inventory.get_items(self.selected_category)
+
+        if (
+            items and (
+                self.selected_item is None or
+                self.selected_item not in [item.name for item in items]
+            )
+        ):
+            self.selected_item = items[0].name
+
+        tab = self.ui.central_panel.get_tabs()[0]
+        tab.clear()
+        buttons = []
+        for item in sorted(items, key=lambda item: item.name):
+            button = Button(item.name)
+            button.register_handler(partial(self.select_item, item.name))
+            button.pressed = (item.name == self.selected_item)
+            buttons.append(button)
+        self.ui.central_panel.add_buttons(tab, buttons)
+
+        self.select_item(self.selected_item)
+
+    def select_item(self, item):
+        if self.selected_item is None:
+            return
+
+        self.selected_item = item
+
+        tab = self.ui.right_panel.get_tabs()[0]
+        tab.clear()
+        label = DescriptionLabel((
+            'Name: {name}\n',
+            'Quantity: {quantity}\n'
+        ).format(
+            name=self.selected_item.name,
+            quantity=self.selected_item.quantity
+        ), tab.rect.width)
+        self.left_panel.add_label(tab, label)
+
+
 class Ui(object):
     STATE = namedtuple('state', [
-        'CREATURE', 'NEW_ADVENTURE', 'CURRENT_ADVENTURE'
+        'CREATURE', 'NEW_ADVENTURE', 'CURRENT_ADVENTURE', 'INVENTORY'
     ])
 
     BUTTONS = namedtuple('buttons', [
-        'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN'
-    ])(0, 1, 2, 3)
+        'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN',
+        'INVENTORY'
+    ])(0, 1, 2, 3, 4)
 
     def __init__(self, game):
         self.STATE.CREATURE = CreatureState(self)
         self.STATE.NEW_ADVENTURE = NewAdventureState(self)
         self.STATE.CURRENT_ADVENTURE = CurrentAdventureState(self)
+        self.STATE.INVENTORY = InventoryState(self)
 
         self._state = self.STATE.CREATURE
 
@@ -373,8 +443,7 @@ class Ui(object):
         current_adventures_button = Button('(u) Current Adventures')
         self.bottom_panel.add_button(tab, current_adventures_button)
 
-        finish_turn_button = Button('(t) Finish Turn')
-        finish_turn_button.is_tristate = False
+        finish_turn_button = Button('(t) Finish Turn', False)
         self.bottom_panel.add_button(tab, finish_turn_button)
 
         # Callbacks
@@ -389,6 +458,9 @@ class Ui(object):
         )
         finish_turn_button.register_handler(
             partial(self.callback, self.BUTTONS.FINISH_TURN)
+        )
+        inventory_button.register_handler(
+            partial(self.callback, self.BUTTONS.INVENTORY)
         )
 
     def display_dialog(self, text):

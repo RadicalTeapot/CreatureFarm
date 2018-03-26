@@ -2,6 +2,7 @@
 """DOCSTRING."""
 
 from ui import Ui
+from Inventory import Inventory
 
 from functools import partial
 
@@ -15,6 +16,7 @@ class Game(object):
         self.adventures = []
         self.running_adventures = []
 
+        self.inventory = Inventory()
         self.ui = Ui(self)
 
         # Callbacks
@@ -29,6 +31,9 @@ class Game(object):
         )
         self.ui.register_callback(
             self.ui.BUTTONS.FINISH_TURN, self.update
+        )
+        self.ui.register_callback(
+            self.ui.BUTTONS.INVENTORY, self.set_inventory_mode
         )
 
     def get_unique_id(self):
@@ -97,6 +102,9 @@ class Game(object):
 
     def set_current_adventure_mode(self):
         self.ui.set_state(self.ui.STATE.CURRENT_ADVENTURE)
+
+    def set_inventory_mode(self):
+        self.ui.set_state(self.ui.STATE.INVENTORY)
 
     def draw(self):
         self.window.clear()
