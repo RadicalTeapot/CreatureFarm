@@ -313,9 +313,10 @@ class InventoryState(UiState):
         self.select_category(self.selected_category)
 
     def select_category(self, category):
-        self.category = category
+        self.selected_category = category
 
         items = self.ui.game.inventory.get_items(self.selected_category)
+        items = sorted(items, key=lambda item: item.name)
 
         if (
             items and (
@@ -328,7 +329,7 @@ class InventoryState(UiState):
         tab = self.ui.central_panel.get_tabs()[0]
         tab.clear()
         buttons = []
-        for item in sorted(items, key=lambda item: item.name):
+        for item in items:
             button = Button(item.name)
             button.register_handler(partial(self.select_item, item.name))
             button.pressed = (item.name == self.selected_item)
@@ -343,16 +344,19 @@ class InventoryState(UiState):
 
         self.selected_item = item
 
+        item = [
+            item
+            for item in self.ui.game.inventory.get_items()
+            if item.has_category(self.selected_category) and
+            item.name == self.selected_item
+        ]
+        if not item:
+            raise RuntimeError('Cannot find item')
+
         tab = self.ui.right_panel.get_tabs()[0]
         tab.clear()
-        label = DescriptionLabel((
-            'Name: {name}\n',
-            'Quantity: {quantity}\n'
-        ).format(
-            name=self.selected_item.name,
-            quantity=self.selected_item.quantity
-        ), tab.rect.width)
-        self.left_panel.add_label(tab, label)
+        label = DescriptionLabel(item[0].get_description(), tab.rect.width)
+        self.ui.right_panel.add_label(tab, label)
 
 
 class Ui(object):

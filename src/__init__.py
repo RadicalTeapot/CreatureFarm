@@ -4,6 +4,7 @@
 from Adventure import Adventure
 from Creature import Creature
 from Game import Game
+from Inventory import Item
 from Settings import Settings
 
 import pyglet
@@ -27,6 +28,24 @@ if __name__ == '__main__':
     game.add_adventure(Adventure('First'))
     game.add_adventure(Adventure('Second'))
     game.add_adventure(Adventure('Third'))
+
+    item = Item()
+    item.name = 'Bird drumstick'
+    item.add_food_component()
+    item.quantity = 5
+    game.inventory.add_item(item)
+
+    item = Item()
+    item.name = 'Weapon'
+    item._categories.add(Item.CATEGORY.WEAPON)
+    item.quantity = 2
+    game.inventory.add_item(item)
+
+    item = Item()
+    item.name = 'Armor'
+    item._categories.add(Item.CATEGORY.ARMOR)
+    item.quantity = 1
+    game.inventory.add_item(item)
 
     @window.event
     def on_draw():
