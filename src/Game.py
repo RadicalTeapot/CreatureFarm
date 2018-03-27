@@ -21,19 +21,7 @@ class Game(object):
 
         # Callbacks
         self.ui.register_callback(
-            self.ui.BUTTONS.CREATURE, self.set_creature_mode
-        )
-        self.ui.register_callback(
-            self.ui.BUTTONS.START_ADVENTURE, self.set_adventure_mode
-        )
-        self.ui.register_callback(
-            self.ui.BUTTONS.CURRENT_ADVENTURE, self.set_current_adventure_mode
-        )
-        self.ui.register_callback(
             self.ui.BUTTONS.FINISH_TURN, self.update
-        )
-        self.ui.register_callback(
-            self.ui.BUTTONS.INVENTORY, self.set_inventory_mode
         )
 
     def get_unique_id(self):
@@ -56,15 +44,9 @@ class Game(object):
         creature.id = self.get_unique_id()
         self.creatures.append(creature)
 
-    def set_creature_mode(self):
-        self.ui.set_state(self.ui.STATE.CREATURE)
-
     def add_adventure(self, adventure):
         adventure.id = self.get_unique_id()
         self.adventures.append(adventure)
-
-    def set_adventure_mode(self):
-        self.ui.set_state(self.ui.STATE.NEW_ADVENTURE)
 
     def start_adventure(self):
         creature = self.ui._state.selected_creature
@@ -100,11 +82,17 @@ class Game(object):
         ]
         self.ui.refresh()
 
-    def set_current_adventure_mode(self):
-        self.ui.set_state(self.ui.STATE.CURRENT_ADVENTURE)
+    def cook(self):
+        creature = self.ui._state.selected_creature
+        recipe = self.ui._state.selected_recipe
 
-    def set_inventory_mode(self):
-        self.ui.set_state(self.ui.STATE.INVENTORY)
+        if recipe is None:
+            self.ui.display_dialog('No recipe selected')
+            return
+
+        if creature is None or creature.locked:
+            self.ui.display_dialog('Invalid creature selection')
+            return
 
     def draw(self):
         self.window.clear()

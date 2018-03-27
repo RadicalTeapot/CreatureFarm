@@ -7,7 +7,7 @@ from ui.Elements import DescriptionLabel
 from ui.Panel import Dialog
 from ui.Panel import Panel
 
-from Inventory import Item
+import Inventory.CATEGORY
 
 from Settings import Settings
 
@@ -156,6 +156,9 @@ class NewAdventureState(UiState):
         self.selected_creature = None
         self.selected_adventure = None
 
+        self.ui.central_panel.add_tab(True, 'Adventures', 1)
+        self.ui.right_panel.add_tab(True, 'Description', 1)
+
         # Left panel
         tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
@@ -169,8 +172,11 @@ class NewAdventureState(UiState):
             button.pressed = (creature == self.selected_creature)
         self.ui.left_panel.add_buttons(tab, buttons)
 
-        # Central panel
-        tab = self.ui.central_panel.add_tab(True, 'Adventures', 1)
+    def select_creature(self, creature):
+        self.selected_creature = creature
+
+        tab = self.ui.central_panel.get_tabs()[0]
+        tab.clear()
         buttons = []
         for adventure in self.ui.game.adventures:
             count = len([
@@ -186,17 +192,19 @@ class NewAdventureState(UiState):
             button.pressed = (adventure == self.selected_adventure)
         self.ui.central_panel.add_buttons(tab, buttons)
 
-        # Right panel
-        tab = self.ui.right_panel.add_tab(True, 'Description', 1)
-        button = Button('Start', False)
-        button.register_handler(self.ui.game.start_adventure)
-        self.ui.right_panel.add_button(tab, button)
-
-    def select_creature(self, creature):
-        self.selected_creature = creature
-
     def select_adventure(self, adventure):
         self.selected_adventure = adventure
+
+        tab = self.ui.right_panel.get_tabs()[0]
+        tab.clear()
+        label = DescriptionLabel(
+            self.selected_adventure.get_description(), tab.rect.width
+        )
+        self.ui.right_panel.add_label(tab, label)
+        if self.selected_adventure.is_available(self.selected_creature):
+            button = Button('Start', False)
+            button.register_handler(self.ui.game.start_adventure)
+            self.ui.right_panel.add_button(tab, button)
 
 
 class CurrentAdventureState(UiState):
@@ -302,9 +310,9 @@ class InventoryState(UiState):
         self.ui.right_panel.add_tab(True, 'Description', 1)
 
         if self.selected_category is None:
-            self.selected_category = Item.CATEGORY[0]
+            self.selected_category = Inventory.CATEGORY[0]
 
-        for category in Item.CATEGORY:
+        for category in Inventory.CATEGORY:
             button = Button(category)
             button.register_handler(partial(self.select_category, category))
             self.ui.left_panel.add_button(tab, button)
@@ -359,31 +367,110 @@ class InventoryState(UiState):
         self.ui.right_panel.add_label(tab, label)
 
 
+class CookState(UiState):
+    def __init__(self, ui):
+        super().__init__(ui)
+        self.selected_creature = None
+        self.selected_recipe = None
+
+    def enter(self):
+        super().enter()
+
+        if self.selected_creature is None and self.ui.game.creatures:
+            self.selected_creature = self.ui.game.creatures[0]
+        if self.selected_recipe is None and self.ui.game.recipes:
+            self.selected_recipe = self.ui.game.recipes[0]
+
+        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
+        buttons = []
+        for creature in self.ui.game.creatures:
+            name = creature.name
+            button = Button(name)
+            button.register_handler(partial(self.select_creature, creature))
+            buttons.append(button)
+            button.pressed = (creature == self.selected_creature)
+        self.ui.left_panel.add_buttons(tab, buttons)
+
+        tab = self.ui.center_panel.add_tab(True, 'Recipes', 1)
+        buttons = []
+        # TODO: Display available recipes first then rest greyed out
+        # recipe may not be available due to muissing ingredients or low
+        # creature cooking skills
+        for recipe in self.ui.game.inventory.get_recipes():
+            name = recipe.name
+            button = Button(name)
+            button.register_handler(partial(self.select_recipe, recipe))
+            buttons.append(button)
+            button.pressed = (recipe == self.selected_recipe)
+        self.ui.central_panel.add_buttons(tab, buttons)
+
+        self.ui.right_panel.add_tab(True, 'Description', 1)
+
+    def select_creature(self, creature):
+        self.selected_creature = creature
+
+    def select_recipe(self, recipe):
+        self.selected_recipe = recipe
+
+        tab = self.ui.right_panel.get_tabs()[0]
+        tab.clear()
+        label = DescriptionLabel(recipe.get_description(), tab.rect.width)
+        self.ui.right_panel.add_label(tab, label)
+        if recipe.is_available(self.selected_creature):
+            button = Button('Cook', False)
+            button.register_handler(self.ui.game.cook)
+            self.ui.right_panel.add_button(button)
+
+
 class Ui(object):
     STATE = namedtuple('state', [
-        'CREATURE', 'NEW_ADVENTURE', 'CURRENT_ADVENTURE', 'INVENTORY'
+        'CREATURE', 'NEW_ADVENTURE', 'CURRENT_ADVENTURE', 'INVENTORY',
+        'COOK'
     ])
 
     BUTTONS = namedtuple('buttons', [
         'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN',
-        'INVENTORY'
-    ])(0, 1, 2, 3, 4)
+        'INVENTORY', 'COOK'
+    ])(0, 1, 2, 3, 4, 5)
 
     def __init__(self, game):
+        self.game = game
+
         self.STATE.CREATURE = CreatureState(self)
         self.STATE.NEW_ADVENTURE = NewAdventureState(self)
         self.STATE.CURRENT_ADVENTURE = CurrentAdventureState(self)
         self.STATE.INVENTORY = InventoryState(self)
+        self.STATE.COOK = CookState(self)
 
         self._state = self.STATE.CREATURE
 
-        self.game = game
         self.dialogs = []
-
         self.panels = []
+
         self.callbacks = dict([
             (button, None) for button in self.BUTTONS
         ])
+
+        self.register_callback(
+            self.BUTTONS.CREATURE,
+            partial(self.set_state, self.STATE.CREATURE)
+        )
+        self.register_callback(
+            self.BUTTONS.START_ADVENTURE,
+            partial(self.set_state, self.STATE.NEW_ADVENTURE)
+        )
+        self.register_callback(
+            self.BUTTONS.CURRENT_ADVENTURE,
+            partial(self.set_state, self.STATE.CURRENT_ADVENTURE)
+        )
+        self.register_callback(
+            self.BUTTONS.INVENTORY,
+            partial(self.set_state, self.STATE.INVENTORY)
+        )
+        self.register_callback(
+            self.BUTTONS.COOK,
+            partial(self.set_state, self.STATE.COOK)
+        )
 
         self.build()
 
@@ -465,6 +552,9 @@ class Ui(object):
         )
         inventory_button.register_handler(
             partial(self.callback, self.BUTTONS.INVENTORY)
+        )
+        cook_button.register_handler(
+            partial(self.callback, self.BUTTONS.COOK)
         )
 
     def display_dialog(self, text):

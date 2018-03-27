@@ -4,6 +4,7 @@
 from Adventure import Adventure
 from Creature import Creature
 from Game import Game
+import Inventory.CATEGORY
 from Inventory import Item
 from Settings import Settings
 
@@ -37,13 +38,13 @@ if __name__ == '__main__':
 
     item = Item()
     item.name = 'Weapon'
-    item._categories.add(Item.CATEGORY.WEAPON)
+    item._categories.add(Inventory.CATEGORY.WEAPON)
     item.quantity = 2
     game.inventory.add_item(item)
 
     item = Item()
     item.name = 'Armor'
-    item._categories.add(Item.CATEGORY.ARMOR)
+    item._categories.add(Inventory.CATEGORY.ARMOR)
     item.quantity = 1
     game.inventory.add_item(item)
 

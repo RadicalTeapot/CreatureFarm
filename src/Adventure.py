@@ -73,6 +73,12 @@ class Adventure(object):
         if self.callback:
             self.callback(rewards)
 
+    def is_available(self, creature):
+        return True
+
+    def get_description(self):
+        return 'Adventure description placeholder'
+
 
 class Reward(object):
     def __init__(self, chance, items, quantity_ranges):
