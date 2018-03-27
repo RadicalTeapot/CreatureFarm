@@ -92,7 +92,7 @@ class FoodComponent(object):
 
 
 class Recipe(object):
-    def __init__(self, game):
+    def __init__(self):
         self.name = None
         self.ingredients = []
         self.results = []
@@ -118,7 +118,7 @@ class Inventory(object):
 
     def get_items(self, category=None):
         if category is None:
-            return self.items.values()
+            return [item for item in self.items.values()]
         return [
             item
             for item in self.items.values()
@@ -130,9 +130,9 @@ class Inventory(object):
 
     def get_recipes(self, category=None):
         if category is None:
-            return self.recipes.values()
+            return [recipe for recipe in self.recipes.values()]
         return [
             recipe
-            for recipe in self.recipes.items()
+            for recipe in self.recipes.values()
             if recipe.has_category(category)
         ]

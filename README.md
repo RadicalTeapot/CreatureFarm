@@ -19,6 +19,7 @@
 
 
 # TODO
+- __Test cooking / recipes__
 - Flip way adventure is handled to avoid the whole adventure copy mess
     - Creature holds a ref of which adventure it's doing
     - Timer is set on creature instead of on adventure

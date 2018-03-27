@@ -7,7 +7,7 @@ from ui.Elements import DescriptionLabel
 from ui.Panel import Dialog
 from ui.Panel import Panel
 
-import Inventory.CATEGORY
+import Inventory
 
 from Settings import Settings
 
@@ -376,10 +376,11 @@ class CookState(UiState):
     def enter(self):
         super().enter()
 
+        self.ui.central_panel.add_tab(True, 'Recipes', 1)
+        self.ui.right_panel.add_tab(True, 'Description', 1)
+
         if self.selected_creature is None and self.ui.game.creatures:
             self.selected_creature = self.ui.game.creatures[0]
-        if self.selected_recipe is None and self.ui.game.recipes:
-            self.selected_recipe = self.ui.game.recipes[0]
 
         tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
@@ -391,7 +392,17 @@ class CookState(UiState):
             button.pressed = (creature == self.selected_creature)
         self.ui.left_panel.add_buttons(tab, buttons)
 
-        tab = self.ui.center_panel.add_tab(True, 'Recipes', 1)
+        self.select_creature(self.selected_creature)
+
+    def select_creature(self, creature):
+        self.selected_creature = creature
+
+        recipes = self.ui.game.inventory.get_recipes()
+        if self.selected_recipe is None and recipes:
+            self.selected_recipe = recipes[0]
+
+        tab = self.ui.central_panel.get_tabs()[0]
+        tab.clear()
         buttons = []
         # TODO: Display available recipes first then rest greyed out
         # recipe may not be available due to muissing ingredients or low
@@ -404,10 +415,7 @@ class CookState(UiState):
             button.pressed = (recipe == self.selected_recipe)
         self.ui.central_panel.add_buttons(tab, buttons)
 
-        self.ui.right_panel.add_tab(True, 'Description', 1)
-
-    def select_creature(self, creature):
-        self.selected_creature = creature
+        self.select_recipe(self.selected_recipe)
 
     def select_recipe(self, recipe):
         self.selected_recipe = recipe
@@ -419,7 +427,7 @@ class CookState(UiState):
         if recipe.is_available(self.selected_creature):
             button = Button('Cook', False)
             button.register_handler(self.ui.game.cook)
-            self.ui.right_panel.add_button(button)
+            self.ui.right_panel.add_button(tab, button)
 
 
 class Ui(object):
