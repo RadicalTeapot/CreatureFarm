@@ -116,6 +116,24 @@ class Inventory(object):
             return
         self.items[item.name] = item
 
+    def add_items(self, items):
+        for item in items:
+            self.add_item(item)
+
+    def take_items(self, items):
+        return_items = []
+        for item in items:
+            return_item = self.items.pop(item.name, None)
+            if return_item is not None:
+                return_items.append(return_item)
+        return return_items
+
+    def has_items(self, items):
+        return all([
+            item.name in self.items
+            for item in items
+        ])
+
     def get_items(self, category=None):
         if category is None:
             return [item for item in self.items.values()]

@@ -94,6 +94,13 @@ class Game(object):
             self.ui.display_dialog('Invalid creature selection')
             return
 
+        if not self.inventory.has_items(recipe.ingredients):
+            self.ui.display_dialog('Ingredients not available')
+            return
+
+        self.inventory.take_items(recipe.ingredients)
+        self.inventory.add_items(recipe.results)
+
     def draw(self):
         self.window.clear()
         self.ui.draw()
