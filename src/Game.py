@@ -3,8 +3,12 @@
 
 from ui import Ui
 from Inventory import Inventory
+from Inventory import Item
+from Inventory import Recipe
+import Creature
 
 from functools import partial
+import json
 
 
 class Game(object):
@@ -22,6 +26,77 @@ class Game(object):
         self.ui.register_callback(
             self.ui.BUTTONS.FINISH_TURN, self.update
         )
+
+        self._parse_data()
+
+    def parse_data(self):
+        ids = []
+        with open("data/items.json", 'r') as item_data:
+            ids = self._parse_items(json.loads(item_data.read()), ids)
+        with open("data/recipes.json", 'r') as recipe_data:
+            self._parse_recipes(json.loads(recipe_data), ids)
+        self._parse_adventures()
+
+    def _parse_items(self, data, ids):
+        items = []
+        for item_data in data:
+            self._validate_item(item_data, ids)
+            item = Item(item_data['id'])
+            item.name = item_data['name']
+            item.description = item_data['description']
+
+            for component in item_data.get(['component'], []):
+                if component['type'] == 'food':
+                    item.add_food_component(
+                        component['is_raw'], component['nutrition_value']
+                    )
+                elif component['type'] == 'armor':
+                    pass
+                elif component['type'] == 'weapon':
+                    pass
+
+            ids.append(item_data['id'])
+            items.append(item)
+
+        self.inventory.add_items(items)
+
+    def _validate_item(self, item, ids):
+        for attribute in ['id', 'name', 'description']:
+            if attribute not in item:
+                raise KeyError('Missing {} attribute'.format(attribute))
+        if item['id'] in ids:
+            raise RuntimeError('Duplicate id')
+        # TODO: check components validity as well
+
+    def _parse_recipes(self, data, ids):
+        for recipe_data in data:
+            self._validate_recipe(recipe_data, ids)
+            recipe = Recipe()
+            recipe.id = recipe_data['id']
+            recipe.name = recipe_data['name']
+            recipe.ingredients = recipe_data['ingredients']
+            recipe.results = recipe_data['results']
+            recipe.complexity = recipe_data['complexity']
+            recipe.duration = recipe_data['duration']
+            recipe.description = recipe_data['description']
+            self.inventory.add_recipe(recipe)
+
+    def _validate_recipe(self, recipe, ids):
+        attributes = [
+            "id", "name", "ingredients", "results", "complexity",
+            "duration", "description"
+        ]
+        for attribute in attributes:
+            if attribute not in recipe:
+                raise KeyError('Missing {} attribute'.format(attribute))
+        if recipe['id'] in ids:
+            raise RuntimeError('Duplicate id')
+
+    def _parse_adventures(self):
+        pass
+
+    def _validate_adventure(self, data):
+        return False
 
     def get_unique_id(self):
         # HACK: This could be avoided by finding a way to store/pass pointers
@@ -61,6 +136,7 @@ class Game(object):
 
         creature.set_activity(
             adventure,
+            Creature.ACTIVITY_TYPE.ADVENTURE,
             adventure.duration,
             update_callback=partial(
                 self.update_adventure, creature, adventure
@@ -98,21 +174,24 @@ class Game(object):
             self.ui.display_dialog('Invalid creature selection')
             return
 
-        if not self.inventory.has_items(recipe.ingredients):
+        ingredients, quantities = zip(*recipe.ingredients)
+        if not self.inventory.has_items(ingredients, quantities):
             self.ui.display_dialog('Ingredients not available')
             return
 
         creature.set_activity(
             recipe,
+            Creature.ACTIVITY_TYPE.COOK,
             recipe.duration,
             end_callback=partial(
                 self.finish_cooking, creature, recipe
             )
         )
-        self.inventory.take_items(recipe.ingredients)
+        self.inventory.take_items(ingredients)
         self.ui.refresh()
 
     def finish_cooking(self, creature, recipe):
+        ingredients, quantities = zip(*recipe.ingredients)
         self.inventory.add_items(recipe.results)
 
         message = '{} just finished cooking !\n\nThey used:\n'.format(

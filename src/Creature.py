@@ -2,6 +2,13 @@
 """DOCSTRING."""
 
 import random
+from collections import namedtuple
+
+ACTIVITY_TYPE = namedtuple('activity_type', [
+    'ADVENTURE', 'COOK'
+])(
+    'on an adventure', 'cooking'
+)
 
 
 class Creature(object):
@@ -125,10 +132,11 @@ class Creature(object):
         self.hp -= quantity
 
     def set_activity(
-        self, activity, timer,
+        self, activity, activity_type, timer,
         start_callback=None, update_callback=None, end_callback=None
     ):
         self._model.activity = activity
+        self._model.activity_type = activity_type
         self._model.timer = timer
         self._model.activity_callbacks['start'] = start_callback
         self._model.activity_callbacks['update'] = update_callback
@@ -158,8 +166,12 @@ class Creature(object):
         self._model.activity_callbacks['end'] = None
 
     def get_description(self):
-        # TODO: Add activity type and timer to description
-        return 'Creature desciption placeholder'
+        msg = 'Creature desciption placeholder\n'
+        if self.busy:
+            msg += 'It is {} for {} more turns.\n'.format(
+                self._model.activity_type, self.timer
+            )
+        return msg
 
 
 class Model(object):
@@ -178,6 +190,7 @@ class Model(object):
         self.tired = 0
 
         self.activity = None
+        self.activity_type = ''
         self.activity_callbacks = {'start': None, 'update': None, 'end': None}
         self.timer = 0
 

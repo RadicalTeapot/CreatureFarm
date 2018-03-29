@@ -1,0 +1,49 @@
+{
+    "raw_meat": {
+        "id": 1,
+        "name": "Raw meat",
+        "components": [
+            {
+                "type":"food",
+                "is_raw": true,
+                "nutrition_value": 1.0
+            }
+        ],
+        "description": "Raw meat harvested from dead animal."
+    },
+
+    "cooked_meat": {
+        "id": 2,
+        "name": "Cooked meat",
+        "components": [
+            {
+                "type":"food",
+                "is_raw": false,
+                "nutrition_value": 5.0
+            }
+        ],
+        "description": "Meat that has been cooked improving it's taste."
+    },
+
+    "chestplate": {
+        "id": 3,
+        "name": "Chestplate",
+        "components": [
+            {
+                "type": "armor"
+            }
+        ],
+        "description": "Item description placeholder"
+    },
+
+    "sword": {
+        "id": 4,
+        "name": "Sword",
+        "components": [
+            {
+                "type": "weapon"
+            }
+        ],
+        "description": "Item description placeholder"
+    }
+}

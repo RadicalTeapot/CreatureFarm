@@ -11,11 +11,13 @@ CATEGORY = namedtuple('category', [
 
 
 class Item(object):
-    def __init__(self):
+    def __init__(self, item_id):
+        self.id = item_id
         self.name = None
-        self.quantity = None
+        self.quantity = 0
         self._categories = set()
         self._components = []
+        self.description = ''
 
     def has_category(self, category):
         return category in self._categories
@@ -24,11 +26,11 @@ class Item(object):
     #                                  Food                                   #
     # ####################################################################### #
 
-    def add_food_component(self, is_raw=True, nutrition_level=1):
+    def add_food_component(self, is_raw=True, nutrition_value=1):
         self._categories.add(CATEGORY.FOOD)
         component = FoodComponent(self)
         component.is_raw = is_raw
-        component.nutrition_level = nutrition_level
+        component.nutrition_value = nutrition_value
         self._components.append(component)
 
     def cook(self):
@@ -70,9 +72,10 @@ class Item(object):
                     'Nutrition value: {nutrition}\n'
                 ).format(
                     raw=component.is_raw,
-                    nutrition=component.nutrition_level
+                    nutrition=component.nutrition_value
                 )
 
+        description += '\n{}'.format(self.description)
         return description
 
 
@@ -80,10 +83,10 @@ class FoodComponent(object):
     def __init__(self, item):
         self.item = item
         self.is_raw = True
-        self.nutrition_level = 1
+        self.nutrition_value = 1
 
     def eat(self):
-        return self.nutrition_level
+        return self.nutrition_value
 
     def cook(self):
         if not self.is_raw:
@@ -98,12 +101,13 @@ class Recipe(object):
         self.results = []
         self.duration = 3
         self._categories = set()
+        self.description = ''
 
     def is_available(self, creature):
         return True
 
     def get_description(self):
-        return 'Recipe description placeholder'
+        return self.description
 
 
 class Inventory(object):
@@ -112,28 +116,28 @@ class Inventory(object):
         self.recipes = {}
 
     def add_item(self, item):
-        if item.name in self.items:
-            self.items[item.name].quantity += item.quantity
+        if item.id in self.items:
+            self.items[item.id].quantity += item.quantity
             return
-        self.items[item.name] = item
+        self.items[item.id] = item
 
     def add_items(self, items):
         for item in items:
             self.add_item(item)
 
-    def take_items(self, items):
-        return_items = []
-        for item in items:
-            return_item = self.items.pop(item.name, None)
-            if return_item is not None:
-                return_items.append(return_item)
-        return return_items
+    def take_items(self, item_ids):
+        items = []
+        for item_id in item_ids:
+            item = self.items.pop(item_id, None)
+            if item is not None:
+                items.append(item)
+        return items
 
-    def has_items(self, items):
-        return all([
-            item.name in self.items
-            for item in items
-        ])
+    def has_items(self, item_ids):
+        return all([item_id in self.items for item_id in item_ids])
+
+    def get_item(self, item_id):
+        return self.items[item_id]
 
     def get_items(self, category=None):
         if category is None:
@@ -145,7 +149,7 @@ class Inventory(object):
         ]
 
     def add_recipe(self, recipe):
-        self.recipes[recipe.name] = recipe
+        self.recipes[recipe.id] = recipe
 
     def get_recipes(self, category=None):
         if category is None:
@@ -155,3 +159,6 @@ class Inventory(object):
             for recipe in self.recipes.values()
             if recipe.has_category(category)
         ]
+
+    def get_recipe(self, recipe_id):
+        return self.recipes[recipe_id]

@@ -108,15 +108,16 @@ class CreatureState(UiState):
 
         # Central panel
         self.ui.central_panel.add_tab(True, 'Stats', 1)
-        self.display_creature_stats()
 
         # Right panel
-        self.ui.right_panel.add_tab(True, 'Equipment', 1)
         self.ui.right_panel.add_tab(True, 'Description', 1)
+
+        self.select_creature(self.selected_creature)
 
     def select_creature(self, creature):
         self.selected_creature = creature
         self.display_creature_stats()
+        self.display_creature_description()
 
     def display_creature_stats(self):
         tab = self.ui.central_panel.get_tabs()[0]
@@ -143,6 +144,18 @@ class CreatureState(UiState):
             self.selected_creature.tired
         ), tab.rect.width)
         tab.add_label(label)
+
+    def display_creature_description(self):
+        tab = self.ui.right_panel.get_tabs()[0]
+        tab.clear()
+
+        if self.selected_creature is None:
+            return
+
+        label = DescriptionLabel(
+            self.selected_creature.get_description(), tab.rect.width
+        )
+        self.ui.right_panel.add_label(tab, label)
 
 
 class NewAdventureState(UiState):
@@ -334,6 +347,8 @@ class InventoryState(UiState):
             )
         ):
             self.selected_item = items[0].name
+        elif not items:
+            self.selected_item = None
 
         tab = self.ui.central_panel.get_tabs()[0]
         tab.clear()
