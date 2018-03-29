@@ -50,6 +50,7 @@ class Game(object):
     def start_adventure(self):
         creature = self.ui._state.selected_creature
         adventure = self.ui._state.selected_adventure
+
         if adventure is None:
             self.ui.display_dialog('No adventure selected')
             return
@@ -64,7 +65,6 @@ class Game(object):
             update_callback=partial(
                 self.update_adventure, creature, adventure
             ),
-            # TODO: use adventure id instead of the object itself
             end_callback=partial(
                 self.finish_adventure, creature, adventure
             )
@@ -86,7 +86,7 @@ class Game(object):
 
         self.ui.refresh()
 
-    def cook(self):
+    def start_cooking(self):
         creature = self.ui._state.selected_creature
         recipe = self.ui._state.selected_recipe
 
@@ -94,7 +94,7 @@ class Game(object):
             self.ui.display_dialog('No recipe selected')
             return
 
-        if creature is None or creature.locked:
+        if creature is None or creature.busy:
             self.ui.display_dialog('Invalid creature selection')
             return
 
@@ -102,8 +102,29 @@ class Game(object):
             self.ui.display_dialog('Ingredients not available')
             return
 
+        creature.set_activity(
+            recipe,
+            recipe.duration,
+            end_callback=partial(
+                self.finish_cooking, creature, recipe
+            )
+        )
         self.inventory.take_items(recipe.ingredients)
+        self.ui.refresh()
+
+    def finish_cooking(self, creature, recipe):
         self.inventory.add_items(recipe.results)
+
+        message = '{} just finished cooking !\n\nThey used:\n'.format(
+            creature.name
+        )
+
+        for item in recipe.ingredients:
+            message += '    {}x {}\n'.format(item.quantity, item.name)
+        message += '\nAnd produced:\n'
+        for item in recipe.results:
+            message += '    {}x {}\n'.format(item.quantity, item.name)
+        self.ui.display_dialog(message)
 
     def draw(self):
         self.window.clear()

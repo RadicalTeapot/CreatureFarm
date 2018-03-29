@@ -427,7 +427,7 @@ class CookState(UiState):
         self.ui.right_panel.add_label(tab, label)
         if recipe.is_available(self.selected_creature):
             button = Button('Cook', False)
-            button.register_handler(self.ui.game.cook)
+            button.register_handler(self.ui.game.start_cooking)
             self.ui.right_panel.add_button(tab, button)
 
 

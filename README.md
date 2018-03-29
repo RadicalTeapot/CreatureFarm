@@ -19,8 +19,5 @@
 
 
 # TODO
-- Flip way adventure is handled to avoid the whole adventure copy mess
-    - Creature holds a ref of which adventure it's doing
-    - Timer is set on creature instead of on adventure
-- Use the same mechanic for cooking (data set on creature with ref to recipe)
+- Set cooking as a creature activity
 - Change new adventure UI so right panel is empty till both creature and adventure are selected (display available adventures first then rest greyed out based (availability is determined by creature skills))

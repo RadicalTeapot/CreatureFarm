@@ -96,6 +96,7 @@ class Recipe(object):
         self.name = None
         self.ingredients = []
         self.results = []
+        self.duration = 3
         self._categories = set()
 
     def is_available(self, creature):
