@@ -28,6 +28,9 @@ if __name__ == '__main__':
     game.add_adventure(Adventure('Second'))
     game.add_adventure(Adventure('Third'))
 
+    item = game.inventory.get_item(1)
+    item.quantity = 5
+
     @window.event
     def on_draw():
         game.draw()

@@ -121,32 +121,36 @@ class Inventory(object):
             return
         self.items[item.id] = item
 
-    def add_items(self, items):
-        for item in items:
-            self.add_item(item)
+    def add_items(self, ingredients):
+        for item_id, quantity in ingredients:
+            self.items[item_id].quantity += quantity
 
-    def take_items(self, item_ids):
-        items = []
-        for item_id in item_ids:
-            item = self.items.pop(item_id, None)
-            if item is not None:
-                items.append(item)
-        return items
+    def take_items(self, ingredients):
+        for item_id, quantity in ingredients:
+            self.items[item_id].quantity -= quantity
 
-    def has_items(self, item_ids):
-        return all([item_id in self.items for item_id in item_ids])
+    def has_items(self, ingredients):
+        return all([
+            item_id in self.items and self.items[item_id].quantity >= quantity
+            for item_id, quantity in ingredients
+        ])
 
     def get_item(self, item_id):
         return self.items[item_id]
 
-    def get_items(self, category=None):
+    def get_items(self, category=None, empty=False):
+        items = []
         if category is None:
-            return [item for item in self.items.values()]
-        return [
-            item
-            for item in self.items.values()
-            if item.has_category(category)
-        ]
+            items = [item for item in self.items.values()]
+        else:
+            items = [
+                item
+                for item in self.items.values()
+                if item.has_category(category)
+            ]
+        if not empty:
+            items = [item for item in items if item.quantity > 0]
+        return items
 
     def add_recipe(self, recipe):
         self.recipes[recipe.id] = recipe

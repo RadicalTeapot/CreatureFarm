@@ -29,23 +29,22 @@ class Game(object):
 
         self._parse_data()
 
-    def parse_data(self):
+    def _parse_data(self):
         ids = []
-        with open("data/items.json", 'r') as item_data:
+        with open("src/data/items.json", 'r') as item_data:
             ids = self._parse_items(json.loads(item_data.read()), ids)
-        with open("data/recipes.json", 'r') as recipe_data:
-            self._parse_recipes(json.loads(recipe_data), ids)
+        with open("src/data/recipes.json", 'r') as recipe_data:
+            ids = self._parse_recipes(json.loads(recipe_data.read()), ids)
         self._parse_adventures()
 
     def _parse_items(self, data, ids):
-        items = []
-        for item_data in data:
+        for item_data in data.values():
             self._validate_item(item_data, ids)
             item = Item(item_data['id'])
             item.name = item_data['name']
             item.description = item_data['description']
 
-            for component in item_data.get(['component'], []):
+            for component in item_data.get('components', []):
                 if component['type'] == 'food':
                     item.add_food_component(
                         component['is_raw'], component['nutrition_value']
@@ -56,9 +55,8 @@ class Game(object):
                     pass
 
             ids.append(item_data['id'])
-            items.append(item)
-
-        self.inventory.add_items(items)
+            self.inventory.add_item(item)
+        return ids
 
     def _validate_item(self, item, ids):
         for attribute in ['id', 'name', 'description']:
@@ -69,7 +67,7 @@ class Game(object):
         # TODO: check components validity as well
 
     def _parse_recipes(self, data, ids):
-        for recipe_data in data:
+        for recipe_data in data.values():
             self._validate_recipe(recipe_data, ids)
             recipe = Recipe()
             recipe.id = recipe_data['id']
@@ -80,6 +78,8 @@ class Game(object):
             recipe.duration = recipe_data['duration']
             recipe.description = recipe_data['description']
             self.inventory.add_recipe(recipe)
+            ids.append(recipe_data['id'])
+        return ids
 
     def _validate_recipe(self, recipe, ids):
         attributes = [
@@ -174,8 +174,7 @@ class Game(object):
             self.ui.display_dialog('Invalid creature selection')
             return
 
-        ingredients, quantities = zip(*recipe.ingredients)
-        if not self.inventory.has_items(ingredients, quantities):
+        if not self.inventory.has_items(recipe.ingredients):
             self.ui.display_dialog('Ingredients not available')
             return
 
@@ -187,22 +186,23 @@ class Game(object):
                 self.finish_cooking, creature, recipe
             )
         )
-        self.inventory.take_items(ingredients)
+        self.inventory.take_items(recipe.ingredients)
         self.ui.refresh()
 
     def finish_cooking(self, creature, recipe):
-        ingredients, quantities = zip(*recipe.ingredients)
         self.inventory.add_items(recipe.results)
 
         message = '{} just finished cooking !\n\nThey used:\n'.format(
             creature.name
         )
 
-        for item in recipe.ingredients:
-            message += '    {}x {}\n'.format(item.quantity, item.name)
+        for item_id, quantity in recipe.ingredients:
+            name = self.inventory.get_item(item_id).name
+            message += '    {}x {}\n'.format(quantity, name)
         message += '\nAnd produced:\n'
-        for item in recipe.results:
-            message += '    {}x {}\n'.format(item.quantity, item.name)
+        for item_id, quantity in recipe.results:
+            name = self.inventory.get_item(item_id).name
+            message += '    {}x {}\n'.format(quantity, name)
         self.ui.display_dialog(message)
 
     def draw(self):
