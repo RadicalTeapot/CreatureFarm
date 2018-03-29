@@ -26,41 +26,11 @@ class Adventure(object):
         # Quantity of damages to inflict
         self.difficulty = 1
 
-        self.creature = None
-        # Counter for adventure length
-        self.clock = 0
-        # State of the adventure
-        self.state = self.NOT_STARTED
-        # Callback method when adventure finishes
-        self.callback = None
-
-    def assign_creature(self, creature):
-        self.creature = creature
-
-    def start(self):
-        if not self.creature:
-            return
-
-        adventure = Adventure(self.title)
-        adventure.__dict__ = self.__dict__.copy()
-
-        adventure.clock = 0
-        adventure.creature.lock()
-        adventure.state = self.RUNNING
-        return adventure
-
-    def update(self):
-        self.clock += 1
-        if self.clock >= self.duration:
-            return self.finish()
-
+    def update(self, creature):
         if random.random() < self.danger:
-            self.creature.hit(self.difficulty)
+            creature.hit(self.difficulty)
 
     def finish(self):
-        self.creature.free()
-        self.state = self.FINISHED
-
         rewards = []
         for reward in self.rewards:
             if random.random() < reward.chance:
@@ -70,8 +40,7 @@ class Adventure(object):
                     )
                     rewards.append((name, quantity))
 
-        if self.callback:
-            self.callback(rewards)
+        return rewards
 
     def is_available(self, creature):
         return True

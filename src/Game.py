@@ -14,7 +14,6 @@ class Game(object):
         self.creatures = []
 
         self.adventures = []
-        self.running_adventures = []
 
         self.inventory = Inventory()
         self.ui = Ui(self)
@@ -36,8 +35,8 @@ class Game(object):
         return unique_id
 
     def update(self):
-        for adventure in self.running_adventures:
-            adventure.update()
+        for creature in self.creatures:
+            creature.update()
         self.ui.refresh()
 
     def add_creature(self, creature):
@@ -55,31 +54,36 @@ class Game(object):
             self.ui.display_dialog('No adventure selected')
             return
 
-        if creature is None or creature.locked:
+        if creature is None or creature.busy:
             self.ui.display_dialog('Invalid creature selection')
             return
 
-        adventure.assign_creature(creature)
-        new_adventure = adventure.start()
-        # TODO: use adventure id instead of the object itself
-        new_adventure.callback = partial(
-            self.finish_adventure, adventure=new_adventure
+        creature.set_activity(
+            adventure,
+            adventure.duration,
+            update_callback=partial(
+                self.update_adventure, creature, adventure
+            ),
+            # TODO: use adventure id instead of the object itself
+            end_callback=partial(
+                self.finish_adventure, creature, adventure
+            )
         )
-        self.running_adventures.append(new_adventure)
         self.ui.refresh()
 
-    def finish_adventure(self, rewards, adventure):
+    def update_adventure(self, creature, adventure):
+        adventure.update(creature)
+
+    def finish_adventure(self, creature, adventure):
+        rewards = adventure.finish()
+
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
-            adventure.creature.name, adventure.title
+            creature.name, adventure.title
         )
         for name, quantity in rewards:
             message += '    {}: {}\n'.format(name, quantity)
         self.ui.display_dialog(message)
-        self.running_adventures = [
-            running
-            for running in self.running_adventures
-            if running != adventure
-        ]
+
         self.ui.refresh()
 
     def cook(self):

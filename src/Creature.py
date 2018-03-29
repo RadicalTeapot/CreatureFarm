@@ -25,7 +25,7 @@ class Creature(object):
 
     @property
     def name(self):
-        if not self.locked:
+        if not self.busy:
             return self._model.name
         else:
             return '{} (busy)'.format(self._model.name)
@@ -91,12 +91,16 @@ class Creature(object):
         self._model.tired = value
 
     @property
-    def locked(self):
-        return self._model.locked
+    def busy(self):
+        return self._model.activity is not None
 
-    @locked.setter
-    def locked(self, value):
-        self._model.locked = value
+    @property
+    def activity(self):
+        return self._model.activity
+
+    @property
+    def timer(self):
+        return self._model.timer
 
     # ####################################################################### #
     #                                 Logic                                   #
@@ -120,11 +124,42 @@ class Creature(object):
     def hit(self, quantity):
         self.hp -= quantity
 
-    def lock(self):
-        self.locked = True
+    def set_activity(
+        self, activity, timer,
+        start_callback=None, update_callback=None, end_callback=None
+    ):
+        self._model.activity = activity
+        self._model.timer = timer
+        self._model.activity_callbacks['start'] = start_callback
+        self._model.activity_callbacks['update'] = update_callback
+        self._model.activity_callbacks['end'] = end_callback
+
+        if callable(self._model.activity_callbacks['start']):
+            self._model.activity_callbacks['start']()
+
+    def update(self):
+        if self._model.activity is not None and self._model.timer > 0:
+            self._model.timer -= 1
+            if self._model.timer == 0:
+                self.free()
+            else:
+                if callable(self._model.activity_callbacks['update']):
+                    self._model.activity_callbacks['update']()
 
     def free(self):
-        self.locked = False
+        self._model.activity = None
+        self._model.timer = 0
+
+        if callable(self._model.activity_callbacks['end']):
+            self._model.activity_callbacks['end']()
+
+        self._model.activity_callbacks['start'] = None
+        self._model.activity_callbacks['update'] = None
+        self._model.activity_callbacks['end'] = None
+
+    def get_description(self):
+        # TODO: Add activity type and timer to description
+        return 'Creature desciption placeholder'
 
 
 class Model(object):
@@ -141,7 +176,10 @@ class Model(object):
 
         self.hunger = 0
         self.tired = 0
-        self.locked = False
+
+        self.activity = None
+        self.activity_callbacks = {'start': None, 'update': None, 'end': None}
+        self.timer = 0
 
 
 class View(object):

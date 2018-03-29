@@ -180,9 +180,9 @@ class NewAdventureState(UiState):
         buttons = []
         for adventure in self.ui.game.adventures:
             count = len([
-                running
-                for running in self.ui.game.running_adventures
-                if running.title == adventure.title
+                creature
+                for creature in self.ui.game.creatures
+                if creature.activity == adventure
             ])
             button = Button('{} ({})'.format(adventure.title, count))
             button.register_handler(
@@ -220,18 +220,18 @@ class CurrentAdventureState(UiState):
         buttons = []
         for adventure in self.ui.game.adventures:
             count = len([
-                running
-                for running in self.ui.game.running_adventures
-                if running.id == adventure.id
+                creature
+                for creature in self.ui.game.creatures
+                if creature.activity == adventure
             ])
             if count == 0:
                 continue
             button = Button('{} ({})'.format(adventure.title, count))
             button.register_handler(
-                partial(self.select_adventure, adventure.id)
+                partial(self.select_adventure, adventure)
             )
             buttons.append(button)
-            button.pressed = (adventure.id == self.selected_adventure)
+            button.pressed = (adventure == self.selected_adventure)
         self.ui.left_panel.add_buttons(tab, buttons)
 
         # Central panel
@@ -243,20 +243,23 @@ class CurrentAdventureState(UiState):
         if self.selected_adventure:
             self.select_adventure(self.selected_adventure)
 
-    def select_adventure(self, adventure_id):
-        self.selected_adventure = adventure_id
+    def select_adventure(self, adventure):
+        self.selected_adventure = adventure
 
         creatures = [
-            running.creature
-            for running in self.ui.game.running_adventures
-            if adventure_id == running.id
+            creature
+            for creature in self.ui.game.creatures
+            if creature.activity == adventure
         ]
 
         if (
-            self.selected_creature is None or
-            self.selected_creature not in [
-                creature.id for creature in creatures
-            ]
+            creatures and
+            (
+                self.selected_creature is None or
+                self.selected_creature not in [
+                    creature.id for creature in creatures
+                ]
+            )
         ):
             self.selected_creature = creatures[0].id
 
@@ -281,18 +284,16 @@ class CurrentAdventureState(UiState):
         tab = self.ui.right_panel.get_tabs()[0]
         tab.clear()
 
-        adventure = [
-            adventure
-            for adventure in self.ui.game.running_adventures
-            if adventure.id == self.selected_adventure and
-            adventure.creature.id == self.selected_creature
+        creature = [
+            creature
+            for creature in self.ui.game.creatures
+            if creature.id == self.selected_creature
         ]
-        if adventure:
-            adventure = adventure[0]
+        if creature:
+            creature = creature[0]
             label = DescriptionLabel((
-                '{} turns left'.format(adventure.duration - adventure.clock)
-            ), tab.rect.width
-            )
+                '{} turns left'.format(creature.timer)
+            ), tab.rect.width)
             self.ui.right_panel.add_label(tab, label)
 
 
