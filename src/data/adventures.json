@@ -1,3 +1,29 @@
 {
+    "forest_hunt": {
+        "id": 2000,
+        "title": "Forest hunt",
+        "duration": 10,
+        "danger": 0.1,
+        "damage_range": [1, 2],
+        "damage_range_curve": 1.0,
+        "rewards": [
+            {"item": 1, "quantity_range": [1, 5], "curve": 1.0, "chance": 1.0},
+            {"item": 4, "quantity_range": [1, 1], "curve": 1.0, "chance": 0.1}
+        ],
+        "description": "Placeholder adventure description"
+    },
 
+    "cave_exploration": {
+        "id": 2001,
+        "title": "Cave exploration",
+        "duration": 15,
+        "danger": 0.25,
+        "damage_range": [1, 2],
+        "damage_range_curve": 1.5,
+        "rewards": [
+            {"item": 3, "quantity_range": [1, 1], "curve": 1.0, "chance": 0.25},
+            {"item": 4, "quantity_range": [1, 1], "curve": 1.0, "chance": 0.25}
+        ],
+        "description": "Placeholder adventure description"
+    }
 }

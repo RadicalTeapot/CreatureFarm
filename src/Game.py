@@ -5,6 +5,8 @@ from ui import Ui
 from Inventory import Inventory
 from Inventory import Item
 from Inventory import Recipe
+from Adventure import Adventure
+from Adventure import Reward
 import Creature
 
 from functools import partial
@@ -35,7 +37,10 @@ class Game(object):
             ids = self._parse_items(json.loads(item_data.read()), ids)
         with open("src/data/recipes.json", 'r') as recipe_data:
             ids = self._parse_recipes(json.loads(recipe_data.read()), ids)
-        self._parse_adventures()
+        with open("src/data/adventures.json", 'r') as adventure_data:
+            ids = self._parse_adventures(
+                json.loads(adventure_data.read()), ids
+            )
 
     def _parse_items(self, data, ids):
         for item_data in data.values():
@@ -92,11 +97,37 @@ class Game(object):
         if recipe['id'] in ids:
             raise RuntimeError('Duplicate id')
 
-    def _parse_adventures(self):
-        pass
+    def _parse_adventures(self, data, ids):
+        for adventure_data in data.values():
+            self._validate_adventure(adventure_data, ids)
+            adventure = Adventure()
+            adventure.id = adventure_data['id']
+            adventure.title = adventure_data['title']
+            adventure.description = adventure_data['description']
+            adventure.duration = adventure_data['duration']
+            adventure.damage_range = adventure_data['damage_range']
+            adventure.damage_range_curve = adventure_data['damage_range_curve']
+            adventure.danger = adventure_data['danger']
+            for reward in adventure_data.get('rewards', []):
+                adventure.add_reward(
+                    reward['item'], reward['quantity_range'], reward['curve'],
+                    reward['chance']
+                )
+            self.add_adventure(adventure)
+            ids.append(adventure_data['id'])
+        return ids
 
-    def _validate_adventure(self, data):
-        return False
+    def _validate_adventure(self, adventure, ids):
+        attributes = [
+            "id", "title", "duration", "danger", "damage_range",
+            "damage_range_curve", "rewards", "description"
+        ]
+        for attribute in attributes:
+            if attribute not in adventure:
+                raise KeyError('Missing {} attribute'.format(attribute))
+        if adventure['id'] in ids:
+            raise RuntimeError('Duplicate id')
+        # TODO check rewards validity as well
 
     def get_unique_id(self):
         # HACK: This could be avoided by finding a way to store/pass pointers

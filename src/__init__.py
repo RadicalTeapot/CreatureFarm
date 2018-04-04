@@ -24,10 +24,6 @@ if __name__ == '__main__':
     game.add_creature(Creature('Second'))
     game.add_creature(Creature('Third'))
 
-    game.add_adventure(Adventure('First'))
-    game.add_adventure(Adventure('Second'))
-    game.add_adventure(Adventure('Third'))
-
     item = game.inventory.get_item(1)
     item.quantity = 5
 

@@ -19,5 +19,4 @@
 
 
 # TODO
-- __Change item to used ids instead of string as identifiers__
 - Change new adventure UI so right panel is empty till both creature and adventure are selected (display available adventures first then rest greyed out based (availability is determined by creature skills))

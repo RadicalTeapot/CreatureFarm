@@ -2,6 +2,7 @@
 """DOCSTRING."""
 
 import random
+import math
 
 
 class Adventure(object):
@@ -9,36 +10,46 @@ class Adventure(object):
     RUNNING = 1
     FINISHED = 2
 
-    def __init__(self, title=''):
+    def __init__(self):
         self.id = -1
-        self.title = title
+        self.title = ''
         self.description = ''
-        self.rewards = [
-            Reward(1, ['food'], [[2, 5]]),
-            Reward(.1, ['sword'], [[1, 1]]),
-            Reward(.01, ['creaure egg'], [[1, 1]])
-        ]
+        self.rewards = []
+        self.damage_range = [0, 0]
+        self.damage_range_curve = 1.0
 
         # Length in turns
         self.duration = 10
         # Risk of damage being inflicted
         self.danger = .1
-        # Quantity of damages to inflict
-        self.difficulty = 1
+
+    def add_reward(self, item, quantity_range, curve, chance):
+        reward = Reward()
+        reward.item = item
+        reward.quantity_range = quantity_range
+        reward.curve = curve
+        reward.chance = chance
+        self.rewards.append(reward)
 
     def update(self, creature):
         if random.random() < self.danger:
-            creature.hit(self.difficulty)
+            # TODO: Use better curve formula
+            damage = math.pow(random.random(), self.damage_range_curve)
+            damage *= (self.damage_range[1] - self.damage_range[0])
+            damage += self.damage_range[0]
+            creature.hit(damage)
 
     def finish(self):
         rewards = []
         for reward in self.rewards:
             if random.random() < reward.chance:
-                for name, qty in reward.contents.items():
-                    quantity = int(
-                        random.random() * (qty[1] - qty[0]) + qty[0]
-                    )
-                    rewards.append((name, quantity))
+                # TODO: Use better curve formula
+                quantity = math.pow(random.random(), reward.curve)
+                quantity *= (
+                    reward.quantity_range[1] - reward.quantity_range[0]
+                )
+                quantity += reward.quantity_range[0]
+                rewards.append((reward.item, quantity))
 
         return rewards
 
@@ -50,6 +61,8 @@ class Adventure(object):
 
 
 class Reward(object):
-    def __init__(self, chance, items, quantity_ranges):
-        self.chance = chance
-        self.contents = dict(zip(items, quantity_ranges))
+    def __init__(self):
+        self.chance = 0.0
+        self.quantity_range = 0.0
+        self.curve = 1.0
+        self.item = -1
