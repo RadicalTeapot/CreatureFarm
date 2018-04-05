@@ -6,8 +6,7 @@ from Inventory import Inventory
 from Inventory import Item
 from Inventory import Recipe
 from Adventure import Adventure
-from Adventure import Reward
-import Creature
+from Constants import ACTIVITY_TYPE
 
 from functools import partial
 import json
@@ -18,11 +17,12 @@ class Game(object):
         self.window = window
 
         self.creatures = []
-
         self.adventures = []
-
         self.inventory = Inventory()
         self.ui = Ui(self)
+
+        # Turn counter
+        self.date = 0
 
         # Callbacks
         self.ui.register_callback(
@@ -143,6 +143,7 @@ class Game(object):
     def update(self):
         for creature in self.creatures:
             creature.update()
+        self.date += 1
         self.ui.refresh()
 
     def add_creature(self, creature):
@@ -167,7 +168,7 @@ class Game(object):
 
         creature.set_activity(
             adventure,
-            Creature.ACTIVITY_TYPE.ADVENTURE,
+            ACTIVITY_TYPE.ADVENTURE,
             adventure.duration,
             update_callback=partial(
                 self.update_adventure, creature, adventure
@@ -176,13 +177,14 @@ class Game(object):
                 self.finish_adventure, creature, adventure
             )
         )
+        adventure.start(creature, self.date)
         self.ui.refresh()
 
     def update_adventure(self, creature, adventure):
-        adventure.update(creature)
+        adventure.update(creature, self.date)
 
     def finish_adventure(self, creature, adventure):
-        rewards = adventure.finish()
+        rewards = adventure.finish(creature, self.date)
 
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
             creature.name, adventure.title
@@ -211,7 +213,7 @@ class Game(object):
 
         creature.set_activity(
             recipe,
-            Creature.ACTIVITY_TYPE.COOK,
+            ACTIVITY_TYPE.COOK,
             recipe.duration,
             end_callback=partial(
                 self.finish_cooking, creature, recipe

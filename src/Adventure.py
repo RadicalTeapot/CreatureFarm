@@ -3,6 +3,8 @@
 
 import random
 import math
+from Constants import ACTIVITY_TYPE
+from Constants import ENTRY_TYPE
 
 
 class Adventure(object):
@@ -31,7 +33,15 @@ class Adventure(object):
         reward.chance = chance
         self.rewards.append(reward)
 
-    def update(self, creature):
+    def start(self, creature, date):
+        creature.logger.add_entry(
+            date,
+            '{} started adventure {}'.format(creature.name, self.title),
+            ACTIVITY_TYPE.ADVENTURE,
+            ENTRY_TYPE.INFO
+        )
+
+    def update(self, creature, date):
         if random.random() < self.danger:
             # TODO: Use better curve formula
             damage = math.pow(random.random(), self.damage_range_curve)
@@ -39,7 +49,14 @@ class Adventure(object):
             damage += self.damage_range[0]
             creature.hit(damage)
 
-    def finish(self):
+            creature.logger.add_entry(
+                date,
+                '{} was hurt for {} damage'.format(creature.name, damage),
+                ACTIVITY_TYPE.ADVENTURE,
+                ENTRY_TYPE.WARNING
+            )
+
+    def finish(self, creature, date):
         rewards = []
         for reward in self.rewards:
             if random.random() < reward.chance:
@@ -50,6 +67,13 @@ class Adventure(object):
                 )
                 quantity += reward.quantity_range[0]
                 rewards.append((reward.item, quantity))
+
+        creature.logger.add_entry(
+            date,
+            '{} finished adventure {}'.format(creature.name, self.title),
+            ACTIVITY_TYPE.ADVENTURE,
+            ENTRY_TYPE.INFO
+        )
 
         return rewards
 

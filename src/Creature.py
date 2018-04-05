@@ -2,19 +2,14 @@
 """DOCSTRING."""
 
 import random
-from collections import namedtuple
-
-ACTIVITY_TYPE = namedtuple('activity_type', [
-    'ADVENTURE', 'COOK'
-])(
-    'on an adventure', 'cooking'
-)
+from Logger import Logger
 
 
 class Creature(object):
     def __init__(self, name):
         self._model = Model()
         self._view = View()
+        self.logger = Logger()
 
         self.hatch(name)
 
