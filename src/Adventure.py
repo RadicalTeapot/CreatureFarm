@@ -47,13 +47,13 @@ class Adventure(object):
             damage = math.pow(random.random(), self.damage_range_curve)
             damage *= (self.damage_range[1] - self.damage_range[0])
             damage += self.damage_range[0]
-            creature.hit(damage)
+            creature.hit(int(damage))
 
             creature.logger.add_entry(
                 date,
                 '{} was hurt for {} damage'.format(creature.name, damage),
                 ACTIVITY_TYPE.ADVENTURE,
-                ENTRY_TYPE.WARNING
+                ENTRY_TYPE.IMPORTANT
             )
 
     def finish(self, creature, date):
@@ -66,7 +66,7 @@ class Adventure(object):
                     reward.quantity_range[1] - reward.quantity_range[0]
                 )
                 quantity += reward.quantity_range[0]
-                rewards.append((reward.item, quantity))
+                rewards.append((reward.item, int(quantity)))
 
         creature.logger.add_entry(
             date,

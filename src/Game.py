@@ -189,8 +189,12 @@ class Game(object):
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
             creature.name, adventure.title
         )
-        for name, quantity in rewards:
-            message += '    {}: {}\n'.format(name, quantity)
+        for item_id, quantity in rewards:
+            message += '    {}: {}\n'.format(
+                self.inventory.get_item(item_id).name,
+                quantity
+            )
+        self.inventory.add_items(rewards)
         self.ui.display_dialog(message)
 
         self.ui.refresh()

@@ -25,3 +25,5 @@
 - Change creatures stats to fit a skill based system (e.g. cooking, crafting, strength, marksmanship, sword wielding...)
 - Reimplement tabs in UI (when a panel has multiple tabs, show arrows at the bottom right of it letting the user switch tabs)
 - Change new adventure UI so right panel is empty till both creature and adventure are selected (display available adventures first then rest greyed out based (availability is determined by creature skills))
+
+# Playtest
