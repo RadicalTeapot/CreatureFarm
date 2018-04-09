@@ -45,6 +45,14 @@ class Creature(object):
         self._model.hp = value
 
     @property
+    def max_hp(self):
+        return self._model.max_hp
+
+    @max_hp.setter
+    def max_hp(self, value):
+        self._model.max_hp = value
+
+    @property
     def strength(self):
         return self._model.strength
 
@@ -112,6 +120,7 @@ class Creature(object):
         self.name = name
         # TODO: get base values from Settings
         self.hp = random.randint(5, 10)
+        self.max_hp = self.hp
         self.strength = random.randint(1, 10)
         self.agility = random.randint(1, 10)
         self.stamina = random.randint(1, 10)
@@ -174,6 +183,7 @@ class Model(object):
         self.id = -1
         self.name = ''
 
+        self.max_hp = 0
         self.hp = 0
 
         self.strength = 0

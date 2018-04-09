@@ -9,9 +9,12 @@ from ui.Panel import Panel
 
 import Inventory
 
+from Constants import ITEM_CATEGORY
+from Constants import UI_BUTTON
+from Constants import UI_STATE
+
 from Settings import Settings
 
-from collections import namedtuple
 from functools import partial
 
 import pyglet
@@ -127,7 +130,7 @@ class CreatureState(UiState):
             return
 
         label = DescriptionLabel((
-            'HP: {}\n\n'
+            'HP: {}/{}\n\n'
             'Strength: {}\n\n'
             'Agility: {}\n\n'
             'Stamina: {}\n\n'
@@ -136,6 +139,7 @@ class CreatureState(UiState):
             'Sleep: {}\n\n'
         ).format(
             self.selected_creature.hp,
+            self.selected_creature.max_hp,
             self.selected_creature.strength,
             self.selected_creature.agility,
             self.selected_creature.stamina,
@@ -446,60 +450,107 @@ class CookState(UiState):
             self.ui.right_panel.add_button(tab, button)
 
 
+class FeedState(UiState):
+    def __init__(self, ui):
+        super().__init__(ui)
+        self.selected_creature = None
+        self.selected_item = None
+
+    def enter(self):
+        super().enter()
+
+        self.ui.central_panel.add_tab(True, 'Food', 1)
+        self.ui.right_panel.add_tab(True, 'Description', 1)
+
+        if self.selected_creature is None and self.ui.game.creatures:
+            self.selected_creature = self.ui.game.creatures[0]
+
+        tab = self.ui.left_panel.add_tabs(True, 'Creatures', 1)
+        buttons = []
+        for creature in self.ui.game.creatures:
+            name = creature.name
+            button = Button(name)
+            button.register_handler(partial(self.select_creature, creature))
+            buttons.append(button)
+            button.pressed = (creature == self.selected_creature)
+        self.ui.left_panel.add_buttons(tab, buttons)
+
+        self.select_creature(self.selected_creature)
+
+    def select_creature(self, creature):
+        self.selected_creature = creature
+
+        food = self.ui.game.inventory.get_items(ITEM_CATEGORY.FOOD)
+        if self.selected_item is None and food:
+            self.selected_item = food[0]
+
+        tab = self.ui.central_panel.get_tabs()[0]
+        tab.clear()
+        buttons = []
+        for item in food:
+            name = item.name
+            button = Button(name)
+            button.register_handler(partial(self.select_item, item))
+            buttons.append(button)
+            button.pressed = (item == self.selected_item)
+        self.ui.central_panel.add_buttons(tab, buttons)
+
+        self.select_item(self.selected_item)
+
+    def select_item(self, item):
+        self.selected_item = item
+
+        # TODO: finish implementing eating
+
 class Ui(object):
-    STATE = namedtuple('state', [
-        'CREATURE', 'NEW_ADVENTURE', 'CURRENT_ADVENTURE', 'INVENTORY',
-        'COOK'
-    ])
-
-    BUTTONS = namedtuple('buttons', [
-        'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN',
-        'INVENTORY', 'COOK'
-    ])(0, 1, 2, 3, 4, 5)
-
     def __init__(self, game):
         self.game = game
 
-        self.STATE.CREATURE = CreatureState(self)
-        self.STATE.NEW_ADVENTURE = NewAdventureState(self)
-        self.STATE.CURRENT_ADVENTURE = CurrentAdventureState(self)
-        self.STATE.INVENTORY = InventoryState(self)
-        self.STATE.COOK = CookState(self)
+        UI_STATE.CREATURE = CreatureState(self)
+        UI_STATE.NEW_ADVENTURE = NewAdventureState(self)
+        UI_STATE.CURRENT_ADVENTURE = CurrentAdventureState(self)
+        UI_STATE.INVENTORY = InventoryState(self)
+        UI_STATE.COOK = CookState(self)
+        UI_STATE.FEED = FeedState(self)
 
-        self._state = self.STATE.CREATURE
+        self._state = UI_STATE.CREATURE
 
         self.dialogs = []
         self.panels = []
 
         self.callbacks = dict([
-            (button, None) for button in self.BUTTONS
+            (button, None) for button in UI_BUTTON
         ])
 
         self.register_callback(
-            self.BUTTONS.CREATURE,
-            partial(self.set_state, self.STATE.CREATURE)
+            UI_BUTTON.CREATURE,
+            partial(self.set_state, UI_STATE.CREATURE)
         )
         self.register_callback(
-            self.BUTTONS.START_ADVENTURE,
-            partial(self.set_state, self.STATE.NEW_ADVENTURE)
+            UI_BUTTON.START_ADVENTURE,
+            partial(self.set_state, UI_STATE.NEW_ADVENTURE)
         )
         self.register_callback(
-            self.BUTTONS.CURRENT_ADVENTURE,
-            partial(self.set_state, self.STATE.CURRENT_ADVENTURE)
+            UI_BUTTON.CURRENT_ADVENTURE,
+            partial(self.set_state, UI_STATE.CURRENT_ADVENTURE)
         )
         self.register_callback(
-            self.BUTTONS.INVENTORY,
-            partial(self.set_state, self.STATE.INVENTORY)
+            UI_BUTTON.INVENTORY,
+            partial(self.set_state, UI_STATE.INVENTORY)
         )
         self.register_callback(
-            self.BUTTONS.COOK,
-            partial(self.set_state, self.STATE.COOK)
+            UI_BUTTON.COOK,
+            partial(self.set_state, UI_STATE.COOK)
+        )
+        self.register_callback(
+            UI_BUTTON.FEED,
+            partial(self.set_state, UI_STATE.FEED)
         )
 
         self.build()
 
     def register_callback(self, button_type, method):
-        if button_type not in self.BUTTONS:
+        if button_type not in UI_BUTTON:
             raise KeyError('Wrong button type')
         self.callbacks[button_type] = method
 
@@ -563,22 +614,25 @@ class Ui(object):
 
         # Callbacks
         creature_button.register_handler(
-            partial(self.callback, self.BUTTONS.CREATURE)
+            partial(self.callback, UI_BUTTON.CREATURE)
         )
         start_adventure_button.register_handler(
-            partial(self.callback, self.BUTTONS.START_ADVENTURE)
+            partial(self.callback, UI_BUTTON.START_ADVENTURE)
         )
         current_adventures_button.register_handler(
-            partial(self.callback, self.BUTTONS.CURRENT_ADVENTURE)
+            partial(self.callback, UI_BUTTON.CURRENT_ADVENTURE)
         )
         finish_turn_button.register_handler(
-            partial(self.callback, self.BUTTONS.FINISH_TURN)
+            partial(self.callback, UI_BUTTON.FINISH_TURN)
         )
         inventory_button.register_handler(
-            partial(self.callback, self.BUTTONS.INVENTORY)
+            partial(self.callback, UI_BUTTON.INVENTORY)
         )
         cook_button.register_handler(
-            partial(self.callback, self.BUTTONS.COOK)
+            partial(self.callback, UI_BUTTON.COOK)
+        )
+        feed_button.register_handler(
+            partial(self.callback, UI_BUTTON.FEED)
         )
 
     def display_dialog(self, text):

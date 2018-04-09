@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from collections import namedtuple
-
-CATEGORY = namedtuple('category', [
-    'FOOD', 'WEAPON', 'ARMOR'
-])(
-    'Food', 'Weapon', 'Armor'
-)
+from Constants import ITEM_CATEGORY
 
 
 class Item(object):
@@ -27,14 +21,14 @@ class Item(object):
     # ####################################################################### #
 
     def add_food_component(self, is_raw=True, nutrition_value=1):
-        self._categories.add(CATEGORY.FOOD)
+        self._categories.add(ITEM_CATEGORY.FOOD)
         component = FoodComponent(self)
         component.is_raw = is_raw
         component.nutrition_value = nutrition_value
         self._components.append(component)
 
     def cook(self):
-        if CATEGORY.FOOD in self._categories:
+        if ITEM_CATEGORY.FOOD in self._categories:
             components = [
                 component
                 for component in self._components
@@ -44,7 +38,7 @@ class Item(object):
                 return component.cook()
 
     def eat(self):
-        if CATEGORY.FOOD in self._categories:
+        if ITEM_CATEGORY.FOOD in self._categories:
             components = [
                 component
                 for component in self._components
@@ -59,7 +53,7 @@ class Item(object):
             'Quantity: {quantity}\n'
         ).format(name=self.name, quantity=self.quantity)
 
-        if CATEGORY.FOOD in self._categories:
+        if ITEM_CATEGORY.FOOD in self._categories:
             components = [
                 component
                 for component in self._components
