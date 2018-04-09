@@ -4,9 +4,9 @@
 from collections import namedtuple
 
 ACTIVITY_TYPE = namedtuple('activity_type', [
-    'ADVENTURE', 'COOK'
+    'ADVENTURE', 'COOK', 'FEED'
 ])(
-    'on an adventure', 'cooking'
+    'on an adventure', 'cooking', 'eating'
 )
 
 ENTRY_TYPE = namedtuple('type', [
@@ -23,7 +23,7 @@ UI_STATE = namedtuple('state', [
 UI_BUTTON = namedtuple('buttons', [
     'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN',
     'INVENTORY', 'COOK', 'FEED'
-])(0, 1, 2, 3, 4, 5)
+])(0, 1, 2, 3, 4, 5, 6)
 
 ITEM_CATEGORY = namedtuple('category', [
     'FOOD', 'WEAPON', 'ARMOR'

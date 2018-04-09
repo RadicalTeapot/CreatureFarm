@@ -144,19 +144,24 @@ class Inventory(object):
             ]
         if not empty:
             items = [item for item in items if item.quantity > 0]
-        return items
+        return sorted(items, key=lambda item: item.name)
 
     def add_recipe(self, recipe):
         self.recipes[recipe.id] = recipe
 
     def get_recipes(self, category=None):
         if category is None:
-            return [recipe for recipe in self.recipes.values()]
-        return [
-            recipe
-            for recipe in self.recipes.values()
-            if recipe.has_category(category)
-        ]
+            recipes = [recipe for recipe in self.recipes.values()]
+        else:
+            recipes = [
+                recipe
+                for recipe in self.recipes.values()
+                if recipe.has_category(category)
+            ]
+        return sorted(
+            recipes,
+            key=lambda recipe: recipe.name
+        )
 
     def get_recipe(self, recipe_id):
         return self.recipes[recipe_id]

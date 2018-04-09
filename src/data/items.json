@@ -6,7 +6,7 @@
             {
                 "type":"food",
                 "is_raw": true,
-                "nutrition_value": 1.0
+                "nutrition_value": 1
             }
         ],
         "description": "Raw meat harvested from dead animal."
@@ -19,10 +19,10 @@
             {
                 "type":"food",
                 "is_raw": false,
-                "nutrition_value": 5.0
+                "nutrition_value": 5
             }
         ],
-        "description": "Meat that has been cooked improving it's taste."
+        "description": "Meat that has been cooked improving its taste."
     },
 
     "chestplate": {

@@ -6,7 +6,9 @@ from Inventory import Inventory
 from Inventory import Item
 from Inventory import Recipe
 from Adventure import Adventure
+
 from Constants import ACTIVITY_TYPE
+from Constants import UI_BUTTON
 
 from functools import partial
 import json
@@ -26,7 +28,7 @@ class Game(object):
 
         # Callbacks
         self.ui.register_callback(
-            self.ui.BUTTONS.FINISH_TURN, self.update
+            UI_BUTTON.FINISH_TURN, self.update
         )
 
         self._parse_data()
@@ -153,6 +155,7 @@ class Game(object):
     def add_adventure(self, adventure):
         adventure.id = self.get_unique_id()
         self.adventures.append(adventure)
+        self.adventures = sorted(self.adventures, key=lambda adv: adv.title)
 
     def start_adventure(self):
         creature = self.ui._state.selected_creature
@@ -241,6 +244,45 @@ class Game(object):
             name = self.inventory.get_item(item_id).name
             message += '    {}x {}\n'.format(quantity, name)
         self.ui.display_dialog(message)
+
+    def feed_creature(self):
+        creature = self.ui._state.selected_creature
+        item = self.ui._state.selected_item
+
+        if item is None:
+            self.ui.display_dialog('No food selected')
+            return
+
+        if creature is None or creature.busy:
+            self.ui.display_dialog('Invalid creature selection')
+            return
+
+        if creature.hp == creature.max_hp:
+            self.ui.display_dialog('{} is already at max health'.format(
+                creature
+            ))
+            return
+
+        creature.set_activity(
+            item,
+            ACTIVITY_TYPE.FEED,
+            1,
+            end_callback=partial(
+                self.finish_feeding, creature, item
+            )
+        )
+        self.inventory.take_items([(item.id, 1)])
+        self.ui.refresh()
+
+    def finish_feeding(self, creature, item):
+        heal_amount = min(item.eat(), creature.max_hp - creature.hp)
+        creature.hp = creature.hp + heal_amount
+
+        self.ui.display_dialog(
+            '{} finished eating {}.\nThey healed for {} hp'.format(
+                creature.name, item.name, heal_amount
+            )
+        )
 
     def draw(self):
         self.window.clear()

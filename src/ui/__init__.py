@@ -328,9 +328,9 @@ class InventoryState(UiState):
         self.ui.right_panel.add_tab(True, 'Description', 1)
 
         if self.selected_category is None:
-            self.selected_category = Inventory.CATEGORY[0]
+            self.selected_category = ITEM_CATEGORY[0]
 
-        for category in Inventory.CATEGORY:
+        for category in ITEM_CATEGORY:
             button = Button(category)
             button.register_handler(partial(self.select_category, category))
             self.ui.left_panel.add_button(tab, button)
@@ -465,7 +465,7 @@ class FeedState(UiState):
         if self.selected_creature is None and self.ui.game.creatures:
             self.selected_creature = self.ui.game.creatures[0]
 
-        tab = self.ui.left_panel.add_tabs(True, 'Creatures', 1)
+        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
         for creature in self.ui.game.creatures:
             name = creature.name
@@ -500,7 +500,15 @@ class FeedState(UiState):
     def select_item(self, item):
         self.selected_item = item
 
-        # TODO: finish implementing eating
+        tab = self.ui.right_panel.get_tabs()[0]
+        tab.clear()
+        label = DescriptionLabel(item.get_description(), tab.rect.width)
+        self.ui.right_panel.add_label(tab, label)
+
+        button = Button('Eat', False)
+        button.register_handler(self.ui.game.feed_creature)
+        self.ui.right_panel.add_button(tab, button)
+
 
 class Ui(object):
     def __init__(self, game):
