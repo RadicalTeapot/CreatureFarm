@@ -8,6 +8,7 @@ from Inventory import Recipe
 from Adventure import Adventure
 
 from Constants import ACTIVITY_TYPE
+from Constants import ENTRY_TYPE
 from Constants import UI_BUTTON
 
 from functools import partial
@@ -272,6 +273,25 @@ class Game(object):
         elif diff == 2:  # Two levels below creature level
             xp_gain = .05
         creature.cooking += xp_gain
+
+        log_message = (
+            'However, the recipe was too simple to improve cooking skills.'
+        )
+        if xp_gain > 0.0:
+            log_message = 'Cooking skills improved'
+            if xp_gain < .1:
+                log_message += ' a bit.'
+            elif xp_gain > 0.4:
+                log_message += ' a lot.'
+            else:
+                log_message += '.'
+
+        creature.logger.add_entry(
+            self.date,
+            'Cooking was successful! {}'.format(log_message),
+            ACTIVITY_TYPE.COOK,
+            ENTRY_TYPE.INFO
+        )
 
     def feed_creature(self):
         creature = self.ui._state.selected_creature
