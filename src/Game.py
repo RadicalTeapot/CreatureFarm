@@ -97,6 +97,17 @@ class Game(object):
         for attribute in attributes:
             if attribute not in recipe:
                 raise KeyError('Missing {} attribute'.format(attribute))
+
+        for ingredient in recipe['ingredients']:
+            if ingredient[0] not in ids:
+                raise RuntimeError('Unknown item with id {} in recipe'.format(
+                    recipe['name'], ingredient[0]
+                ))
+        for ingredient in recipe['results']:
+            if ingredient[0] not in ids:
+                raise RuntimeError('Unknown item with id {} in recipe'.format(
+                    recipe['name'], ingredient[0]
+                ))
         if recipe['id'] in ids:
             raise RuntimeError('Duplicate id')
 
