@@ -77,6 +77,7 @@ class Game(object):
         for recipe_data in data.values():
             self._validate_recipe(recipe_data, ids)
             recipe = Recipe()
+            recipe.game = self
             recipe.id = recipe_data['id']
             recipe.name = recipe_data['name']
             recipe.ingredients = recipe_data['ingredients']

@@ -91,6 +91,7 @@ class FoodComponent(object):
 class Recipe(object):
     def __init__(self):
         self.name = None
+        self.game = None
         self.ingredients = []
         self.results = []
         self.duration = 3
@@ -114,11 +115,15 @@ class Recipe(object):
             '{description}'
         ).format(
             ingredients='\n'.join([
-                '{}x {}'.format(quantity, item)
+                '{}x {}'.format(
+                    quantity, self.game.inventory.get_item(item).name
+                )
                 for item, quantity in self.ingredients
             ]),
             results='\n'.join([
-                '{}x {}'.format(quantity, item)
+                '{}x {}'.format(
+                    quantity, self.game.inventory.get_item(item).name
+                )
                 for item, quantity in self.results
             ]),
             complexity=self.complexity,
