@@ -94,6 +94,7 @@ class Recipe(object):
         self.ingredients = []
         self.results = []
         self.duration = 3
+        self.complexity = 0
         self._categories = set()
         self.description = ''
 
@@ -101,7 +102,28 @@ class Recipe(object):
         return True
 
     def get_description(self):
-        return self.description
+        return (
+            'Ingredients :\n'
+            '{ingredients}\n'
+            '\n'
+            'Results :\n'
+            '{results}\n'
+            '\n'
+            'Difficulty : {complexity}\n'
+            '\n'
+            '{description}'
+        ).format(
+            ingredients='\n'.join([
+                '{}x {}'.format(quantity, item)
+                for item, quantity in self.ingredients
+            ]),
+            results='\n'.join([
+                '{}x {}'.format(quantity, item)
+                for item, quantity in self.results
+            ]),
+            complexity=self.complexity,
+            description=self.description
+        )
 
 
 class Inventory(object):

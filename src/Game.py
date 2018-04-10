@@ -207,15 +207,19 @@ class Game(object):
         recipe = self.ui._state.selected_recipe
 
         if recipe is None:
-            self.ui.display_dialog('No recipe selected')
+            self.ui.display_dialog('No recipe selected.')
             return
 
         if creature is None or creature.busy:
-            self.ui.display_dialog('Invalid creature selection')
+            self.ui.display_dialog('Invalid creature selection.')
+            return
+
+        if creature.cooking - recipe.complexity < -1:
+            self.ui.display_dialog('Cooking level too low for this recipe.')
             return
 
         if not self.inventory.has_items(recipe.ingredients):
-            self.ui.display_dialog('Ingredients not available')
+            self.ui.display_dialog('Ingredients not available.')
             return
 
         creature.set_activity(
@@ -244,6 +248,18 @@ class Game(object):
             name = self.inventory.get_item(item_id).name
             message += '    {}x {}\n'.format(quantity, name)
         self.ui.display_dialog(message)
+
+        diff = creature.cooking - recipe.complexity
+        xp_gain = 0.
+        if diff == -1:  # One level above creature level
+            xp_gain = 0.5  # 50 % xp gain
+        elif diff == 0:  # Same level
+            xp_gain = .2
+        elif diff == 1:  # One level below creature level
+            xp_gain = .1
+        elif diff == 2:  # Two levels below creature level
+            xp_gain = .05
+        creature.cooking += xp_gain
 
     def feed_creature(self):
         creature = self.ui._state.selected_creature

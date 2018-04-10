@@ -19,6 +19,8 @@
 
 
 # TODO
+- __Add min level caps to activities and implement gaining exp when activity is done__
+- Add fail chance for activities driven by difference between creature level and activity complexity
 - Implement an activity log to describe creature activity evolution
 - Implement enemies / fights (as data and have adventures have a enemy table (with chances of encounter))
 - Implement weapons and armor
