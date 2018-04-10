@@ -7,5 +7,35 @@
         "complexity": 0,
         "duration": 3,
         "description": "Turn raw meat into cooked meat."
+    },
+
+    "boiled_vegetables": {
+        "id": 1001,
+        "name": "Boiled vegetables",
+        "ingredients": [[3, 3]],
+        "results": [[4, 1]],
+        "complexity": 0,
+        "duration": 3,
+        "description": "Boil raw vegetables."
+    },
+
+    "stew": {
+        "id": 1002,
+        "name": "Stew",
+        "ingredients": [[1, 2], [3, 5]],
+        "results": [[5, 1]],
+        "complexity": 1,
+        "duration": 3,
+        "description": "Make a delicious meat and vegetable stew."
+    },
+
+    "lavish_meal": {
+        "id": 1003,
+        "name": "Lavish meal",
+        "ingredients": [[2, 2], [10, 5]],
+        "results": [[6, 1]],
+        "complexity": 3,
+        "duration": 5,
+        "description": "Only a true chef can cook such a meal."
     }
 }

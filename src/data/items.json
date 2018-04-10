@@ -25,8 +25,60 @@
         "description": "Meat that has been cooked improving its taste."
     },
 
-    "chestplate": {
+    "raw_vegetables": {
         "id": 3,
+        "name": "Raw vegetables",
+        "components": [
+            {
+                "type": "food",
+                "is_raw": true,
+                "nutrition_value": 0
+            }
+        ],
+        "description": "Raw vegetables found in the wild, useless until cooked."
+    },
+
+    "boiled_vegetables": {
+        "id": 4,
+        "name": "Boiled vegetables",
+        "components": [
+            {
+                "type": "food",
+                "is_raw": false,
+                "nutrition_value": 2
+            }
+        ],
+        "description": "Boiled vegetables, kinda bland but filling."
+    },
+
+    "stew": {
+        "id": 5,
+        "name": "Stew",
+        "components": [
+            {
+                "type": "food",
+                "is_raw": false,
+                "nutrition_value": 10
+            }
+        ],
+        "description": "Meat and vegetables stew, delicious."
+    },
+
+    "lavish_meal": {
+        "id": 6,
+        "name": "Lavish meal",
+        "components": [
+            {
+                "type": "food",
+                "is_raw": false,
+                "nutrition_value": 20
+            }
+        ],
+        "description": "The best meal you ever had."
+    },
+
+    "chestplate": {
+        "id": 100,
         "name": "Chestplate",
         "components": [
             {
@@ -37,7 +89,7 @@
     },
 
     "sword": {
-        "id": 4,
+        "id": 200,
         "name": "Sword",
         "components": [
             {
