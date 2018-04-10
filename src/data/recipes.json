@@ -32,7 +32,7 @@
     "lavish_meal": {
         "id": 1003,
         "name": "Lavish meal",
-        "ingredients": [[2, 2], [10, 5]],
+        "ingredients": [[2, 2], [3, 10]],
         "results": [[6, 1]],
         "complexity": 3,
         "duration": 5,
