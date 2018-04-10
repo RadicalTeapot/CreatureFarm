@@ -7,8 +7,6 @@ from ui.Elements import DescriptionLabel
 from ui.Panel import Dialog
 from ui.Panel import Panel
 
-import Inventory
-
 from Constants import ITEM_CATEGORY
 from Constants import UI_BUTTON
 from Constants import UI_STATE
@@ -131,21 +129,33 @@ class CreatureState(UiState):
 
         label = DescriptionLabel((
             'HP: {}/{}\n\n'
-            'Strength: {}\n\n'
-            'Agility: {}\n\n'
-            'Stamina: {}\n\n'
-            'Speed: {}\n\n'
-            'Hunger: {}\n\n'
-            'Sleep: {}\n\n'
+            'Melee: Lvl. {} ({} %)\n\n'
+            'Marksmanship: Lvl. {} ({} %)\n\n'
+            'Cooking: Lvl. {} ({} %)\n\n'
+            'Building: Lvl. {} ({} %)\n\n'
         ).format(
             self.selected_creature.hp,
             self.selected_creature.max_hp,
-            self.selected_creature.strength,
-            self.selected_creature.agility,
-            self.selected_creature.stamina,
-            self.selected_creature.speed,
-            self.selected_creature.hunger,
-            self.selected_creature.tired
+            int(self.selected_creature.melee),
+            int((
+                self.selected_creature.melee -
+                int(self.selected_creature.melee)
+            ) * 100),
+            int(self.selected_creature.marksmanship),
+            int((
+                self.selected_creature.marksmanship -
+                int(self.selected_creature.marksmanship)
+            ) * 100),
+            int(self.selected_creature.cooking),
+            int((
+                self.selected_creature.cooking -
+                int(self.selected_creature.cooking)
+            ) * 100),
+            int(self.selected_creature.building),
+            int((
+                self.selected_creature.building -
+                int(self.selected_creature.building)
+            ) * 100)
         ), tab.rect.width)
         tab.add_label(label)
 

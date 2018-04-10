@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-import random
 from Logger import Logger
 
 
@@ -53,52 +52,36 @@ class Creature(object):
         self._model.max_hp = value
 
     @property
-    def strength(self):
-        return self._model.strength
+    def melee(self):
+        return self._model.melee
 
-    @strength.setter
-    def strength(self, value):
-        self._model.strength = value
-
-    @property
-    def agility(self):
-        return self._model.agility
-
-    @agility.setter
-    def agility(self, value):
-        self._model.agility = value
+    @melee.setter
+    def melee(self, value):
+        self._model.melee = value
 
     @property
-    def stamina(self):
-        return self._model.stamina
+    def marksmanship(self):
+        return self._model.marksmanship
 
-    @stamina.setter
-    def stamina(self, value):
-        self._model.stamina = value
-
-    @property
-    def speed(self):
-        return self._model.speed
-
-    @speed.setter
-    def speed(self, value):
-        self._model.speed = value
+    @marksmanship.setter
+    def marksmanship(self, value):
+        self._model.marksmanship = value
 
     @property
-    def hunger(self):
-        return self._model.hunger
+    def cooking(self):
+        return self._model.cooking
 
-    @hunger.setter
-    def hunger(self, value):
-        self._model.hunger = value
+    @cooking.setter
+    def cooking(self, value):
+        self._model.cooking = value
 
     @property
-    def tired(self):
-        return self._model.tired
+    def building(self):
+        return self._model.building
 
-    @tired.setter
-    def tired(self, value):
-        self._model.tired = value
+    @building.setter
+    def building(self, value):
+        self._model.building = value
 
     @property
     def busy(self):
@@ -118,13 +101,12 @@ class Creature(object):
 
     def hatch(self, name):
         self.name = name
-        # TODO: get base values from Settings
-        self.hp = random.randint(5, 10)
+        self.hp = 10
         self.max_hp = self.hp
-        self.strength = random.randint(1, 10)
-        self.agility = random.randint(1, 10)
-        self.stamina = random.randint(1, 10)
-        self.speed = random.randint(1, 10)
+        self.melee = 1.0
+        self.marksmanship = 1.0
+        self.cooking = 1.0
+        self.building = 1.0
 
     def eat(self, quantity):
         self.hunger -= quantity
@@ -186,13 +168,10 @@ class Model(object):
         self.max_hp = 0
         self.hp = 0
 
-        self.strength = 0
-        self.agility = 0
-        self.stamina = 0
-        self.speed = 0
-
-        self.hunger = 0
-        self.tired = 0
+        self.melee = 0
+        self.marksmanship = 0
+        self.cooking = 0
+        self.building = 0
 
         self.activity = None
         self.activity_type = ''
