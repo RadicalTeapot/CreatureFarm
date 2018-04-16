@@ -6,6 +6,7 @@ from Inventory import Inventory
 from Inventory import Item
 from Inventory import Recipe
 from Adventure import Adventure
+from Creature import Enemy
 
 from Constants import ACTIVITY_TYPE
 from Constants import ENTRY_TYPE
@@ -13,6 +14,7 @@ from Constants import UI_BUTTON
 
 from functools import partial
 import json
+import random
 
 
 class Game(object):
@@ -20,6 +22,7 @@ class Game(object):
         self.window = window
 
         self.creatures = []
+        self.enemies = []
         self.adventures = []
         self.inventory = Inventory()
         self.ui = Ui(self)
@@ -40,6 +43,8 @@ class Game(object):
             ids = self._parse_items(json.loads(item_data.read()), ids)
         with open("src/data/recipes.json", 'r') as recipe_data:
             ids = self._parse_recipes(json.loads(recipe_data.read()), ids)
+        with open("src/data/enemies.json", 'r') as enemy_data:
+            ids = self._parse_enemies(json.loads(enemy_data.read()), ids)
         with open("src/data/adventures.json", 'r') as adventure_data:
             ids = self._parse_adventures(
                 json.loads(adventure_data.read()), ids
@@ -113,6 +118,8 @@ class Game(object):
             raise RuntimeError('Duplicate id')
 
     def _parse_adventures(self, data, ids):
+        # TODO: parse enemy list and remove the danger, damage and damage range
+        # attributes
         for adventure_data in data.values():
             self._validate_adventure(adventure_data, ids)
             adventure = Adventure()
@@ -144,6 +151,31 @@ class Game(object):
             raise RuntimeError('Duplicate id')
         # TODO check rewards validity as well
 
+    def _parse_enemies(self, data, ids):
+        for enemy_data in data.values():
+            self._validate_enemy(enemy_data, ids)
+            enemy = Enemy()
+            enemy.id = enemy_data['id']
+            enemy.name = enemy_data['name']
+            enemy.description = enemy_data['description']
+            enemy.hp = enemy_data['hp']
+            enemy.strength = enemy_data['strength']
+            enemy.armor = enemy_data['armor']
+            enemy.agility = enemy_data['agility']
+            self.add_enemy(enemy)
+            ids.append(enemy_data['id'])
+        return ids
+
+    def _validate_enemy(self, enemy, ids):
+        attributes = [
+            "id", "name", "hp", "strength", "armor", "agility", "description"
+        ]
+        for attribute in attributes:
+            if attribute not in enemy:
+                raise KeyError('Missing {} attribute'.format(attribute))
+        if enemy['id'] in ids:
+            raise RuntimeError('Duplicate id')
+
     def get_unique_id(self):
         # HACK: This could be avoided by finding a way to store/pass pointers
         # to functions instead of values
@@ -166,9 +198,11 @@ class Game(object):
         self.creatures.append(creature)
 
     def add_adventure(self, adventure):
-        adventure.id = self.get_unique_id()
         self.adventures.append(adventure)
         self.adventures = sorted(self.adventures, key=lambda adv: adv.title)
+
+    def add_enemy(self, enemy):
+        self.enemies.append(enemy)
 
     def start_adventure(self):
         creature = self.ui._state.selected_creature
@@ -247,22 +281,39 @@ class Game(object):
         self.ui.refresh()
 
     def finish_cooking(self, creature, recipe):
-        self.inventory.add_items(recipe.results)
-
-        message = '{} just finished cooking !\n\nThey used:\n'.format(
-            creature.name
-        )
-
-        for item_id, quantity in recipe.ingredients:
-            name = self.inventory.get_item(item_id).name
-            message += '    {}x {}\n'.format(quantity, name)
-        message += '\nAnd produced:\n'
-        for item_id, quantity in recipe.results:
-            name = self.inventory.get_item(item_id).name
-            message += '    {}x {}\n'.format(quantity, name)
-        self.ui.display_dialog(message)
-
         diff = creature.cooking - recipe.complexity
+
+        failed = True
+        rand = random.random()
+        if diff == -1 and rand < 0.1:
+            self.ui.display_dialog = (
+                '{} failed cooking {} and wasted the ingredients.'
+            ).format(
+                creature.name, recipe.name
+            )
+        elif (diff == 0 and rand < 0.1) or (diff == -1 and rand < .33):
+            self.ui.display_dialog = (
+                '{} failed cooking {} but did not waste the ingredients.'
+            ).format(
+                creature.name, recipe.name
+            )
+            self.inventory.add_items(recipe.ingredients)
+        else:
+            message = '{} just finished cooking !\n\nThey used:\n'.format(
+                creature.name
+            )
+            for item_id, quantity in recipe.ingredients:
+                name = self.inventory.get_item(item_id).name
+                message += '    {}x {}\n'.format(quantity, name)
+            message += '\nAnd produced:\n'
+            for item_id, quantity in recipe.results:
+                name = self.inventory.get_item(item_id).name
+                message += '    {}x {}\n'.format(quantity, name)
+            self.ui.display_dialog(message)
+
+            self.inventory.add_items(recipe.results)
+            failed = False
+
         xp_gain = 0.
         if diff == -1:  # One level above creature level
             xp_gain = 0.5  # 50 % xp gain
@@ -272,23 +323,29 @@ class Game(object):
             xp_gain = .1
         elif diff == 2:  # Two levels below creature level
             xp_gain = .05
+
+        if failed:  # Get only a third of xp when failing
+            xp_gain *= 0.33
         creature.cooking += xp_gain
 
         log_message = (
-            'However, the recipe was too simple to improve cooking skills.'
-        )
+            "The recipe was too simple to improve {}'s cooking skills."
+        ).format(creature.name)
         if xp_gain > 0.0:
-            log_message = 'Cooking skills improved'
+            log_message = "{}'s cooking skills improved".format(creature.name)
             if xp_gain < .1:
                 log_message += ' a bit.'
             elif xp_gain > 0.4:
                 log_message += ' a lot.'
             else:
                 log_message += '.'
+        result = 'Successfully cooked {}'.format(recipe.name)
+        if failed:
+            result = 'Failed to cook {}'.format(recipe.name)
 
         creature.logger.add_entry(
             self.date,
-            'Cooking was successful! {}'.format(log_message),
+            '{} ! {}'.format(result, log_message),
             ACTIVITY_TYPE.COOK,
             ENTRY_TYPE.INFO
         )

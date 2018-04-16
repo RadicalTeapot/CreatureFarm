@@ -181,3 +181,63 @@ class Model(object):
 
 class View(object):
     pass
+
+
+class Enemy(object):
+    def __init__(self):
+        self.name = None
+        self.level = None
+        self.description = None
+
+        self._hp = None
+        self._strength = None
+        self._armor = None
+        self._agility = None
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected int, got {} instead'.format(
+                type(value).__name__
+            ))
+        self._hp = value
+
+    @property
+    def strength(self):
+        return self._strength
+
+    @strength.setter
+    def strength(self, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected int, got {} instead'.format(
+                type(value).__name__
+            ))
+        self._strength = value
+
+    @property
+    def armor(self):
+        return self._armor
+
+    @armor.setter
+    def armor(self, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected int, got {} instead'.format(
+                type(value).__name__
+            ))
+        self._armor = value
+
+    @property
+    def agility(self):
+        return self._agility
+
+    @agility.setter
+    def agility(self, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected int, got {} instead'.format(
+                type(value).__name__
+            ))
+        self._agility = value

@@ -16,6 +16,7 @@ class Adventure(object):
         self.id = -1
         self.title = ''
         self.description = ''
+        self.enemies = []
         self.rewards = []
         self.damage_range = [0, 0]
         self.damage_range_curve = 1.0
@@ -42,6 +43,7 @@ class Adventure(object):
         )
 
     def update(self, creature, date):
+        # TODO: Switch to using enemies
         if random.random() < self.danger:
             # TODO: Use better curve formula
             damage = math.pow(random.random(), self.damage_range_curve)

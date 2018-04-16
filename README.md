@@ -21,12 +21,13 @@
 # TODO
 - __Add min level caps to activities and implement gaining exp when activity is done__
 - Add fail chance for activities driven by difference between creature level and activity complexity
-- Log xp gain, success/fail wat end of activities to creature log
+- Log xp gain, success/fail at end of activities to creature log
+
 - Implement an activity log to describe creature activity evolution
 - Implement enemies / fights (as data and have adventures have a enemy table (with chances of encounter))
 - Implement weapons and armor
 - Change creatures stats to fit a skill based system (e.g. cooking, crafting, strength, marksmanship, sword wielding...)
 - Reimplement tabs in UI (when a panel has multiple tabs, show arrows at the bottom right of it letting the user switch tabs)
-- Change new adventure UI so right panel is empty till both creature and adventure are selected (display available adventures first then rest greyed out based (availability is determined by creature skills))
+- Display available adventures/recipe first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
 
 # Playtest
