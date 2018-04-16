@@ -2,20 +2,20 @@
     "goblin" : {
         "id": 3000,
         "name": "Goblin",
-        "hp": 5,
-        "strength" : 2,
-        "armor": 0,
-        "agility": 1,
+        "hp": 5.0,
+        "strength" : 2.0,
+        "armor": 0.0,
+        "agility": 0.5,
         "description": "Enemy placeholder description"
     },
 
     "orc" : {
         "id": 3001,
         "name": "Orc",
-        "hp": 10,
-        "strength": 5,
-        "armor": 2,
-        "agility": 0,
+        "hp": 10.0,
+        "strength": 5.0,
+        "armor": 0.25,
+        "agility": 0.1,
         "description": "Enemy placeholder description"
-    },
+    }
 }

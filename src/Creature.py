@@ -8,7 +8,7 @@ class Creature(object):
     def __init__(self, name):
         self._model = Model()
         self._view = View()
-        self.logger = Logger()
+        self.logger = Logger(name)
 
         self.hatch(name)
 
@@ -52,6 +52,14 @@ class Creature(object):
         self._model.max_hp = value
 
     @property
+    def strength(self):
+        return self._model.strength
+
+    @strength.setter
+    def strength(self, value):
+        self._model.strength = value
+
+    @property
     def melee(self):
         return self._model.melee
 
@@ -66,6 +74,22 @@ class Creature(object):
     @marksmanship.setter
     def marksmanship(self, value):
         self._model.marksmanship = value
+
+    @property
+    def evasion(self):
+        return self._model.evasion
+
+    @evasion.setter
+    def evasion(self, value):
+        self._model.evasion = value
+
+    @property
+    def armor(self):
+        return self._model.armor
+
+    @armor.setter
+    def armor(self, value):
+        self._model.armor = value
 
     @property
     def cooking(self):
@@ -103,16 +127,16 @@ class Creature(object):
         self.name = name
         self.hp = 10
         self.max_hp = self.hp
+
+        self.strength = 1.0
         self.melee = 1.0
         self.marksmanship = 1.0
+
+        self.evasion = 1.0
+        self.armor = 0.0
+
         self.cooking = 1.0
         self.building = 1.0
-
-    def eat(self, quantity):
-        self.hunger -= quantity
-
-    def sleep(self, duration):
-        self.tired -= duration
 
     def hit(self, quantity):
         self.hp -= quantity
@@ -155,7 +179,7 @@ class Creature(object):
         msg = 'Creature desciption placeholder\n'
         if self.busy:
             msg += 'It is {} for {} more turns.\n'.format(
-                self._model.activity_type, self.timer
+                self._model.activity_type.value, self.timer
             )
         return msg
 
@@ -168,8 +192,13 @@ class Model(object):
         self.max_hp = 0
         self.hp = 0
 
+        self.strength = 0
         self.melee = 0
         self.marksmanship = 0
+
+        self.evasion = 0
+        self.armor = 0
+
         self.cooking = 0
         self.building = 0
 
@@ -189,10 +218,26 @@ class Enemy(object):
         self.level = None
         self.description = None
 
+        self._max_hp = None
         self._hp = None
         self._strength = None
         self._armor = None
         self._agility = None
+
+    def reset(self):
+        self.hp = self.max_hp
+
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @max_hp.setter
+    def max_hp(self, value):
+        if not isinstance(value, float):
+            raise TypeError('Expected float, got {} instead'.format(
+                type(value).__name__
+            ))
+        self._max_hp = value
 
     @property
     def hp(self):
@@ -200,8 +245,8 @@ class Enemy(object):
 
     @hp.setter
     def hp(self, value):
-        if not isinstance(value, int):
-            raise TypeError('Expected int, got {} instead'.format(
+        if not isinstance(value, float):
+            raise TypeError('Expected float, got {} instead'.format(
                 type(value).__name__
             ))
         self._hp = value
@@ -212,8 +257,8 @@ class Enemy(object):
 
     @strength.setter
     def strength(self, value):
-        if not isinstance(value, int):
-            raise TypeError('Expected int, got {} instead'.format(
+        if not isinstance(value, float):
+            raise TypeError('Expected float, got {} instead'.format(
                 type(value).__name__
             ))
         self._strength = value
@@ -224,8 +269,8 @@ class Enemy(object):
 
     @armor.setter
     def armor(self, value):
-        if not isinstance(value, int):
-            raise TypeError('Expected int, got {} instead'.format(
+        if not isinstance(value, float):
+            raise TypeError('Expected float, got {} instead'.format(
                 type(value).__name__
             ))
         self._armor = value
@@ -236,8 +281,8 @@ class Enemy(object):
 
     @agility.setter
     def agility(self, value):
-        if not isinstance(value, int):
-            raise TypeError('Expected int, got {} instead'.format(
+        if not isinstance(value, float):
+            raise TypeError('Expected float, got {} instead'.format(
                 type(value).__name__
             ))
         self._agility = value

@@ -13,18 +13,12 @@ class Adventure(object):
     FINISHED = 2
 
     def __init__(self):
-        self.id = -1
-        self.title = ''
-        self.description = ''
+        self.id = None
+        self.title = None
+        self.description = None
+        self.duration = None
         self.enemies = []
         self.rewards = []
-        self.damage_range = [0, 0]
-        self.damage_range_curve = 1.0
-
-        # Length in turns
-        self.duration = 10
-        # Risk of damage being inflicted
-        self.danger = .1
 
     def add_reward(self, item, quantity_range, curve, chance):
         reward = Reward()
@@ -33,6 +27,12 @@ class Adventure(object):
         reward.curve = curve
         reward.chance = chance
         self.rewards.append(reward)
+
+    def add_enemy(self, enemy, chance):
+        new_enemy = Enemy()
+        new_enemy.enemy = enemy
+        new_enemy.chance = chance
+        self.enemies.append(new_enemy)
 
     def start(self, creature, date):
         creature.logger.add_entry(
@@ -43,20 +43,96 @@ class Adventure(object):
         )
 
     def update(self, creature, date):
-        # TODO: Switch to using enemies
-        if random.random() < self.danger:
-            # TODO: Use better curve formula
-            damage = math.pow(random.random(), self.damage_range_curve)
-            damage *= (self.damage_range[1] - self.damage_range[0])
-            damage += self.damage_range[0]
-            creature.hit(int(damage))
+        enemy = None
+        for possible_enemy in self.enemies:
+            if random.random() < possible_enemy.chance:
+                enemy = possible_enemy
+                enemy.enemy.reset()
+                break
+        if enemy is None:
+            return
 
-            creature.logger.add_entry(
-                date,
-                '{} was hurt for {} damage'.format(creature.name, damage),
-                ACTIVITY_TYPE.ADVENTURE,
-                ENTRY_TYPE.IMPORTANT
-            )
+        creature.logger.add_entry(
+            date,
+            '{} encountered {} !'.format(
+                creature.name, enemy.enemy.name
+            ),
+            ACTIVITY_TYPE.FIGHTING,
+            ENTRY_TYPE.IMPORTANT
+        )
+
+        counter = 0
+        while True:
+            if enemy.enemy.hp <= 0:
+                # TODO: add fight counter to the date
+                creature.logger.add_entry(
+                    date,
+                    '{} killed {} !'.format(creature.name, enemy.enemy.name),
+                    ACTIVITY_TYPE.FIGHTING,
+                    ENTRY_TYPE.IMPORTANT
+                )
+                break
+            if creature.hp <= 0:
+                # TODO: add fight counter to the date
+                creature.logger.add_entry(
+                    date,
+                    '{} was killed by {} !'.format(
+                        creature.name, enemy.enemy.name
+                    ),
+                    ACTIVITY_TYPE.FIGHTING,
+                    ENTRY_TYPE.CRITICAL
+                )
+                break
+            if counter >= 50:
+                # HACK: This avoids an infinite loop, find a more elegant
+                # system
+                break
+            counter += 1
+
+            # TODO: Switch to a more complete fight system
+
+            # Creature hitting enemy
+            hit_chance = creature.melee - enemy.enemy.agility
+            # This produces a curve is at 0 for hit_chance = -2
+            # ~1 for hit_chance = 5 and progresses nicely in between
+            hit_chance = 1 - math.exp(1.0 - 1.3 ** (hit_chance + 2))
+
+            if random.random() <= hit_chance:
+                # TODO: improve formula
+                damages = creature.strength * (1. - enemy.enemy.armor)
+                enemy.enemy.hp -= damages
+                creature.melee += 0.01  # 1% skill increase
+
+                # TODO: add fight counter to the date
+                creature.logger.add_entry(
+                    date,
+                    '{} hit {} for {} damage'.format(
+                        creature.name, enemy.enemy.name, damages
+                    ),
+                    ACTIVITY_TYPE.FIGHTING,
+                    ENTRY_TYPE.INFO
+                )
+
+            # Enemy hitting creature
+            hit_chance = enemy.enemy.agility - creature.evasion
+            hit_chance = 1 - math.exp(1.0 - 1.3 ** (hit_chance + 2))
+
+            if random.random() <= hit_chance:
+                # TODO: improve formula
+                damages = enemy.enemy.strength * (1. - creature.armor)
+                creature.hit(damages)
+
+                # TODO: add fight counter to the date
+                creature.logger.add_entry(
+                    date,
+                    '{} was hit by {} for {} damage'.format(
+                        creature.name, enemy.enemy.name, damages
+                    ),
+                    ACTIVITY_TYPE.FIGHTING,
+                    ENTRY_TYPE.INFO
+                )
+            else:
+                creature.evasion += 0.01  # 1% evasion increase
 
     def finish(self, creature, date):
         rewards = []
@@ -92,3 +168,9 @@ class Reward(object):
         self.quantity_range = 0.0
         self.curve = 1.0
         self.item = -1
+
+
+class Enemy(object):
+    def __init__(self):
+        self.enemy = -1
+        self.chance = 0.0

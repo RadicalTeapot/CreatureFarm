@@ -1,32 +1,42 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from collections import namedtuple
+from enum import Enum
 
-ACTIVITY_TYPE = namedtuple('activity_type', [
-    'ADVENTURE', 'COOK', 'FEED'
-])(
-    'on an adventure', 'cooking', 'eating'
-)
 
-ENTRY_TYPE = namedtuple('type', [
-    'INFO',
-    'IMPORTANT',
-    'CRITICAL'
-])
+class UI_STATE(object):
+    CREATURE = None
+    NEW_ADVENTURE = None
+    CURRENT_ADVENTURE = None
+    INVENTORY = None
+    COOK = None
+    FEED = None
 
-UI_STATE = namedtuple('state', [
-    'CREATURE', 'NEW_ADVENTURE', 'CURRENT_ADVENTURE', 'INVENTORY',
-    'COOK', 'FEED'
-])
 
-UI_BUTTON = namedtuple('buttons', [
-    'CREATURE', 'START_ADVENTURE', 'CURRENT_ADVENTURE', 'FINISH_TURN',
-    'INVENTORY', 'COOK', 'FEED'
-])(0, 1, 2, 3, 4, 5, 6)
+class ENTRY_TYPE(Enum):
+    INFO = 1
+    IMPORTANT = 2
+    CRITICAL = 3
 
-ITEM_CATEGORY = namedtuple('category', [
-    'FOOD', 'WEAPON', 'ARMOR'
-])(
-    'Food', 'Weapon', 'Armor'
-)
+
+class UI_BUTTON(Enum):
+    CREATURE = 0
+    START_ADVENTURE = 1
+    CURRENT_ADVENTURE = 2
+    FINISH_TURN = 3
+    INVENTORY = 4
+    COOK = 5
+    FEED = 6
+
+
+class ITEM_CATEGORY(Enum):
+    FOOD = 'Food'
+    WEAPON = 'Weapon'
+    ARMOR = 'Armor'
+
+
+class ACTIVITY_TYPE(Enum):
+    ADVENTURE = 'on an adventure'
+    COOK = 'cooking'
+    FEED = 'eating'
+    FIGHTING = 'in a fight'

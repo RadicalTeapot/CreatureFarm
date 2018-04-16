@@ -129,13 +129,20 @@ class CreatureState(UiState):
 
         label = DescriptionLabel((
             'HP: {}/{}\n\n'
+            '\n'
+            'Strength: {}\n\n'
             'Melee: Lvl. {} ({} %)\n\n'
             'Marksmanship: Lvl. {} ({} %)\n\n'
+            '\n'
+            'Evasion: Lvl. {} ({} %)\n\n'
+            'Armor: {}\n\n'
+            '\n'
             'Cooking: Lvl. {} ({} %)\n\n'
             'Building: Lvl. {} ({} %)\n\n'
         ).format(
             self.selected_creature.hp,
             self.selected_creature.max_hp,
+            self.selected_creature.strength,
             int(self.selected_creature.melee),
             int((
                 self.selected_creature.melee -
@@ -146,6 +153,12 @@ class CreatureState(UiState):
                 self.selected_creature.marksmanship -
                 int(self.selected_creature.marksmanship)
             ) * 100),
+            int(self.selected_creature.evasion),
+            int((
+                self.selected_creature.evasion -
+                int(self.selected_creature.evasion)
+            ) * 100),
+            self.selected_creature.armor,
             int(self.selected_creature.cooking),
             int((
                 self.selected_creature.cooking -
@@ -338,10 +351,10 @@ class InventoryState(UiState):
         self.ui.right_panel.add_tab(True, 'Description', 1)
 
         if self.selected_category is None:
-            self.selected_category = ITEM_CATEGORY[0]
+            self.selected_category = ITEM_CATEGORY.FOOD
 
         for category in ITEM_CATEGORY:
-            button = Button(category)
+            button = Button(category.value)
             button.register_handler(partial(self.select_category, category))
             self.ui.left_panel.add_button(tab, button)
             button.pressed = (self.selected_category == category)

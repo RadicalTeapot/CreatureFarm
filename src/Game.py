@@ -22,7 +22,7 @@ class Game(object):
         self.window = window
 
         self.creatures = []
-        self.enemies = []
+        self.enemies = {}
         self.adventures = []
         self.inventory = Inventory()
         self.ui = Ui(self)
@@ -127,9 +127,10 @@ class Game(object):
             adventure.title = adventure_data['title']
             adventure.description = adventure_data['description']
             adventure.duration = adventure_data['duration']
-            adventure.damage_range = adventure_data['damage_range']
-            adventure.damage_range_curve = adventure_data['damage_range_curve']
-            adventure.danger = adventure_data['danger']
+            for enemy in adventure_data.get('enemies', []):
+                adventure.add_enemy(
+                    self.enemies[enemy['enemy']], enemy['chance']
+                )
             for reward in adventure_data.get('rewards', []):
                 adventure.add_reward(
                     reward['item'], reward['quantity_range'], reward['curve'],
@@ -141,8 +142,7 @@ class Game(object):
 
     def _validate_adventure(self, adventure, ids):
         attributes = [
-            "id", "title", "duration", "danger", "damage_range",
-            "damage_range_curve", "rewards", "description"
+            "id", "title", "duration", "enemies", "rewards", "description"
         ]
         for attribute in attributes:
             if attribute not in adventure:
@@ -150,6 +150,7 @@ class Game(object):
         if adventure['id'] in ids:
             raise RuntimeError('Duplicate id')
         # TODO check rewards validity as well
+        # TODO check enemies validity as well
 
     def _parse_enemies(self, data, ids):
         for enemy_data in data.values():
@@ -158,6 +159,7 @@ class Game(object):
             enemy.id = enemy_data['id']
             enemy.name = enemy_data['name']
             enemy.description = enemy_data['description']
+            enemy.max_hp = enemy_data['hp']
             enemy.hp = enemy_data['hp']
             enemy.strength = enemy_data['strength']
             enemy.armor = enemy_data['armor']
@@ -202,7 +204,7 @@ class Game(object):
         self.adventures = sorted(self.adventures, key=lambda adv: adv.title)
 
     def add_enemy(self, enemy):
-        self.enemies.append(enemy)
+        self.enemies[enemy.id] = enemy
 
     def start_adventure(self):
         creature = self.ui._state.selected_creature
