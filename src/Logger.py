@@ -2,6 +2,7 @@
 """DOCSTRING."""
 
 import logging
+import os
 
 
 class LogEntry(object):
@@ -20,7 +21,12 @@ class Logger(object):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
 
-        file_handler = logging.FileHandler('logs/log.log', 'w')
+        path = os.path.abspath('logs')
+        if not os.path.exists(path):
+            os.makedirs(path)
+        path = os.path.join(path, 'log.log')
+
+        file_handler = logging.FileHandler(path, 'w')
         console_handler = logging.StreamHandler()
 
         formatter = logging.Formatter('%(name)s - %(message)s')
