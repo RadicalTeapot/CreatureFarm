@@ -21,6 +21,8 @@ if __name__ == '__main__':
     game = Game(window)
     game.add_creature(Creature('RadicalTeapot'))
 
+    game.inventory.add_items([(100, 1), (200, 1)])
+
     @window.event
     def on_draw():
         game.draw()

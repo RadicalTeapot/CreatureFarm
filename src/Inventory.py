@@ -5,47 +5,16 @@ from Constants import ITEM_CATEGORY
 
 
 class Item(object):
-    def __init__(self, item_id):
-        self.id = item_id
+    def __init__(self):
+        self.id = -1
         self.name = None
         self.quantity = 0
-        self._categories = set()
-        self._components = []
+        self.category = None
         self.description = ''
-
-    def has_category(self, category):
-        return category in self._categories
 
     # ####################################################################### #
     #                                  Food                                   #
     # ####################################################################### #
-
-    def add_food_component(self, is_raw=True, nutrition_value=1):
-        self._categories.add(ITEM_CATEGORY.FOOD)
-        component = FoodComponent(self)
-        component.is_raw = is_raw
-        component.nutrition_value = nutrition_value
-        self._components.append(component)
-
-    def cook(self):
-        if ITEM_CATEGORY.FOOD in self._categories:
-            components = [
-                component
-                for component in self._components
-                if isinstance(component, FoodComponent)
-            ]
-            for component in components:
-                return component.cook()
-
-    def eat(self):
-        if ITEM_CATEGORY.FOOD in self._categories:
-            components = [
-                component
-                for component in self._components
-                if isinstance(component, FoodComponent)
-            ]
-            for component in components:
-                return component.eat()
 
     def get_description(self):
         description = (
@@ -53,39 +22,75 @@ class Item(object):
             'Quantity: {quantity}\n'
         ).format(name=self.name, quantity=self.quantity)
 
-        if ITEM_CATEGORY.FOOD in self._categories:
-            components = [
-                component
-                for component in self._components
-                if isinstance(component, FoodComponent)
-            ]
-            for component in components:
-                description += (
-                    '\n'
-                    'Raw: {raw}\n'
-                    'Nutrition value: {nutrition}\n'
-                ).format(
-                    raw=component.is_raw,
-                    nutrition=component.nutrition_value
-                )
-
-        description += '\n{}'.format(self.description)
         return description
 
 
-class FoodComponent(object):
-    def __init__(self, item):
-        self.item = item
+class FoodItem(Item):
+    def __init__(self):
+        super().__init__()
+        self.category = ITEM_CATEGORY.FOOD
         self.is_raw = True
         self.nutrition_value = 1
 
     def eat(self):
         return self.nutrition_value
 
-    def cook(self):
-        if not self.is_raw:
-            return False
-        return True
+    def get_description(self):
+        description = super().get_description()
+        description += (
+            '\n'
+            'Raw: {raw}\n'
+            'Nutrition value: {nutrition}\n'
+        ).format(
+            raw=self.is_raw,
+            nutrition=self.nutrition_value
+        )
+
+        return description
+
+
+class ArmorItem(Item):
+    def __init__(self):
+        super().__init__()
+        self.category = ITEM_CATEGORY.ARMOR
+        self.body_part = None
+        # TODO: swap to stat modification effects
+        self.armor = 0.
+
+    def get_description(self):
+        description = super().get_description()
+        description += (
+            '\n'
+            'Body part: {}\n'
+            'Armor: {}\n'
+        ).format(
+            self.body_part.name.lower(),
+            self.armor
+        )
+
+        return description
+
+
+class WeaponItem(Item):
+    def __init__(self):
+        super().__init__()
+        self.category = ITEM_CATEGORY.WEAPON
+        self.types = set()
+        # TODO: swap to stat modification effects
+        self.strength = 0.
+
+    def get_description(self):
+        description = super().get_description()
+        description += (
+            '\n'
+            'Types: {}\n'
+            'Strength: {}\n'
+        ).format(
+            ', '.join([weapon_type.name.lower() for weapon_type in self.types]),
+            self.strength
+        )
+
+        return description
 
 
 class Recipe(object):
@@ -167,7 +172,7 @@ class Inventory(object):
             items = [
                 item
                 for item in self.items.values()
-                if item.has_category(category)
+                if item.category == category
             ]
         if not empty:
             items = [item for item in items if item.quantity > 0]

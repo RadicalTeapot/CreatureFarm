@@ -40,3 +40,25 @@ class ACTIVITY_TYPE(Enum):
     COOK = 'cooking'
     FEED = 'eating'
     FIGHTING = 'in a fight'
+
+
+class BODY_PART(Enum):
+    CHEST = 0
+    HEAD = 1
+    ARMS = 2
+    LEGS = 3
+
+
+class WEAPON_TYPE(Enum):
+    ONE_HANDED = 0
+    TWO_HANDED = 1
+    MELEE = 2
+    RANGED = 3
+
+    SWORD = 10
+    DAGGER = 11
+    CLUB = 12
+
+    BOW = 20
+    CROSSBOW = 21
+    GUN = 22

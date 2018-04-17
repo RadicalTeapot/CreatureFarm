@@ -398,7 +398,7 @@ class InventoryState(UiState):
         item = [
             item
             for item in self.ui.game.inventory.get_items()
-            if item.has_category(self.selected_category) and
+            if item.category == self.selected_category and
             item.name == self.selected_item
         ]
         if not item:

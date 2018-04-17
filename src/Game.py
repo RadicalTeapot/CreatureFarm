@@ -4,13 +4,19 @@
 from ui import Ui
 from Inventory import Inventory
 from Inventory import Item
+from Inventory import ArmorItem
+from Inventory import FoodItem
+from Inventory import WeaponItem
 from Inventory import Recipe
+
 from Adventure import Adventure
 from Creature import Enemy
 
 from Constants import ACTIVITY_TYPE
 from Constants import ENTRY_TYPE
 from Constants import UI_BUTTON
+from Constants import BODY_PART
+from Constants import WEAPON_TYPE
 
 from functools import partial
 import json
@@ -53,19 +59,29 @@ class Game(object):
     def _parse_items(self, data, ids):
         for item_data in data.values():
             self._validate_item(item_data, ids)
-            item = Item(item_data['id'])
+            item = None
+            if item_data['type'] == 'food':
+                item = FoodItem()
+                item.is_raw = item_data['is_raw']
+                item.nutrition_value = item_data['nutrition_value']
+            elif item_data['type'] == 'armor':
+                item = ArmorItem()
+                for body_part in BODY_PART:
+                    if item_data['body_part'].lower() == body_part.name.lower():
+                        item.body_part = body_part
+                item.armor = item_data['armor']
+            elif item_data['type'] == 'weapon':
+                item = WeaponItem()
+                for weapon_type in WEAPON_TYPE:
+                    if weapon_type.name.lower() in item_data['flags']:
+                        item.types.add(weapon_type)
+                item.strength = item_data['strength']
+            else:
+                item = Item()
+
             item.name = item_data['name']
             item.description = item_data['description']
-
-            for component in item_data.get('components', []):
-                if component['type'] == 'food':
-                    item.add_food_component(
-                        component['is_raw'], component['nutrition_value']
-                    )
-                elif component['type'] == 'armor':
-                    pass
-                elif component['type'] == 'weapon':
-                    pass
+            item.id = item_data['id']
 
             ids.append(item_data['id'])
             self.inventory.add_item(item)
