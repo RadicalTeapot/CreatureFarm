@@ -363,7 +363,7 @@ class Game(object):
 
         if failed:  # Get only a third of xp when failing
             xp_gain *= 0.33
-        creature.cooking += xp_gain
+        creature.gain_experience(STATS.COOKING, xp_gain)
 
         log_message = (
             "The recipe was too simple to improve {}'s cooking skills."

@@ -146,10 +146,16 @@ class Creature(object):
             raise KeyError('Wrong stat type')
         self._model.stats[stat] = value
 
+    def gain_experience(self, stat, amount):
+        if stat not in self._model.stats:
+            raise KeyError('Wrong stat type')
+        self._model.stats[stat] += amount
+        # TODO: Add log message when creature gains a new level
+
     def hatch(self, name):
         self.name = name
         self.hp = 10
-        self.max_hp = self.hp
+        self.max_hp = 10
 
         self.strength = 1.0
         self.melee = 1.0

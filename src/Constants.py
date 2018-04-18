@@ -72,7 +72,7 @@ class WEAPON_TYPE(Enum):
 
 class STATS(Enum):
     HP = 0
-    MAX_HP = 0
+    MAX_HP = 1
 
     STRENGTH = 2
     MELEE = 3

@@ -5,6 +5,7 @@ import random
 import math
 from Constants import ACTIVITY_TYPE
 from Constants import ENTRY_TYPE
+from Constants import STATS
 
 
 class Adventure(object):
@@ -104,7 +105,9 @@ class Adventure(object):
                 armor_absorbtion = math.exp(-(math.pow(diff, .9)) * .25)
                 damages = creature.strength * min(max(armor_absorbtion, 0.), 1.)
                 enemy.enemy.hp -= int(damages)
-                creature.melee += 0.01  # 1% skill increase
+                # TODO: Fix so proper stat gets xp
+                # 1% melee increase
+                creature.gain_experience(STATS.MELEE, 0.01)
 
                 # TODO: add fight counter to the date
                 creature.logger.add_entry(
@@ -138,7 +141,8 @@ class Adventure(object):
                     ENTRY_TYPE.INFO
                 )
             else:
-                creature.evasion += 0.01  # 1% evasion increase
+                # 1% evasion increase
+                creature.gain_experience(STATS.EVASION, 0.01)
 
     def finish(self, creature, date):
         rewards = []
