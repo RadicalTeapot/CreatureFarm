@@ -533,6 +533,103 @@ class FeedState(UiState):
         self.ui.right_panel.add_button(tab, button)
 
 
+class EquipState(UiState):
+    def __init__(self, ui):
+        super().__init__(ui)
+        self.selected_creature = None
+        self.selected_item = None
+
+    def enter(self):
+        super().enter()
+
+        self.ui.central_panel.add_tab(True, "Items", 1)
+        self.ui.right_panel.add_tab(True, "Compare", 1)
+
+        if self.selected_creature is None and self.ui.game.creatures:
+            self.selected_creature = self.ui.game.creatures[0]
+
+        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
+        buttons = []
+        for creature in self.ui.game.creatures:
+            name = creature.name
+            button = Button(name)
+            button.register_handler(partial(self.select_creature, creature))
+            buttons.append(button)
+            button.pressed = (creature == self.selected_creature)
+        self.ui.left_panel.add_buttons(tab, buttons)
+
+        if self.selected_creature is not None:
+            self.select_creature(self.selected_creature)
+
+    def select_creature(self, creature):
+        self.selected_creature = creature
+
+        tab = self.ui.central_panel.get_tabs()[0]
+        tab.clear()
+
+        # TODO: Put weapons and armors in different tabs
+
+        # TODO: Instead of filtering out equiped item, show them greyed out
+        # and ask the user if they want to unequip it for the original creature
+        # to equip it to the selected one
+        weapons = [
+            item
+            for item in self.ui.game.inventory.get_items(ITEM_CATEGORY.WEAPON)
+            if not item.equiped
+        ]
+        if self.selected_item is None and weapons:
+            self.selected_item = weapons[0]
+
+        buttons = []
+        for item in weapons:
+            name = item.name
+            button = Button(name)
+            button.register_handler(partial(self.select_item, item))
+            buttons.append(button)
+            button.pressed = (item == self.selected_item)
+
+        armors = [
+            item
+            for item in self.ui.game.inventory.get_items(ITEM_CATEGORY.ARMOR)
+            if not item.equiped
+        ]
+        for item in armors:
+            name = item.name
+            button = Button(name)
+            button.register_handler(partial(self.select_item, item))
+            buttons.append(button)
+            button.pressed = (item == self.selected_item)
+
+        self.ui.central_panel.add_buttons(tab, buttons)
+
+        if self.selected_item is not None:
+            self.select_item(self.selected_item)
+
+    def select_item(self, item):
+        self.selected_item = item
+
+        tab = self.ui.right_panel.get_tabs()[0]
+        tab.clear()
+
+        body_part = self.selected_item.body_part
+
+        equiped = self.selected_creature.equipment[body_part]
+        description = 'Equiped :\n\n'
+        if equiped:
+            description += equiped.get_description()
+        else:
+            description += 'Nothing'
+        description += '\n\nSelected :\n\n{}'.format(
+            self.selected_item.get_description()
+        )
+        label = DescriptionLabel(description, tab.rect.width)
+        self.ui.right_panel.add_label(tab, label)
+
+        button = Button('Equip', False)
+        button.register_handler(self.ui.game.equip_item)
+        self.ui.right_panel.add_button(tab, button)
+
+
 class Ui(object):
     def __init__(self, game):
         self.game = game
@@ -543,6 +640,7 @@ class Ui(object):
         UI_STATE.INVENTORY = InventoryState(self)
         UI_STATE.COOK = CookState(self)
         UI_STATE.FEED = FeedState(self)
+        UI_STATE.EQUIP = EquipState(self)
 
         self._state = UI_STATE.CREATURE
 
@@ -576,6 +674,10 @@ class Ui(object):
         self.register_callback(
             UI_BUTTON.FEED,
             partial(self.set_state, UI_STATE.FEED)
+        )
+        self.register_callback(
+            UI_BUTTON.EQUIP,
+            partial(self.set_state, UI_STATE.EQUIP)
         )
 
         self.build()
@@ -664,6 +766,9 @@ class Ui(object):
         )
         feed_button.register_handler(
             partial(self.callback, UI_BUTTON.FEED)
+        )
+        equip_button.register_handler(
+            partial(self.callback, UI_BUTTON.EQUIP)
         )
 
     def display_dialog(self, text):

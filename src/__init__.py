@@ -21,6 +21,7 @@ if __name__ == '__main__':
     game = Game(window)
     game.add_creature(Creature('RadicalTeapot'))
 
+    # Add a sword and chestplate
     game.inventory.add_items([(100, 1), (200, 1)])
 
     @window.event

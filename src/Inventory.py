@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
+from Constants import BODY_PART
 from Constants import ITEM_CATEGORY
 
 
@@ -56,16 +57,24 @@ class ArmorItem(Item):
         self.body_part = None
         # TODO: swap to stat modification effects
         self.armor = 0.
+        self.equiped = None
 
     def get_description(self):
         description = super().get_description()
+
+        equiped = ''
+        if self.equiped:
+            '\nEquiped to: {}\n'.format(self.equiped.name)
+
         description += (
             '\n'
             'Body part: {}\n'
             'Armor: {}\n'
+            '{}'
         ).format(
             self.body_part.name.lower(),
-            self.armor
+            self.armor,
+            equiped
         )
 
         return description
@@ -75,19 +84,30 @@ class WeaponItem(Item):
     def __init__(self):
         super().__init__()
         self.category = ITEM_CATEGORY.WEAPON
+        self.body_part = BODY_PART.HAND
         self.types = set()
         # TODO: swap to stat modification effects
         self.strength = 0.
+        self.equiped = None
 
     def get_description(self):
         description = super().get_description()
+
+        # TODO: Fix description not showing equiped line
+
+        equiped = ''
+        if self.equiped:
+            '\nEquiped to: {}\n'.format(self.equiped.name)
+
         description += (
             '\n'
             'Types: {}\n'
             'Strength: {}\n'
+            '{}'
         ).format(
             ', '.join([weapon_type.name.lower() for weapon_type in self.types]),
-            self.strength
+            self.strength,
+            equiped
         )
 
         return description

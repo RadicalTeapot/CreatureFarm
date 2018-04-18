@@ -407,6 +407,26 @@ class Game(object):
             )
         )
 
+    def equip_item(self):
+        creature = self.ui._state.selected_creature
+        item = self.ui._state.selected_item
+
+        if item is None:
+            self.ui.display_dialog('No food selected')
+            return
+
+        if creature is None or creature.busy:
+            self.ui.display_dialog('Invalid creature selection')
+            return
+
+        # TODO: Handle two handed weapons and off hand weapons
+        equiped_item = creature.equipment[item.body_part]
+        if equiped_item:
+            equiped_item.equiped = None
+        creature.equipment[item.body_part] = item
+        item.equiped = creature
+        self.ui.refresh()
+
     def draw(self):
         self.window.clear()
         self.ui.draw()

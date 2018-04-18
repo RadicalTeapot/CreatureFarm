@@ -2,6 +2,7 @@
 """DOCSTRING."""
 
 from Logger import Logger
+from Constants import BODY_PART
 
 
 class Creature(object):
@@ -119,6 +120,10 @@ class Creature(object):
     def timer(self):
         return self._model.timer
 
+    @property
+    def equipment(self):
+        return self._model.equipment
+
     # ####################################################################### #
     #                                 Logic                                   #
     # ####################################################################### #
@@ -206,6 +211,10 @@ class Model(object):
         self.activity_type = ''
         self.activity_callbacks = {'start': None, 'update': None, 'end': None}
         self.timer = 0
+
+        self.equipment = {}
+        for body_part in BODY_PART:
+            self.equipment[body_part] = None
 
 
 class View(object):

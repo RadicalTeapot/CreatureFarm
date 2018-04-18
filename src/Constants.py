@@ -11,6 +11,7 @@ class UI_STATE(object):
     INVENTORY = None
     COOK = None
     FEED = None
+    EQUIP = None
 
 
 class ENTRY_TYPE(Enum):
@@ -27,6 +28,7 @@ class UI_BUTTON(Enum):
     INVENTORY = 4
     COOK = 5
     FEED = 6
+    EQUIP = 7
 
 
 class ITEM_CATEGORY(Enum):
@@ -47,6 +49,8 @@ class BODY_PART(Enum):
     HEAD = 1
     ARMS = 2
     LEGS = 3
+    HAND = 4
+    OFF_HAND = 5
 
 
 class WEAPON_TYPE(Enum):
@@ -62,3 +66,5 @@ class WEAPON_TYPE(Enum):
     BOW = 20
     CROSSBOW = 21
     GUN = 22
+
+    SHIELD = 30
