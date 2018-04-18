@@ -93,21 +93,24 @@ class Adventure(object):
 
             # Creature hitting enemy
             hit_chance = creature.melee - enemy.enemy.agility
-            # This produces a curve is at 0 for hit_chance = -2
+            # This produces a curve at 0 for hit_chance = -2
             # ~1 for hit_chance = 5 and progresses nicely in between
             hit_chance = 1 - math.exp(1.0 - 1.3 ** (hit_chance + 2))
 
             if random.random() <= hit_chance:
-                # TODO: improve formula
-                damages = creature.strength * (1. - enemy.enemy.armor)
-                enemy.enemy.hp -= damages
+                # This produces a curve at 1 for armor - strength = 0
+                # ~.78 for 1, ~.34 for 5 and ~.13 for 10
+                diff = max(enemy.enemy.armor - creature.strength, 0.)
+                armor_absorbtion = math.exp(-(math.pow(diff, .9)) * .25)
+                damages = creature.strength * min(max(armor_absorbtion, 0.), 1.)
+                enemy.enemy.hp -= int(damages)
                 creature.melee += 0.01  # 1% skill increase
 
                 # TODO: add fight counter to the date
                 creature.logger.add_entry(
                     date,
                     '{} hit {} for {} damage'.format(
-                        creature.name, enemy.enemy.name, damages
+                        creature.name, enemy.enemy.name, int(damages)
                     ),
                     ACTIVITY_TYPE.FIGHTING,
                     ENTRY_TYPE.INFO
@@ -118,15 +121,18 @@ class Adventure(object):
             hit_chance = 1 - math.exp(1.0 - 1.3 ** (hit_chance + 2))
 
             if random.random() <= hit_chance:
-                # TODO: improve formula
-                damages = enemy.enemy.strength * (1. - creature.armor)
-                creature.hit(damages)
+                diff = max(creature.armor - enemy.enemy.strength, 0.)
+                armor_absorbtion = math.exp(-(math.pow(diff, .9)) * .25)
+                damages = (
+                    enemy.enemy.strength * min(max(armor_absorbtion, 0.), 1.)
+                )
+                creature.hit(int(damages))
 
                 # TODO: add fight counter to the date
                 creature.logger.add_entry(
                     date,
                     '{} was hit by {} for {} damage'.format(
-                        creature.name, enemy.enemy.name, damages
+                        creature.name, enemy.enemy.name, int(damages)
                     ),
                     ACTIVITY_TYPE.FIGHTING,
                     ENTRY_TYPE.INFO
