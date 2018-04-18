@@ -3,6 +3,7 @@
 
 from Logger import Logger
 from Constants import BODY_PART
+from Constants import STATS
 
 
 class Creature(object):
@@ -38,75 +39,75 @@ class Creature(object):
 
     @property
     def hp(self):
-        return self._model.hp
+        return self._get_stat(STATS.HP)
 
     @hp.setter
     def hp(self, value):
-        self._model.hp = value
+        self._set_stat(STATS.HP, value)
 
     @property
     def max_hp(self):
-        return self._model.max_hp
+        return self._get_stat(STATS.MAX_HP)
 
     @max_hp.setter
     def max_hp(self, value):
-        self._model.max_hp = value
+        self._set_stat(STATS.MAX_HP, value)
 
     @property
     def strength(self):
-        return self._model.strength
+        return self._get_stat(STATS.STRENGTH)
 
     @strength.setter
     def strength(self, value):
-        self._model.strength = value
+        self._set_stat(STATS.STRENGTH, value)
 
     @property
     def melee(self):
-        return self._model.melee
+        return self._get_stat(STATS.MELEE)
 
     @melee.setter
     def melee(self, value):
-        self._model.melee = value
+        self._set_stat(STATS.MELEE, value)
 
     @property
     def marksmanship(self):
-        return self._model.marksmanship
+        return self._get_stat(STATS.MARKSMANSHIP)
 
     @marksmanship.setter
     def marksmanship(self, value):
-        self._model.marksmanship = value
+        self._set_stat(STATS.MARKSMANSHIP, value)
 
     @property
     def evasion(self):
-        return self._model.evasion
+        return self._get_stat(STATS.EVASION)
 
     @evasion.setter
     def evasion(self, value):
-        self._model.evasion = value
+        self._set_stat(STATS.EVASION, value)
 
     @property
     def armor(self):
-        return self._model.armor
+        return self._get_stat(STATS.ARMOR)
 
     @armor.setter
     def armor(self, value):
-        self._model.armor = value
+        self._set_stat(STATS.ARMOR, value)
 
     @property
     def cooking(self):
-        return self._model.cooking
+        return self._get_stat(STATS.COOKING)
 
     @cooking.setter
     def cooking(self, value):
-        self._model.cooking = value
+        self._set_stat(STATS.COOKING, value)
 
     @property
     def building(self):
-        return self._model.building
+        return self._get_stat(STATS.BUILDING)
 
     @building.setter
     def building(self, value):
-        self._model.building = value
+        self._set_stat(STATS.BUILDING, value)
 
     @property
     def busy(self):
@@ -127,6 +128,23 @@ class Creature(object):
     # ####################################################################### #
     #                                 Logic                                   #
     # ####################################################################### #
+
+    def _get_stat(self, stat):
+        if stat not in self._model.stats:
+            raise KeyError('Wrong stat type')
+        value = self._model.stats[stat]
+        # Add equipment stat changes to stat values
+        for equiped in self._model.equipment.values():
+            if equiped is None:
+                continue
+            # Get the modification value or 0 if it doesn't exist
+            value += equiped.modified_stats.get(stat, 0.)
+        return value
+
+    def _set_stat(self, stat, value):
+        if stat not in self._model.stats:
+            raise KeyError('Wrong stat type')
+        self._model.stats[stat] = value
 
     def hatch(self, name):
         self.name = name
@@ -191,21 +209,13 @@ class Creature(object):
 
 class Model(object):
     def __init__(self):
+        # TODO Use Constant stats
         self.id = -1
         self.name = ''
 
-        self.max_hp = 0
-        self.hp = 0
-
-        self.strength = 0
-        self.melee = 0
-        self.marksmanship = 0
-
-        self.evasion = 0
-        self.armor = 0
-
-        self.cooking = 0
-        self.building = 0
+        self.stats = {}
+        for stat in STATS:
+            self.stats[stat] = 0.
 
         self.activity = None
         self.activity_type = ''
@@ -223,6 +233,7 @@ class View(object):
 
 class Enemy(object):
     def __init__(self):
+        # TODO Use Constant stats
         self.name = None
         self.level = None
         self.description = None
