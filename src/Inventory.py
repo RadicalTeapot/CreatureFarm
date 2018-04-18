@@ -55,8 +55,7 @@ class ArmorItem(Item):
         super().__init__()
         self.category = ITEM_CATEGORY.ARMOR
         self.body_part = None
-        # TODO: swap to stat modification effects
-        self.armor = 0.
+        self.modified_stats = {}
         self.equiped = None
 
     def get_description(self):
@@ -64,16 +63,21 @@ class ArmorItem(Item):
 
         equiped = ''
         if self.equiped:
-            '\nEquiped to: {}\n'.format(self.equiped.name)
+            equiped = '\nEquiped to: {}\n'.format(self.equiped.name)
+
+        stat_changes = []
+        for stat, value in self.modified_stats.items():
+            stat_changes.append('  {}: {}'.format(stat.name.title(), value))
+        stat_changes.sort()
 
         description += (
             '\n'
             'Body part: {}\n'
-            'Armor: {}\n'
+            'Stat changes:\n{}\n'
             '{}'
         ).format(
             self.body_part.name.lower(),
-            self.armor,
+            '\n'.join(stat_changes),
             equiped
         )
 
@@ -86,27 +90,29 @@ class WeaponItem(Item):
         self.category = ITEM_CATEGORY.WEAPON
         self.body_part = BODY_PART.HAND
         self.types = set()
-        # TODO: swap to stat modification effects
-        self.strength = 0.
+        self.modified_stats = {}
         self.equiped = None
 
     def get_description(self):
         description = super().get_description()
 
-        # TODO: Fix description not showing equiped line
-
         equiped = ''
         if self.equiped:
-            '\nEquiped to: {}\n'.format(self.equiped.name)
+            equiped = '\nEquiped to: {}\n'.format(self.equiped.name)
+
+        stat_changes = []
+        for stat, value in self.modified_stats.items():
+            stat_changes.append('  {}: {}'.format(stat.name.title(), value))
+        stat_changes.sort()
 
         description += (
             '\n'
             'Types: {}\n'
-            'Strength: {}\n'
+            'Stat changes:\n{}\n'
             '{}'
         ).format(
             ', '.join([weapon_type.name.lower() for weapon_type in self.types]),
-            self.strength,
+            '\n'.join(stat_changes),
             equiped
         )
 

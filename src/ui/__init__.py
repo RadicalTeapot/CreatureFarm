@@ -397,9 +397,8 @@ class InventoryState(UiState):
 
         item = [
             item
-            for item in self.ui.game.inventory.get_items()
-            if item.category == self.selected_category and
-            item.name == self.selected_item
+            for item in self.ui.game.inventory.get_items(self.selected_category)
+            if item.name == self.selected_item
         ]
         if not item:
             raise RuntimeError('Cannot find item')

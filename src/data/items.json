@@ -58,7 +58,10 @@
         "name": "Chestplate",
         "type": "armor",
         "body_part": "Chest",
-        "armor": 5.0,
+        "modified_stats": [
+            {"type": "armor", "value": 5.0},
+            {"type": "evasion", "value": -1.0}
+        ],
         "description": "Item description placeholder"
     },
 
@@ -67,7 +70,10 @@
         "name": "Sword",
         "type": "weapon",
         "flags": ["one_handed", "melee", "sword"],
-        "strength": 5.0,
+        "modified_stats": [
+            {"type": "strength", "value": 5.0},
+            {"type": "melee", "value": 1.0}
+        ],
         "description": "Item description placeholder"
     }
 }

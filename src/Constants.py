@@ -68,3 +68,18 @@ class WEAPON_TYPE(Enum):
     GUN = 22
 
     SHIELD = 30
+
+
+class STATS(Enum):
+    HP = 0
+    MAX_HP = 0
+
+    STRENGTH = 2
+    MELEE = 3
+    MARKSMANSHIP = 4
+
+    EVASION = 5
+    ARMOR = 6
+
+    COOKING = 7
+    BUILDING = 8

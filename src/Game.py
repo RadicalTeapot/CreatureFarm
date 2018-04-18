@@ -17,6 +17,7 @@ from Constants import ENTRY_TYPE
 from Constants import UI_BUTTON
 from Constants import BODY_PART
 from Constants import WEAPON_TYPE
+from Constants import STATS
 
 from functools import partial
 import json
@@ -60,22 +61,40 @@ class Game(object):
         for item_data in data.values():
             self._validate_item(item_data, ids)
             item = None
+            # Food
             if item_data['type'] == 'food':
                 item = FoodItem()
                 item.is_raw = item_data['is_raw']
                 item.nutrition_value = item_data['nutrition_value']
+            # Armor
             elif item_data['type'] == 'armor':
                 item = ArmorItem()
                 for body_part in BODY_PART:
                     if item_data['body_part'].lower() == body_part.name.lower():
                         item.body_part = body_part
-                item.armor = item_data['armor']
+                        break
+                for stat in item_data['modified_stats']:
+                    modified_stat = [
+                        s
+                        for s in STATS
+                        if s.name.lower() == stat['type']
+                    ]
+                    if modified_stat:
+                        item.modified_stats[modified_stat[0]] = stat['value']
+            # Weapon
             elif item_data['type'] == 'weapon':
                 item = WeaponItem()
                 for weapon_type in WEAPON_TYPE:
                     if weapon_type.name.lower() in item_data['flags']:
                         item.types.add(weapon_type)
-                item.strength = item_data['strength']
+                for stat in item_data['modified_stats']:
+                    modified_stat = [
+                        s
+                        for s in STATS
+                        if s.name.lower() == stat['type']
+                    ]
+                    if modified_stat:
+                        item.modified_stats[modified_stat[0]] = stat['value']
             else:
                 item = Item()
 
