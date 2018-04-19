@@ -37,4 +37,8 @@ if __name__ == '__main__':
         if button == pyglet.window.mouse.LEFT:
             game.ui.click(x, y)
 
+    @window.event
+    def on_mouse_scroll(x, y, scroll_x, scroll_y):
+        game.ui.scroll(x, y, scroll_y)
+
     pyglet.app.run()

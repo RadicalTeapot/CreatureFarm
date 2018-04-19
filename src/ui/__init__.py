@@ -712,7 +712,7 @@ class Ui(object):
         self._state.enter()
 
     def build_bottom_ui(self):
-        tab = self.bottom_panel.add_tab(True)
+        tab = self.bottom_panel.add_tab(True, content_wrap=True)
 
         creature_button = Button('(c) Creatures')
         self.bottom_panel.add_button(tab, creature_button)
@@ -793,6 +793,15 @@ class Ui(object):
 
         for panel in self.panels:
             if panel.click(x, y):
+                return True
+        return False
+
+    def scroll(self, x, y, scroll):
+        if self.dialogs:
+            return self.dialogs[-1].scroll(x, y, scroll)
+
+        for panel in self.panels:
+            if panel.scroll(x, y, scroll):
                 return True
         return False
 

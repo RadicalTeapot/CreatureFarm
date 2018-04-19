@@ -8,10 +8,13 @@ from Settings import Settings
 
 
 class Layout(object):
-    def __init__(self, parent, direction, spacing):
+    def __init__(self, parent, direction, spacing, content_wrap=False):
         self.rect = parent.rect
+        self.scroll_position = 0
         self.direction = direction
         self.spacing = spacing
+        self.content_wrap = content_wrap
+        self.content_size = 0
         self.content = []
 
     def clear(self):
@@ -36,24 +39,59 @@ class Layout(object):
 
         for content in self.content:
             content_size = getattr(content.rect, axis)
-            # If content doesn't fit, go to next column
-            if pos + content_size + self.spacing > size:
-                pos = self.spacing
-                other_pos += max_size + self.spacing
-                max_size = 0
-            else:
-                max_size = max(max_size, getattr(content.rect, other_axis))
+
+            if self.content_wrap:
+                # If content doesn't fit, go to next column
+                if pos + content_size + self.spacing > size:
+                    pos = self.spacing
+                    other_pos += max_size + self.spacing
+                    max_size = 0
+                else:
+                    max_size = max(max_size, getattr(content.rect, other_axis))
 
             content.set_pos(
-                self.rect.x + (pos if self.direction == 0 else other_pos),
+                (
+                    self.rect.x +
+                    (pos if self.direction == 0 else other_pos) +
+                    (self.scroll_position if self.direction == 0 else 0)
+                ),
                 # Flip y to simulate drawing content from top to bottom
                 (
                     (self.rect.y + self.rect.height) -
                     (other_pos if self.direction == 0 else pos) -
+                    (self.scroll_position if self.direction == 1 else 0) -
                     content.rect.height
                 )
             )
             pos += content_size + self.spacing
+
+        self.content_size = pos
+
+        if not self.content_wrap and pos > getattr(self.rect, axis):
+            # TODO: display a scroll bar
+            pass
+
+    def scroll(self, scroll):
+        amount = Settings.SCROLL_SPEED
+        if scroll < 0:
+            amount *= -1
+        self.scroll_position += amount
+
+        if self.scroll_position < 0:
+            amount -= self.scroll_position
+            self.scroll_position = 0
+        size = self.rect.width if self.direction == 0 else self.rect.height
+        if self.scroll_position > (self.content_size - size):
+            amount -= self.scroll_position - (self.content_size - size)
+            self.scroll_position = self.content_size - size
+
+        for content in self.content:
+            x, y = content.get_pos()
+            if self.direction == 0:
+                x += amount
+            else:
+                y += amount
+            content.set_pos(x, y)
 
 
 class Tab(object):
@@ -75,8 +113,8 @@ class Tab(object):
         del self.labels[:]
         self.layout.clear()
 
-    def set_layout(self, direction=0, spacing=10):
-        self.layout = Layout(self, direction, spacing)
+    def set_layout(self, direction=0, spacing=10, content_wrap=False):
+        self.layout = Layout(self, direction, spacing, content_wrap)
 
     def set_active(self, active):
         # TODO: Grey out title when tab not active
@@ -128,6 +166,13 @@ class Tab(object):
             for button, state in zip(self.buttons, pressed):
                 button.pressed = state
 
+    def scroll(self, scroll):
+        if not self.active or not self.visible:
+            return
+
+        if self.layout:
+            self.layout.scroll(scroll)
+
 
 class Panel(object):
     border_margin = 3
@@ -147,7 +192,9 @@ class Panel(object):
 
         self.tabs = []
 
-    def add_tab(self, active, title='', direction=0, spacing=10):
+    def add_tab(
+        self, active, title='', direction=0, spacing=10, content_wrap=False
+    ):
         tab = Tab(title)
         self.tabs.append(tab)
 
@@ -165,7 +212,7 @@ class Panel(object):
                 tab.title_button.x = x
                 x += tab.title_button.rect.width + self.tab_spacing
 
-        tab.set_layout(direction, spacing)
+        tab.set_layout(direction, spacing, content_wrap)
         tab.set_active(active)
         if active:
             [tab.set_active(False) for tab in self.tabs]
@@ -223,6 +270,13 @@ class Panel(object):
                     if tab.title_button.click(x, y):
                         return True
                 tab.click(x, y)
+            return True
+        return False
+
+    def scroll(self, x, y, scroll):
+        if self.rect.contains(x, y):
+            for tab in self.tabs:
+                tab.scroll(scroll)
             return True
         return False
 

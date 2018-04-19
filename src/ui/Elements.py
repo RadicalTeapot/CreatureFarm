@@ -56,6 +56,9 @@ class Button(object):
         )
         self.text.y = self.rect.y + self.margin
 
+    def get_pos(self):
+        return self.rect.x, self.rect.y
+
     def set_pos(self, x, y):
         self.rect.x = x
         self.rect.y = y
@@ -110,6 +113,9 @@ class AttributeLabel(object):
         self.rect.width = self.label.content_width
         self.rect.height = self.label.content_height
 
+    def get_pos(self):
+        return self.rect.x, self.rect.y
+
     def set_pos(self, x, y):
         self.rect.x = x
         self.rect.y = y
@@ -154,6 +160,9 @@ class DescriptionLabel(object):
         self.rect = ui.Rect(
             0, 0, width, self.text.content_height
         )
+
+    def get_pos(self):
+        return self.rect.x, self.rect.y
 
     def set_pos(self, x, y):
         self.rect.x = x
