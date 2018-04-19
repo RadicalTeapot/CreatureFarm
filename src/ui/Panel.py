@@ -95,12 +95,17 @@ class Layout(object):
 
 
 class Tab(object):
-    def __init__(self, title='', active=False, visible=True):
+    def __init__(self, title, rect, active=False, visible=True):
         self.title = title
         self.title_button = ui.Button(self.title)
 
         self.layout = None
-        self.rect = ui.Rect(0, 0, 0, 0)
+        self.rect = ui.Rect(rect.x, rect.y, rect.width, rect.height)
+
+        self.texture = pyglet.image.Texture.create(
+            self.rect.width, self.rect.height, rectangle=True
+        )
+        self.buffer_manager = pyglet.image.get_buffer_manager()
 
         self.buttons = []
         self.labels = []
@@ -135,20 +140,51 @@ class Tab(object):
         self.layout.add_content(label)
         self.labels.append(label)
 
+    def set_viewport(self, width, height):
+        pyglet.gl.glViewport(0, 0, width, height)
+
+        pyglet.gl.glMatrixMode(pyglet.gl.GL_PROJECTION)
+        pyglet.gl.glLoadIdentity()
+        pyglet.gl.glOrtho(0, width, 0, height, -1, 1)
+        pyglet.gl.glMatrixMode(pyglet.gl.GL_MODELVIEW)
+
     def draw(self):
         if not self.visible:
             return
 
-        if len(self.title):
-            self.title_button.draw()
-
         if not self.active:
             return
+
+        buffer = self.buffer_manager.get_color_buffer()
+        texture = pyglet.image.Texture.create(800, 600, rectangle=True)
+        texture.blit_into(buffer, 0, 0, 0)
+
+        self.set_viewport(
+            self.rect.width, self.rect.height
+        )
+        pyglet.gl.glClear(pyglet.gl.GL_COLOR_BUFFER_BIT)
+        pyglet.gl.glTranslatef(-self.rect.x, -self.rect.y, 0)
 
         for button in self.buttons:
             button.draw()
         for label in self.labels:
             label.draw()
+
+        pyglet.gl.glTranslatef(self.rect.x, self.rect.y, 0)
+
+        buffer = self.buffer_manager.get_color_buffer()
+        self.texture.blit_into(buffer, 0, 0, 0)
+
+        self.set_viewport(Settings.WIDTH, Settings.HEIGHT)
+
+        # HACK: Find a better solution so the whole ui byuffer doesn't need to
+        # be redrawn
+
+        texture.blit(0, 0)
+        self.texture.blit(self.rect.x, self.rect.y)
+
+        if len(self.title):
+            self.title_button.draw()
 
     def mouse_motion(self, x, y):
         if not self.active or not self.visible:
@@ -195,11 +231,10 @@ class Panel(object):
     def add_tab(
         self, active, title='', direction=0, spacing=10, content_wrap=False
     ):
-        tab = Tab(title)
+        # Take panel border into account
+        tab = Tab(title, self.inner_rect)
         self.tabs.append(tab)
 
-        # Take panel border into account
-        tab.rect = self.inner_rect
 
         # Set tab button position
         x = self.rect.x + self.tab_spacing

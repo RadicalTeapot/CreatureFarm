@@ -145,6 +145,7 @@ class AttributeLabel(object):
                 self.pre,
                 self.post
             )
+
         self.label.draw()
 
 
