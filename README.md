@@ -24,9 +24,7 @@
 - Log xp gain, success/fail at end of activities to creature log
 
 - Implement an activity log to describe creature activity evolution
-- Implement weapons and armor
-- Implement stat effects from food/armor/weapon (e.g. +5 strength, -0.2 evasion, ...)
-- Change creatures stats to fit a skill based system (e.g. cooking, crafting, strength, marksmanship, sword wielding...)
+- Implement stat effects from food (e.g. +5 strength, -0.2 evasion, ...)
 - Reimplement tabs in UI (when a panel has multiple tabs, show arrows at the bottom right of it letting the user switch tabs)
 - Display available adventures/recipe first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
 - Improve fight system

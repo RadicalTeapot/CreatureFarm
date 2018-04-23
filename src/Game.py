@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from ui import Ui
 from Inventory import Inventory
 from Inventory import Item
 from Inventory import ArmorItem
@@ -25,24 +24,37 @@ import random
 
 
 class Game(object):
-    def __init__(self, window):
+    _instance = None
+
+    def __init__(self, window, ui):
+        if Game._instance is not None:
+            raise RuntimeError('Cannot have multiple Game instances !')
+
+        Game._instance = self
         self.window = window
 
         self.creatures = []
         self.enemies = {}
         self.adventures = []
         self.inventory = Inventory()
-        self.ui = Ui(self)
+        self.ui = ui
+        self.ui.build()
 
-        # Turn counter
-        self.date = 0
-
-        # Callbacks
+        #  Callbacks
         self.ui.register_callback(
             UI_BUTTON.FINISH_TURN, self.update
         )
 
+        # Turn counter
+        self.date = 0
+
         self._parse_data()
+
+    @staticmethod
+    def getInstance():
+        if not Game._instance:
+            raise RuntimeError('Game not instanciated !')
+        return Game._instance
 
     def _parse_data(self):
         ids = []

@@ -2,9 +2,13 @@
 """DOCSTRING."""
 
 import pyglet
+
 import ui
 from ui.Elements import Button
 from Settings import Settings
+from ui.Buffer import Texture
+
+from Game import Game
 
 
 class Layout(object):
@@ -101,11 +105,12 @@ class Tab(object):
 
         self.layout = None
         self.rect = ui.Rect(rect.x, rect.y, rect.width, rect.height)
+        self.rect.update_color((255, 255, 255))
 
         self.texture = pyglet.image.Texture.create(
             self.rect.width, self.rect.height, rectangle=True
         )
-        self.buffer_manager = pyglet.image.get_buffer_manager()
+        self.texture = Texture(self.rect.width, self.rect.height)
 
         self.buttons = []
         self.labels = []
@@ -155,33 +160,24 @@ class Tab(object):
         if not self.active:
             return
 
-        buffer = self.buffer_manager.get_color_buffer()
-        texture = pyglet.image.Texture.create(800, 600, rectangle=True)
-        texture.blit_into(buffer, 0, 0, 0)
+        with Game.getInstance().ui.buffer as buffer:
+            buffer.bind_texture(self.texture)
+            self.set_viewport(
+                self.rect.width, self.rect.height
+            )
+            pyglet.gl.glClear(pyglet.gl.GL_COLOR_BUFFER_BIT)
+            pyglet.gl.glTranslatef(-self.rect.x, -self.rect.y, 0)
 
-        self.set_viewport(
-            self.rect.width, self.rect.height
-        )
-        pyglet.gl.glClear(pyglet.gl.GL_COLOR_BUFFER_BIT)
-        pyglet.gl.glTranslatef(-self.rect.x, -self.rect.y, 0)
+            for button in self.buttons:
+                button.draw()
+            for label in self.labels:
+                label.draw()
 
-        for button in self.buttons:
-            button.draw()
-        for label in self.labels:
-            label.draw()
+            pyglet.gl.glLoadIdentity()
 
-        pyglet.gl.glTranslatef(self.rect.x, self.rect.y, 0)
-
-        buffer = self.buffer_manager.get_color_buffer()
-        self.texture.blit_into(buffer, 0, 0, 0)
-
-        self.set_viewport(Settings.WIDTH, Settings.HEIGHT)
-
-        # HACK: Find a better solution so the whole ui byuffer doesn't need to
-        # be redrawn
-
-        texture.blit(0, 0)
-        self.texture.blit(self.rect.x, self.rect.y)
+        with self.texture:
+            self.set_viewport(Settings.WIDTH, Settings.HEIGHT)
+            self.rect.draw()
 
         if len(self.title):
             self.title_button.draw()
@@ -234,7 +230,6 @@ class Panel(object):
         # Take panel border into account
         tab = Tab(title, self.inner_rect)
         self.tabs.append(tab)
-
 
         # Set tab button position
         x = self.rect.x + self.tab_spacing

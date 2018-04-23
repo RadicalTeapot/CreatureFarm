@@ -2,8 +2,10 @@
 """DOCSTRING."""
 
 from Creature import Creature
-from Game import Game
 from Settings import Settings
+
+from Game import Game
+from ui import Ui
 
 import pyglet
 
@@ -18,7 +20,9 @@ if __name__ == '__main__':
         width=Settings.WIDTH, height=Settings.HEIGHT
     )
 
-    game = Game(window)
+    ui = Ui()
+    game = Game(window, ui)
+
     game.add_creature(Creature('RadicalTeapot'))
 
     # Add a sword and chestplate
