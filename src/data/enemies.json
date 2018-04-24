@@ -3,7 +3,7 @@
         "name": "Goblin",
         "hp": 5.0,
         "strength" : 2.0,
-        "armor": 0.0,
+        "armor": 1.0,
         "agility": 0.5,
         "description": "Enemy placeholder description"
     },
@@ -12,7 +12,7 @@
         "name": "Orc",
         "hp": 10.0,
         "strength": 5.0,
-        "armor": 0.25,
+        "armor": 10.0,
         "agility": 0.1,
         "description": "Enemy placeholder description"
     }
