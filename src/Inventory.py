@@ -123,8 +123,8 @@ class Recipe(object):
     def __init__(self):
         self.name = None
         self.game = None
-        self.ingredients = []
-        self.results = []
+        self.ingredients = {}
+        self.results = {}
         self.duration = 3
         self.complexity = 0
         self._categories = set()
@@ -149,13 +149,13 @@ class Recipe(object):
                 '{}x {}'.format(
                     quantity, self.game.inventory.get_item(item).name
                 )
-                for item, quantity in self.ingredients
+                for item, quantity in self.ingredients.items()
             ]),
             results='\n'.join([
                 '{}x {}'.format(
                     quantity, self.game.inventory.get_item(item).name
                 )
-                for item, quantity in self.results
+                for item, quantity in self.results.items()
             ]),
             complexity=self.complexity,
             description=self.description
@@ -174,17 +174,23 @@ class Inventory(object):
         self.items[item.id] = item
 
     def add_items(self, ingredients):
-        for item_id, quantity in ingredients:
+        for item_id, quantity in ingredients.items():
             self.items[item_id].quantity += quantity
 
     def take_items(self, ingredients):
-        for item_id, quantity in ingredients:
+        for item_id, quantity in ingredients.items():
             self.items[item_id].quantity -= quantity
+
+    def has_item(self, item_id, quantity=0):
+        return (
+            item_id in self.items and
+            self.items[item_id].quantity >= quantity
+        )
 
     def has_items(self, ingredients):
         return all([
-            item_id in self.items and self.items[item_id].quantity >= quantity
-            for item_id, quantity in ingredients
+            self.has_item(item_id, quantity)
+            for item_id, quantity in ingredients.items()
         ])
 
     def get_item(self, item_id):

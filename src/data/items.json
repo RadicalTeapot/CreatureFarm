@@ -1,6 +1,5 @@
 {
-    "raw_meat": {
-        "id": 1,
+    "food.raw_meat": {
         "name": "Raw meat",
         "type":"food",
         "is_raw": true,
@@ -8,8 +7,7 @@
         "description": "Raw meat harvested from dead animal."
     },
 
-    "cooked_meat": {
-        "id": 2,
+    "food.cooked_meat": {
         "name": "Cooked meat",
         "type":"food",
         "is_raw": false,
@@ -17,8 +15,7 @@
         "description": "Meat that has been cooked improving its taste."
     },
 
-    "raw_vegetables": {
-        "id": 3,
+    "food.raw_vegetables": {
         "name": "Raw vegetables",
         "type": "food",
         "is_raw": true,
@@ -26,8 +23,7 @@
         "description": "Raw vegetables found in the wild, useless until cooked."
     },
 
-    "boiled_vegetables": {
-        "id": 4,
+    "food.boiled_vegetables": {
         "name": "Boiled vegetables",
         "type": "food",
         "is_raw": false,
@@ -35,8 +31,7 @@
         "description": "Boiled vegetables, kinda bland but filling."
     },
 
-    "stew": {
-        "id": 5,
+    "food.stew": {
         "name": "Stew",
         "type": "food",
         "is_raw": false,
@@ -44,8 +39,7 @@
         "description": "Meat and vegetables stew, delicious."
     },
 
-    "lavish_meal": {
-        "id": 6,
+    "food.lavish_meal": {
         "name": "Lavish meal",
         "type": "food",
         "is_raw": false,
@@ -53,8 +47,7 @@
         "description": "The best meal you ever had."
     },
 
-    "chestplate": {
-        "id": 100,
+    "armor.chestplate": {
         "name": "Chestplate",
         "type": "armor",
         "body_part": "Chest",
@@ -65,8 +58,7 @@
         "description": "Item description placeholder"
     },
 
-    "sword": {
-        "id": 200,
+    "weapon.sword": {
         "name": "Sword",
         "type": "weapon",
         "flags": ["one_handed", "melee", "sword"],

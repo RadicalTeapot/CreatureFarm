@@ -19,15 +19,14 @@ class Adventure(object):
         self.description = None
         self.duration = None
         self.enemies = []
-        self.rewards = []
+        self.rewards = {}
 
-    def add_reward(self, item, quantity_range, curve, chance):
+    def add_reward(self, item_id, quantity_range, curve, chance):
         reward = Reward()
-        reward.item = item
         reward.quantity_range = quantity_range
         reward.curve = curve
         reward.chance = chance
-        self.rewards.append(reward)
+        self.rewards[item_id] = reward
 
     def add_enemy(self, enemy, chance):
         new_enemy = Enemy()
@@ -145,8 +144,8 @@ class Adventure(object):
                 creature.gain_experience(STATS.EVASION, 0.01)
 
     def finish(self, creature, date):
-        rewards = []
-        for reward in self.rewards:
+        rewards = {}
+        for item_id, reward in self.rewards.items():
             if random.random() < reward.chance:
                 # TODO: Use better curve formula
                 quantity = math.pow(random.random(), reward.curve)
@@ -154,7 +153,7 @@ class Adventure(object):
                     reward.quantity_range[1] - reward.quantity_range[0]
                 )
                 quantity += reward.quantity_range[0]
-                rewards.append((reward.item, int(quantity)))
+                rewards[item_id] = int(quantity)
 
         creature.logger.add_entry(
             date,
@@ -177,7 +176,6 @@ class Reward(object):
         self.chance = 0.0
         self.quantity_range = 0.0
         self.curve = 1.0
-        self.item = -1
 
 
 class Enemy(object):

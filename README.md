@@ -28,6 +28,5 @@
 - Reimplement tabs in UI (when a panel has multiple tabs, show arrows at the bottom right of it letting the user switch tabs)
 - Display available adventures/recipe first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
 - Improve fight system
-- Switch ids to string and use . notation (e.g. : item.weapon.sword, recipe.cooked_meat, ...)
 
 # Playtest

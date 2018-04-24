@@ -1,6 +1,5 @@
 {
     "goblin" : {
-        "id": 3000,
         "name": "Goblin",
         "hp": 5.0,
         "strength" : 2.0,
@@ -10,7 +9,6 @@
     },
 
     "orc" : {
-        "id": 3001,
         "name": "Orc",
         "hp": 10.0,
         "strength": 5.0,

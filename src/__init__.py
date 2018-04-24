@@ -26,7 +26,10 @@ if __name__ == '__main__':
     game.add_creature(Creature('RadicalTeapot'))
 
     # Add a sword and chestplate
-    game.inventory.add_items([(100, 1), (200, 1)])
+    game.inventory.add_items({
+        'items.armor.chestplate': 1,
+        'items.weapon.sword': 1
+    })
 
     @window.event
     def on_draw():

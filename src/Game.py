@@ -57,7 +57,7 @@ class Game(object):
         return Game._instance
 
     def _parse_data(self):
-        ids = []
+        ids = set()
         with open("src/data/items.json", 'r') as item_data:
             ids = self._parse_items(json.loads(item_data.read()), ids)
         with open("src/data/recipes.json", 'r') as recipe_data:
@@ -70,8 +70,9 @@ class Game(object):
             )
 
     def _parse_items(self, data, ids):
-        for item_data in data.values():
-            self._validate_item(item_data, ids)
+        for item_id, item_data in data.items():
+            item_id = 'items.{}'.format(item_id)
+            self._validate_item(item_id, item_data, ids)
             item = None
             # Food
             if item_data['type'] == 'food':
@@ -112,39 +113,42 @@ class Game(object):
 
             item.name = item_data['name']
             item.description = item_data['description']
-            item.id = item_data['id']
+            item.id = item_id
 
-            ids.append(item_data['id'])
+            ids.add(item_id)
             self.inventory.add_item(item)
         return ids
 
-    def _validate_item(self, item, ids):
-        for attribute in ['id', 'name', 'description']:
+    def _validate_item(self, item_id, item, ids):
+        for attribute in ['name', 'description']:
             if attribute not in item:
                 raise KeyError('Missing {} attribute'.format(attribute))
-        if item['id'] in ids:
+        if item_id in ids:
             raise RuntimeError('Duplicate id')
         # TODO: check components validity as well
 
     def _parse_recipes(self, data, ids):
-        for recipe_data in data.values():
-            self._validate_recipe(recipe_data, ids)
+        for recipe_id, recipe_data in data.items():
+            recipe_id = 'recipes.{}'.format(recipe_id)
+            self._validate_recipe(recipe_id, recipe_data, ids)
             recipe = Recipe()
             recipe.game = self
-            recipe.id = recipe_data['id']
+            recipe.id = recipe_id
             recipe.name = recipe_data['name']
-            recipe.ingredients = recipe_data['ingredients']
-            recipe.results = recipe_data['results']
+            for ingredient in recipe_data['ingredients']:
+                recipe.ingredients[ingredient['item']] = ingredient['quantity']
+            for result in recipe_data['results']:
+                recipe.results[result['item']] = result['quantity']
             recipe.complexity = recipe_data['complexity']
             recipe.duration = recipe_data['duration']
             recipe.description = recipe_data['description']
+            ids.add(recipe_id)
             self.inventory.add_recipe(recipe)
-            ids.append(recipe_data['id'])
         return ids
 
-    def _validate_recipe(self, recipe, ids):
+    def _validate_recipe(self, recipe_id, recipe, ids):
         attributes = [
-            "id", "name", "ingredients", "results", "complexity",
+            "name", "ingredients", "results", "complexity",
             "duration", "description"
         ]
         for attribute in attributes:
@@ -152,58 +156,65 @@ class Game(object):
                 raise KeyError('Missing {} attribute'.format(attribute))
 
         for ingredient in recipe['ingredients']:
-            if ingredient[0] not in ids:
-                raise RuntimeError('Unknown item with id {} in recipe'.format(
-                    recipe['name'], ingredient[0]
-                ))
+            if not self.inventory.has_item(ingredient['item']):
+                raise RuntimeError(
+                    'Unknown item with id {} in recipe {}'.format(
+                        ingredient['item'], recipe['name']
+                    )
+                )
         for ingredient in recipe['results']:
-            if ingredient[0] not in ids:
-                raise RuntimeError('Unknown item with id {} in recipe'.format(
-                    recipe['name'], ingredient[0]
-                ))
-        if recipe['id'] in ids:
+            if not self.inventory.has_item(ingredient['item']):
+                raise RuntimeError(
+                    'Unknown item with id {} in recipe {}'.format(
+                        ingredient['item'], recipe['name']
+                    )
+                )
+        if recipe_id in ids:
             raise RuntimeError('Duplicate id')
 
     def _parse_adventures(self, data, ids):
-        # TODO: parse enemy list and remove the danger, damage and damage range
-        # attributes
-        for adventure_data in data.values():
-            self._validate_adventure(adventure_data, ids)
+        for adventure_id, adventure_data in data.items():
+            adventure_id = 'adventures.{}'.format(adventure_id)
+            self._validate_adventure(adventure_id, adventure_data, ids)
             adventure = Adventure()
-            adventure.id = adventure_data['id']
+            adventure.id = adventure_id
             adventure.title = adventure_data['title']
             adventure.description = adventure_data['description']
             adventure.duration = adventure_data['duration']
+
             for enemy in adventure_data.get('enemies', []):
                 adventure.add_enemy(
                     self.enemies[enemy['enemy']], enemy['chance']
                 )
+
             for reward in adventure_data.get('rewards', []):
                 adventure.add_reward(
                     reward['item'], reward['quantity_range'], reward['curve'],
                     reward['chance']
                 )
+
+            ids.add(adventure_id)
             self.add_adventure(adventure)
-            ids.append(adventure_data['id'])
         return ids
 
-    def _validate_adventure(self, adventure, ids):
+    def _validate_adventure(self, adventure_id, adventure, ids):
         attributes = [
-            "id", "title", "duration", "enemies", "rewards", "description"
+            "title", "duration", "enemies", "rewards", "description"
         ]
         for attribute in attributes:
             if attribute not in adventure:
                 raise KeyError('Missing {} attribute'.format(attribute))
-        if adventure['id'] in ids:
+        if adventure_id in ids:
             raise RuntimeError('Duplicate id')
         # TODO check rewards validity as well
         # TODO check enemies validity as well
 
     def _parse_enemies(self, data, ids):
-        for enemy_data in data.values():
-            self._validate_enemy(enemy_data, ids)
+        for enemy_id, enemy_data in data.items():
+            enemy_id = 'enemies.{}'.format(enemy_id)
+            self._validate_enemy(enemy_id, enemy_data, ids)
             enemy = Enemy()
-            enemy.id = enemy_data['id']
+            enemy.id = enemy_id
             enemy.name = enemy_data['name']
             enemy.description = enemy_data['description']
             enemy.max_hp = enemy_data['hp']
@@ -211,30 +222,19 @@ class Game(object):
             enemy.strength = enemy_data['strength']
             enemy.armor = enemy_data['armor']
             enemy.agility = enemy_data['agility']
+            ids.add(enemy_id)
             self.add_enemy(enemy)
-            ids.append(enemy_data['id'])
         return ids
 
-    def _validate_enemy(self, enemy, ids):
+    def _validate_enemy(self, enemy_id, enemy, ids):
         attributes = [
-            "id", "name", "hp", "strength", "armor", "agility", "description"
+            "name", "hp", "strength", "armor", "agility", "description"
         ]
         for attribute in attributes:
             if attribute not in enemy:
                 raise KeyError('Missing {} attribute'.format(attribute))
-        if enemy['id'] in ids:
+        if enemy_id in ids:
             raise RuntimeError('Duplicate id')
-
-    def get_unique_id(self):
-        # HACK: This could be avoided by finding a way to store/pass pointers
-        # to functions instead of values
-        unique_id = 0
-        ids = [creature.id for creature in self.creatures]
-        ids.extend([adventure.id for adventure in self.adventures])
-        ids = set(ids)
-        while unique_id in ids:
-            unique_id += 1
-        return unique_id
 
     def update(self):
         for creature in self.creatures:
@@ -243,7 +243,8 @@ class Game(object):
         self.ui.refresh()
 
     def add_creature(self, creature):
-        creature.id = self.get_unique_id()
+        # TODO: Find a better id system
+        creature.id = len(self.creatures)
         self.creatures.append(creature)
 
     def add_adventure(self, adventure):
@@ -288,7 +289,7 @@ class Game(object):
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
             creature.name, adventure.title
         )
-        for item_id, quantity in rewards:
+        for item_id, quantity in rewards.items():
             message += '    {}: {}\n'.format(
                 self.inventory.get_item(item_id).name,
                 quantity
@@ -351,11 +352,11 @@ class Game(object):
             message = '{} just finished cooking !\n\nThey used:\n'.format(
                 creature.name
             )
-            for item_id, quantity in recipe.ingredients:
+            for item_id, quantity in recipe.ingredients.items():
                 name = self.inventory.get_item(item_id).name
                 message += '    {}x {}\n'.format(quantity, name)
             message += '\nAnd produced:\n'
-            for item_id, quantity in recipe.results:
+            for item_id, quantity in recipe.results.items():
                 name = self.inventory.get_item(item_id).name
                 message += '    {}x {}\n'.format(quantity, name)
             self.ui.display_dialog(message)
@@ -425,7 +426,7 @@ class Game(object):
                 self.finish_feeding, creature, item
             )
         )
-        self.inventory.take_items([(item.id, 1)])
+        self.inventory.take_items({item.id: 1})
         self.ui.refresh()
 
     def finish_feeding(self, creature, item):
