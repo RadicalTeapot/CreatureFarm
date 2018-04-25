@@ -13,10 +13,12 @@ from Creature import Enemy
 
 from Constants import ACTIVITY_TYPE
 from Constants import ENTRY_TYPE
-from Constants import UI_BUTTON
 from Constants import BODY_PART
 from Constants import WEAPON_TYPE
 from Constants import STATS
+from Constants import FIGHT_OUTCOME
+
+from ObjectManager import ObjectManager
 
 from functools import partial
 import json
@@ -24,37 +26,18 @@ import random
 
 
 class Game(object):
-    _instance = None
-
-    def __init__(self, window, ui):
-        if Game._instance is not None:
-            raise RuntimeError('Cannot have multiple Game instances !')
-
-        Game._instance = self
+    def __init__(self, window):
         self.window = window
 
         self.creatures = []
         self.enemies = {}
         self.adventures = []
         self.inventory = Inventory()
-        self.ui = ui
-        self.ui.build()
-
-        #  Callbacks
-        self.ui.register_callback(
-            UI_BUTTON.FINISH_TURN, self.update
-        )
 
         # Turn counter
         self.date = 0
 
         self._parse_data()
-
-    @staticmethod
-    def getInstance():
-        if not Game._instance:
-            raise RuntimeError('Game not instanciated !')
-        return Game._instance
 
     def _parse_data(self):
         ids = set()
@@ -240,7 +223,7 @@ class Game(object):
         for creature in self.creatures:
             creature.update()
         self.date += 1
-        self.ui.refresh()
+        ObjectManager.ui.refresh()
 
     def add_creature(self, creature):
         # TODO: Find a better id system
@@ -255,15 +238,15 @@ class Game(object):
         self.enemies[enemy.id] = enemy
 
     def start_adventure(self):
-        creature = self.ui._state.selected_creature
-        adventure = self.ui._state.selected_adventure
+        creature = ObjectManager.ui._state.selected_creature
+        adventure = ObjectManager.ui._state.selected_adventure
 
         if adventure is None:
-            self.ui.display_dialog('No adventure selected')
+            ObjectManager.ui.display_dialog('No adventure selected')
             return
 
         if creature is None or creature.busy:
-            self.ui.display_dialog('Invalid creature selection')
+            ObjectManager.ui.display_dialog('Invalid creature selection')
             return
 
         creature.set_activity(
@@ -278,7 +261,7 @@ class Game(object):
             )
         )
         adventure.start(creature, self.date)
-        self.ui.refresh()
+        ObjectManager.ui.refresh()
 
     def update_adventure(self, creature, adventure):
         adventure.update(creature, self.date)
@@ -295,28 +278,30 @@ class Game(object):
                 quantity
             )
         self.inventory.add_items(rewards)
-        self.ui.display_dialog(message)
+        ObjectManager.ui.display_dialog(message)
 
-        self.ui.refresh()
+        ObjectManager.ui.refresh()
 
     def start_cooking(self):
-        creature = self.ui._state.selected_creature
-        recipe = self.ui._state.selected_recipe
+        creature = ObjectManager.ui._state.selected_creature
+        recipe = ObjectManager.ui._state.selected_recipe
 
         if recipe is None:
-            self.ui.display_dialog('No recipe selected.')
+            ObjectManager.ui.display_dialog('No recipe selected.')
             return
 
         if creature is None or creature.busy:
-            self.ui.display_dialog('Invalid creature selection.')
+            ObjectManager.ui.display_dialog('Invalid creature selection.')
             return
 
         if creature.cooking - recipe.complexity < -1:
-            self.ui.display_dialog('Cooking level too low for this recipe.')
+            ObjectManager.ui.display_dialog(
+                'Cooking level too low for this recipe.'
+            )
             return
 
         if not self.inventory.has_items(recipe.ingredients):
-            self.ui.display_dialog('Ingredients not available.')
+            ObjectManager.ui.display_dialog('Ingredients not available.')
             return
 
         creature.set_activity(
@@ -328,7 +313,7 @@ class Game(object):
             )
         )
         self.inventory.take_items(recipe.ingredients)
-        self.ui.refresh()
+        ObjectManager.ui.refresh()
 
     def finish_cooking(self, creature, recipe):
         diff = creature.cooking - recipe.complexity
@@ -336,13 +321,13 @@ class Game(object):
         failed = True
         rand = random.random()
         if diff == -1 and rand < 0.1:
-            self.ui.display_dialog = (
+            ObjectManager.ui.display_dialog = (
                 '{} failed cooking {} and wasted the ingredients.'
             ).format(
                 creature.name, recipe.name
             )
         elif (diff == 0 and rand < 0.1) or (diff == -1 and rand < .33):
-            self.ui.display_dialog = (
+            ObjectManager.ui.display_dialog = (
                 '{} failed cooking {} but did not waste the ingredients.'
             ).format(
                 creature.name, recipe.name
@@ -359,7 +344,7 @@ class Game(object):
             for item_id, quantity in recipe.results.items():
                 name = self.inventory.get_item(item_id).name
                 message += '    {}x {}\n'.format(quantity, name)
-            self.ui.display_dialog(message)
+            ObjectManager.ui.display_dialog(message)
 
             self.inventory.add_items(recipe.results)
             failed = False
@@ -401,21 +386,21 @@ class Game(object):
         )
 
     def feed_creature(self):
-        creature = self.ui._state.selected_creature
-        item = self.ui._state.selected_item
+        creature = ObjectManager.ui._state.selected_creature
+        item = ObjectManager.ui._state.selected_item
 
         if item is None:
-            self.ui.display_dialog('No food selected')
+            ObjectManager.ui.display_dialog('No food selected')
             return
 
         if creature is None or creature.busy:
-            self.ui.display_dialog('Invalid creature selection')
+            ObjectManager.ui.display_dialog('Invalid creature selection')
             return
 
         if creature.hp == creature.max_hp:
-            self.ui.display_dialog('{} is already at max health'.format(
-                creature
-            ))
+            ObjectManager.ui.display_dialog(
+                '{} is already at max health'.format(creature)
+            )
             return
 
         creature.set_activity(
@@ -427,28 +412,28 @@ class Game(object):
             )
         )
         self.inventory.take_items({item.id: 1})
-        self.ui.refresh()
+        ObjectManager.ui.refresh()
 
     def finish_feeding(self, creature, item):
         heal_amount = min(item.eat(), creature.max_hp - creature.hp)
         creature.hp = creature.hp + heal_amount
 
-        self.ui.display_dialog(
+        ObjectManager.ui.display_dialog(
             '{} finished eating {}.\nThey healed for {} hp'.format(
                 creature.name, item.name, heal_amount
             )
         )
 
     def equip_item(self):
-        creature = self.ui._state.selected_creature
-        item = self.ui._state.selected_item
+        creature = ObjectManager.ui._state.selected_creature
+        item = ObjectManager.ui._state.selected_item
 
         if item is None:
-            self.ui.display_dialog('No food selected')
+            ObjectManager.ui.display_dialog('No food selected')
             return
 
         if creature is None or creature.busy:
-            self.ui.display_dialog('Invalid creature selection')
+            ObjectManager.ui.display_dialog('Invalid creature selection')
             return
 
         # TODO: Handle two handed weapons and off hand weapons
@@ -457,8 +442,54 @@ class Game(object):
             equiped_item.equiped = None
         creature.equipment[item.body_part] = item
         item.equiped = creature
-        self.ui.refresh()
+        ObjectManager.ui.refresh()
+
+    def start_fight(self, creature, enemy):
+        fight = creature.activity
+        fight.start(enemy)
+
+        creature.logger.add_entry(
+            self.date,
+            '{} encountered {} !'.format(
+                creature.name, fight.enemy.name
+            ),
+            ACTIVITY_TYPE.FIGHTING,
+            ENTRY_TYPE.IMPORTANT
+        )
+
+    def update_fight(self, creature):
+        creature.activity.update(creature, self.date)
+
+    def end_fight(self, creature):
+        fight = creature.activity
+
+        if fight.outcome == FIGHT_OUTCOME.WON:
+            creature.logger.add_entry(
+                '{}.{}'.format(self.date, fight.turn_counter),
+                '{} killed {} !'.format(creature.name, fight.enemy.name),
+                ACTIVITY_TYPE.FIGHTING,
+                ENTRY_TYPE.IMPORTANT
+            )
+        elif fight.outcome == FIGHT_OUTCOME.LOST:
+            creature.logger.add_entry(
+                '{}.{}'.format(self.date, fight.turn_counter),
+                '{} fled from {} !'.format(
+                    creature.name, fight.enemy.name
+                ),
+                ACTIVITY_TYPE.FIGHTING,
+                ENTRY_TYPE.CRITICAL
+            )
+        elif fight.outcome == FIGHT_OUTCOME.DRAW:
+            creature.logger.add_entry(
+                '{}.{}'.format(self.date, fight.turn_counter),
+                '{} gave up fighting {}.'.format(
+                    creature.name, fight.enemy.name
+                ),
+                ACTIVITY_TYPE.FIGHTING,
+                ENTRY_TYPE.CRITICAL
+            )
+        del fight.enemy
 
     def draw(self):
         self.window.clear()
-        self.ui.draw()
+        ObjectManager.ui.draw()

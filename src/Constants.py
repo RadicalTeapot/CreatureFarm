@@ -83,3 +83,8 @@ class STATS(Enum):
 
     COOKING = 7
     BUILDING = 8
+
+class FIGHT_OUTCOME(Enum):
+    WON = 0
+    LOST = 1
+    DRAW = 2

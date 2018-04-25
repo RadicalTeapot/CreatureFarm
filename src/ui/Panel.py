@@ -8,7 +8,7 @@ from ui.Elements import Button
 from Settings import Settings
 from ui.Buffer import Texture
 
-from Game import Game
+from ObjectManager import ObjectManager
 
 
 class Layout(object):
@@ -160,7 +160,7 @@ class Tab(object):
         if not self.active:
             return
 
-        with Game.getInstance().ui.buffer as buffer:
+        with ObjectManager.ui.buffer as buffer:
             buffer.bind_texture(self.texture)
             self.set_viewport(
                 self.rect.width, self.rect.height

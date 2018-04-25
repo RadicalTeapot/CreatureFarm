@@ -19,9 +19,13 @@
 
 
 # TODO
-- __Add min level caps to activities and implement gaining exp when activity is done__
+- __ Change fight mode to turn based (as opposed to instant), let the user set how many turns a creature should be adventuring, let creature have inventories that gets filled while adventuring and fighting and can be partially or totally lost when fleeing from a fight__
+- Add min level caps to activities and implement gaining exp when activity is done
 - Add fail chance for activities driven by difference between creature level and activity complexity
 - Log xp gain, success/fail at end of activities to creature log
+- Change way game is drawn (generate a static image for the panel borders and create a Panel.refresh method which redraws only the current tab texture. In Game.draw, draw first the panels textures and then the border overlay)
+- Change healing system from food to turn based. More hp take longer to heal. Make food grant bonuses (permanent (mutagen...) or temporary)
+- Add some items to increase inventory size of creatures
 
 - Implement an activity log to describe creature activity evolution
 - Implement stat effects from food (e.g. +5 strength, -0.2 evasion, ...)

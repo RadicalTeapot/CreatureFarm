@@ -9,7 +9,6 @@ from Constants import STATS
 class Creature(object):
     def __init__(self, name):
         self._model = Model()
-        self._view = View()
         self.logger = Logger(name)
 
         self.hatch(name)
@@ -111,15 +110,19 @@ class Creature(object):
 
     @property
     def busy(self):
-        return self._model.activity is not None
+        return len(self._model.activity_stack) > 0
 
     @property
     def activity(self):
-        return self._model.activity
+        if not self.busy:
+            return None
+        return self._model.activity_stack[-1]
 
     @property
     def timer(self):
-        return self._model.timer
+        if not self.busy:
+            return 0
+        return self._model.activity_stack[-1].timer
 
     @property
     def equipment(self):
@@ -174,35 +177,35 @@ class Creature(object):
         self, activity, activity_type, timer,
         start_callback=None, update_callback=None, end_callback=None
     ):
-        self._model.activity = activity
-        self._model.activity_type = activity_type
-        self._model.timer = timer
-        self._model.activity_callbacks['start'] = start_callback
-        self._model.activity_callbacks['update'] = update_callback
-        self._model.activity_callbacks['end'] = end_callback
+        activity = Activity(
+            activity, activity_type, timer,
+            start_callback, update_callback, end_callback
+        )
+        self._model.activity_stack.append(activity)
 
-        if callable(self._model.activity_callbacks['start']):
-            self._model.activity_callbacks['start']()
+        if callable(activity.start):
+            activity.start()
 
     def update(self):
-        if self._model.activity is not None and self._model.timer > 0:
-            self._model.timer -= 1
-            if self._model.timer == 0:
-                self.free()
-            else:
-                if callable(self._model.activity_callbacks['update']):
-                    self._model.activity_callbacks['update']()
+        if not self.busy:
+            return
+
+        activity = self._model.activity_stack[-1]
+        if activity.timer > 0:
+            activity.timer -= 1
+
+        if activity.timer == 0:
+            self.free()
+        else:
+            if callable(activity.update):
+                activity.update()
 
     def free(self):
-        self._model.activity = None
-        self._model.timer = 0
+        activity = self._model.activity_stack.pop()
 
-        if callable(self._model.activity_callbacks['end']):
-            self._model.activity_callbacks['end']()
-
-        self._model.activity_callbacks['start'] = None
-        self._model.activity_callbacks['update'] = None
-        self._model.activity_callbacks['end'] = None
+        if callable(activity.end):
+            activity.end()
+        del activity
 
     def get_description(self):
         msg = 'Creature desciption placeholder\n'
@@ -223,18 +226,26 @@ class Model(object):
         for stat in STATS:
             self.stats[stat] = 0.
 
-        self.activity = None
-        self.activity_type = ''
-        self.activity_callbacks = {'start': None, 'update': None, 'end': None}
-        self.timer = 0
+        self.activity_stack = []
 
         self.equipment = {}
         for body_part in BODY_PART:
             self.equipment[body_part] = None
 
+        self.inventory = {}
 
-class View(object):
-    pass
+
+class Activity(object):
+    def __init__(
+        self, activity, activity_type, timer,
+        start_callback=None, update_callback=None, end_callback=None
+    ):
+        self.activity = activity
+        self.type = activity_type
+        self.timer = timer
+        self.start = start_callback
+        self.update = update_callback
+        self.end = end_callback
 
 
 class Enemy(object):

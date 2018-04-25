@@ -4,6 +4,7 @@
 from Creature import Creature
 from Settings import Settings
 
+from ObjectManager import ObjectManager
 from Game import Game
 from ui import Ui
 
@@ -20,32 +21,33 @@ if __name__ == '__main__':
         width=Settings.WIDTH, height=Settings.HEIGHT
     )
 
-    ui = Ui()
-    game = Game(window, ui)
+    object_manager = ObjectManager()
+    object_manager.add_object('game', Game(window))
+    object_manager.add_object('ui', Ui())
 
-    game.add_creature(Creature('RadicalTeapot'))
+    ObjectManager.game.add_creature(Creature('RadicalTeapot'))
 
     # Add a sword and chestplate
-    game.inventory.add_items({
+    ObjectManager.game.inventory.add_items({
         'items.armor.chestplate': 1,
         'items.weapon.sword': 1
     })
 
     @window.event
     def on_draw():
-        game.draw()
+        ObjectManager.game.draw()
 
     @window.event
     def on_mouse_motion(x, y, dx, dy):
-        game.ui.mouse_motion(x, y)
+        ObjectManager.ui.mouse_motion(x, y)
 
     @window.event
     def on_mouse_release(x, y, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
-            game.ui.click(x, y)
+            ObjectManager.ui.click(x, y)
 
     @window.event
     def on_mouse_scroll(x, y, scroll_x, scroll_y):
-        game.ui.scroll(x, y, scroll_y)
+        ObjectManager.ui.scroll(x, y, scroll_y)
 
     pyglet.app.run()
