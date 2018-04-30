@@ -113,6 +113,14 @@ class Creature(object):
         self._set_stat(STATS.BUILDING, value)
 
     @property
+    def inventory_size(self):
+        return self._get_stat(STATS.INVENTORY_SIZE)
+
+    @inventory_size.setter
+    def inventory_size(self, value):
+        self._set_stat(STATS.INVENTORY_SIZE, value)
+
+    @property
     def busy(self):
         return len(self._model.activity_stack) > 0
 
@@ -177,7 +185,7 @@ class Creature(object):
             self._model.inventory[item_id] = quantity
 
     def get_inventory_size_left(self):
-        return self._model.max_inventory_size - sum([
+        return self.inventory_size - sum([
             quantity for quantity in self._model.inventory.values()
         ])
 
@@ -205,6 +213,8 @@ class Creature(object):
 
         self.cooking = 1.0
         self.building = 1.0
+
+        self.inventory_size = 10
 
     def hit(self, quantity):
         self.hp -= quantity
@@ -289,7 +299,6 @@ class Model(object):
             self.equipment[body_part] = None
 
         self.inventory = {}
-        self.max_inventory_size = 10
 
 
 class Activity(object):

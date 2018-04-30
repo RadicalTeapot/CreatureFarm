@@ -35,6 +35,7 @@ class ITEM_CATEGORY(Enum):
     FOOD = 'Food'
     WEAPON = 'Weapon'
     ARMOR = 'Armor'
+    UTILITY = 'Utility'
 
 
 class ACTIVITY_TYPE(Enum):
@@ -49,8 +50,14 @@ class BODY_PART(Enum):
     HEAD = 1
     ARMS = 2
     LEGS = 3
-    HAND = 4
-    OFF_HAND = 5
+
+    UTILITY_CHEST = 4
+    UTILITY_HEAD = 5
+    UTILITY_ARMS = 6
+    UTILITY_LEGS = 7
+
+    HAND = 8
+    OFF_HAND = 9
 
 
 class WEAPON_TYPE(Enum):
@@ -83,6 +90,8 @@ class STATS(Enum):
 
     COOKING = 7
     BUILDING = 8
+
+    INVENTORY_SIZE = 9
 
 class FIGHT_OUTCOME(Enum):
     WON = 0

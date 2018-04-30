@@ -19,6 +19,7 @@ from Constants import BODY_PART
 from Constants import WEAPON_TYPE
 from Constants import STATS
 from Constants import FIGHT_OUTCOME
+from Constants import ITEM_CATEGORY
 
 from ObjectManager import ObjectManager
 
@@ -65,10 +66,14 @@ class Game(object):
                 item.is_raw = item_data['is_raw']
                 item.nutrition_value = item_data['nutrition_value']
             # Armor
-            elif item_data['type'] == 'armor':
+            elif item_data['type'] in ['armor', 'utility']:
                 item = ArmorItem()
                 for body_part in BODY_PART:
-                    if item_data['body_part'].lower() == body_part.name.lower():
+                    item_part = item_data['body_part'].lower()
+                    if item_data['type'] == 'utility':
+                        item.category = ITEM_CATEGORY.UTILITY
+                        item_part = 'utility_' + item_part
+                    if item_part == body_part.name.lower():
                         item.body_part = body_part
                         break
                 for stat in item_data['modified_stats']:
@@ -93,6 +98,10 @@ class Game(object):
                     ]
                     if modified_stat:
                         item.modified_stats[modified_stat[0]] = stat['value']
+            elif item_data['type'] == 'utility':
+                # TODO: implement utility item (creature should be able to
+                # equip one utility item per body part on top of their armor)
+                pass
             else:
                 item = Item()
 
@@ -427,7 +436,7 @@ class Game(object):
         item = ObjectManager.ui._state.selected_item
 
         if item is None:
-            ObjectManager.ui.display_dialog('No food selected')
+            ObjectManager.ui.display_dialog('No item selected')
             return
 
         if creature is None or creature.busy:

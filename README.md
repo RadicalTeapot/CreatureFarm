@@ -19,6 +19,7 @@
 
 
 # TODO
+- Add options to give creatures potions/food/items before going to adventures to be used in adventure (at cost of inventory space)
 - Add min level caps to activities and implement gaining exp when activity is done
 - Add fail chance for activities driven by difference between creature level and activity complexity
 - Log xp gain, success/fail at end of activities to creature log
@@ -28,7 +29,7 @@
 
 - Implement an activity log to describe creature activity evolution
 - Implement stat effects from food (e.g. +5 strength, -0.2 evasion, ...)
-- Reimplement tabs in UI (when a panel has multiple tabs, show arrows at the bottom right of it letting the user switch tabs)
+- Reimplement tabs in UI
 - Display available adventures/recipe first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
 - Improve fight system
 

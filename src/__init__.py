@@ -30,7 +30,8 @@ if __name__ == '__main__':
     # Add a sword and chestplate
     ObjectManager.game.inventory.add_items({
         'items.armor.chestplate': 1,
-        'items.weapon.sword': 1
+        'items.weapon.sword': 1,
+        'items.utility.backpack': 1
     })
 
     @window.event

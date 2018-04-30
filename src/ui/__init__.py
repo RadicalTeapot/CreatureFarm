@@ -151,6 +151,8 @@ class CreatureState(UiState):
             '\n'
             'Cooking: Lvl. {} ({} %)\n\n'
             'Building: Lvl. {} ({} %)\n\n'
+            '\n'
+            'Inventory space: {} ({} total)\n\n'
         ).format(
             self.selected_creature.hp,
             self.selected_creature.max_hp,
@@ -180,7 +182,9 @@ class CreatureState(UiState):
             int((
                 self.selected_creature.building -
                 int(self.selected_creature.building)
-            ) * 100)
+            ) * 100),
+            int(self.selected_creature.get_inventory_size_left()),
+            int(self.selected_creature.inventory_size)
         ), tab.rect.width)
         tab.add_label(label)
 

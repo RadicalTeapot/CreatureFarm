@@ -67,7 +67,10 @@ class ArmorItem(Item):
 
         stat_changes = []
         for stat, value in self.modified_stats.items():
-            stat_changes.append('  {}: {}'.format(stat.name.title(), value))
+            stat_changes.append('  {}: {}'.format(
+                stat.name.title().replace('_', ' '),
+                value
+            ))
         stat_changes.sort()
 
         description += (
@@ -76,7 +79,7 @@ class ArmorItem(Item):
             'Stat changes:\n{}\n'
             '{}'
         ).format(
-            self.body_part.name.lower(),
+            self.body_part.name.title().replace('_', ' '),
             '\n'.join(stat_changes),
             equiped
         )
@@ -102,7 +105,10 @@ class WeaponItem(Item):
 
         stat_changes = []
         for stat, value in self.modified_stats.items():
-            stat_changes.append('  {}: {}'.format(stat.name.title(), value))
+            stat_changes.append('  {}: {}'.format(
+                stat.name.title().replace('_', ' '),
+                value
+            ))
         stat_changes.sort()
 
         description += (
@@ -111,7 +117,10 @@ class WeaponItem(Item):
             'Stat changes:\n{}\n'
             '{}'
         ).format(
-            ', '.join([weapon_type.name.lower() for weapon_type in self.types]),
+            ', '.join([
+                weapon_type.name.title().replace('_', ' ')
+                for weapon_type in self.types
+            ]),
             '\n'.join(stat_changes),
             equiped
         )

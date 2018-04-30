@@ -50,7 +50,7 @@
     "armor.chestplate": {
         "name": "Chestplate",
         "type": "armor",
-        "body_part": "Chest",
+        "body_part": "chest",
         "modified_stats": [
             {"type": "armor", "value": 5.0},
             {"type": "evasion", "value": -1.0}
@@ -65,6 +65,17 @@
         "modified_stats": [
             {"type": "strength", "value": 5.0},
             {"type": "melee", "value": 1.0}
+        ],
+        "description": "Item description placeholder"
+    },
+
+    "utility.backpack": {
+        "name": "Backpack",
+        "type": "utility",
+        "body_part": "chest",
+        "modified_stats": [
+            {"type": "inventory_size", "value": 10},
+            {"type": "evasion", "value": -2.0}
         ],
         "description": "Item description placeholder"
     }
