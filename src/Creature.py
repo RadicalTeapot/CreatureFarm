@@ -126,7 +126,7 @@ class Creature(object):
     def timer(self):
         if not self.busy:
             return 0
-        return self._model.activity_stack[-1].timer
+        return self._model.activity_stack[-1].turn_count
 
     @property
     def inventory(self):
@@ -165,16 +165,31 @@ class Creature(object):
 
     def add_to_inventory(self, loot):
         for item_id, quantity in loot.items():
+            # TODO: Add message to log when inventory is full/quantity needs to
+            # be adjusted
+            if self.get_inventory_size_left() == 0:
+                break
+
+            if quantity > self.get_inventory_size_left():
+                quantity = self.get_inventory_size_left()
+
             quantity += self._model.inventory.get(item_id, 0)
             self._model.inventory[item_id] = quantity
+
+    def get_inventory_size_left(self):
+        return self._model.max_inventory_size - sum([
+            quantity for quantity in self._model.inventory.values()
+        ])
 
     def remove_from_inventory(self, loot):
         for item_id, quantity in loot.items():
             if item_id not in self._model.inventory:
                 raise KeyError('Item {} not in inventory'.format(item_id))
-            self._model.inventory[item_id] = max(
-                self._model.inventory[item_id] - quantity, 0
-            )
+
+            self._model.inventory[item_id] -= quantity
+
+            if self._model.inventory[item_id] <= 0:
+                del self._model.inventory[item_id]
 
     def hatch(self, name):
         self.name = name
@@ -217,14 +232,13 @@ class Creature(object):
             return
 
         activity = self._model.activity_stack[-1]
-        if activity.timer > 0:
-            activity.timer -= 1
+        activity.turn_count += 1
+        if activity.timer != -1:
+            if activity.timer - activity.turn_count <= 0:
+                return self.free()
 
-        if activity.timer == 0:
-            self.free()
-        else:
-            if callable(activity.update):
-                activity.update()
+        if callable(activity.update):
+            activity.update()
 
     def free(self, free_all=False, ignore_callbacks=False):
         activities = []
@@ -246,13 +260,15 @@ class Creature(object):
     def get_description(self):
         msg = 'Creature desciption placeholder\n'
         if self.busy:
-            msg += 'It is {} for {} more turns.\n'.format(
+            msg += 'It has been {} for {} turns.\n'.format(
                 self.activity.type.value, self.timer
             )
-        msg += '\nInventory :\n'
-        for item_id, quantity in self._model.inventory.items():
-            name = ObjectManager.game.inventory.get_item(item_id).name
-            msg += '  {}: {}\n'.format(name, quantity)
+
+        if self._model.inventory.items():
+            msg += '\nInventory :\n'
+            for item_id, quantity in self._model.inventory.items():
+                name = ObjectManager.game.inventory.get_item(item_id).name
+                msg += '  {}: {}\n'.format(name, quantity)
         return msg
 
 
@@ -273,6 +289,7 @@ class Model(object):
             self.equipment[body_part] = None
 
         self.inventory = {}
+        self.max_inventory_size = 10
 
 
 class Activity(object):
@@ -283,6 +300,7 @@ class Activity(object):
         self.activity = activity
         self.type = activity_type
         self.timer = timer
+        self.turn_count = 0
         self.start = start_callback
         self.update = update_callback
         self.end = end_callback
