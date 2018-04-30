@@ -19,7 +19,9 @@
 
 
 # TODO
-- __ Change fight mode to turn based (as opposed to instant), let the user set how many turns a creature should be adventuring, let creature have inventories that gets filled while adventuring and fighting and can be partially or totally lost when fleeing from a fight__
+- __ Change fight mode to turn based (as opposed to instant), make adventures last forever and let user recall creature from the current adventure screen, let creature have inventories that gets filled while adventuring and fighting and can be partially or totally lost when fleeing from a fight__
+- Have creature have max inventory size
+- Change creature activity timer to count up instead of down and display number of turns passed doing an activity when activity is endless
 - Add min level caps to activities and implement gaining exp when activity is done
 - Add fail chance for activities driven by difference between creature level and activity complexity
 - Log xp gain, success/fail at end of activities to creature log

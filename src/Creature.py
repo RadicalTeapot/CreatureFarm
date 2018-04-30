@@ -4,6 +4,10 @@
 from Logger import Logger
 from Constants import BODY_PART
 from Constants import STATS
+from ObjectManager import ObjectManager
+
+import math
+import random
 
 
 class Creature(object):
@@ -125,6 +129,10 @@ class Creature(object):
         return self._model.activity_stack[-1].timer
 
     @property
+    def inventory(self):
+        return self._model.inventory
+
+    @property
     def equipment(self):
         return self._model.equipment
 
@@ -154,6 +162,19 @@ class Creature(object):
             raise KeyError('Wrong stat type')
         self._model.stats[stat] += amount
         # TODO: Add log message when creature gains a new level
+
+    def add_to_inventory(self, loot):
+        for item_id, quantity in loot.items():
+            quantity += self._model.inventory.get(item_id, 0)
+            self._model.inventory[item_id] = quantity
+
+    def remove_from_inventory(self, loot):
+        for item_id, quantity in loot.items():
+            if item_id not in self._model.inventory:
+                raise KeyError('Item {} not in inventory'.format(item_id))
+            self._model.inventory[item_id] = max(
+                self._model.inventory[item_id] - quantity, 0
+            )
 
     def hatch(self, name):
         self.name = name
@@ -186,6 +207,11 @@ class Creature(object):
         if callable(activity.start):
             activity.start()
 
+    def has_activity(self, activity):
+        return activity in [
+            item.activity for item in self._model.activity_stack
+        ]
+
     def update(self):
         if not self.busy:
             return
@@ -200,19 +226,33 @@ class Creature(object):
             if callable(activity.update):
                 activity.update()
 
-    def free(self):
-        activity = self._model.activity_stack.pop()
+    def free(self, free_all=False, ignore_callbacks=False):
+        activities = []
+        if free_all:
+            activities = [
+                activity
+                for activity in reversed(self._model.activity_stack)
+            ]
+            self._model.activity_stack = []
+        else:
+            activities.append(self._model.activity_stack.pop())
 
-        if callable(activity.end):
-            activity.end()
-        del activity
+        for activity in activities:
+            if not ignore_callbacks and callable(activity.end):
+                activity.end()
+
+            del activity
 
     def get_description(self):
         msg = 'Creature desciption placeholder\n'
         if self.busy:
             msg += 'It is {} for {} more turns.\n'.format(
-                self._model.activity_type.value, self.timer
+                self.activity.type.value, self.timer
             )
+        msg += '\nInventory :\n'
+        for item_id, quantity in self._model.inventory.items():
+            name = ObjectManager.game.inventory.get_item(item_id).name
+            msg += '  {}: {}\n'.format(name, quantity)
         return msg
 
 
@@ -254,6 +294,7 @@ class Enemy(object):
         self.name = None
         self.level = None
         self.description = None
+        self.loot = {}
 
         self._max_hp = None
         self._hp = None
@@ -261,8 +302,26 @@ class Enemy(object):
         self._armor = None
         self._agility = None
 
-    def reset(self):
-        self.hp = self.max_hp
+    def get_loot(self):
+        rewards = {}
+        for item_id, data in self.loot.items():
+            # TODO: use creature stats to modify curve value
+            quantity_range, curve = data
+            # Remap curve for [0, 1] to [1.5, -0.5]
+            curve = min(max(curve, 0.), 1.0)
+            curve = (1 - curve) * 2 - 0.5
+            # Sigmoid curve
+            # for curve = 0.5 -> .1: .008, .5: .5, 1.: 0.998
+            quantity = 1 / (1 + math.exp(-12 * (random.random() - curve)))
+            # Remap quantity from [0, 1] to quantity range
+            quantity *= (quantity_range[1] - quantity_range[0])
+            quantity += quantity_range[0]
+            quantity = round(quantity)
+
+            if quantity > 0:
+                rewards[item_id] = int(quantity)
+
+        return rewards
 
     @property
     def max_hp(self):

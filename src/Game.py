@@ -11,6 +11,8 @@ from Inventory import Recipe
 from Adventure import Adventure
 from Creature import Enemy
 
+from Fight import Fight
+
 from Constants import ACTIVITY_TYPE
 from Constants import ENTRY_TYPE
 from Constants import BODY_PART
@@ -163,18 +165,12 @@ class Game(object):
             adventure.id = adventure_id
             adventure.title = adventure_data['title']
             adventure.description = adventure_data['description']
-            adventure.duration = adventure_data['duration']
 
             for enemy in adventure_data.get('enemies', []):
-                adventure.add_enemy(
-                    self.enemies[enemy['enemy']], enemy['chance']
-                )
+                adventure.add_enemy(enemy['enemy'], enemy['chance'])
 
             for reward in adventure_data.get('rewards', []):
-                adventure.add_reward(
-                    reward['item'], reward['quantity_range'], reward['curve'],
-                    reward['chance']
-                )
+                adventure.add_reward(reward['item'], reward['chance'])
 
             ids.add(adventure_id)
             self.add_adventure(adventure)
@@ -182,7 +178,7 @@ class Game(object):
 
     def _validate_adventure(self, adventure_id, adventure, ids):
         attributes = [
-            "title", "duration", "enemies", "rewards", "description"
+            "title", "enemies", "rewards", "description"
         ]
         for attribute in attributes:
             if attribute not in adventure:
@@ -205,6 +201,8 @@ class Game(object):
             enemy.strength = enemy_data['strength']
             enemy.armor = enemy_data['armor']
             enemy.agility = enemy_data['agility']
+            for loot in enemy_data['loot']:
+                enemy.loot[loot['item']] = (loot['quantity'], loot['curve'])
             ids.add(enemy_id)
             self.add_enemy(enemy)
         return ids
@@ -218,6 +216,7 @@ class Game(object):
                 raise KeyError('Missing {} attribute'.format(attribute))
         if enemy_id in ids:
             raise RuntimeError('Duplicate id')
+        # TODO: check loot validity as well
 
     def update(self):
         for creature in self.creatures:
@@ -252,7 +251,7 @@ class Game(object):
         creature.set_activity(
             adventure,
             ACTIVITY_TYPE.ADVENTURE,
-            adventure.duration,
+            -1,
             update_callback=partial(
                 self.update_adventure, creature, adventure
             ),
@@ -267,19 +266,18 @@ class Game(object):
         adventure.update(creature, self.date)
 
     def finish_adventure(self, creature, adventure):
-        rewards = adventure.finish(creature, self.date)
-
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
             creature.name, adventure.title
         )
-        for item_id, quantity in rewards.items():
+        for item_id, quantity in creature.inventory.items():
             message += '    {}: {}\n'.format(
                 self.inventory.get_item(item_id).name,
                 quantity
             )
-        self.inventory.add_items(rewards)
-        ObjectManager.ui.display_dialog(message)
+        self.inventory.add_items(creature.inventory)
+        creature.inventory.clear()
 
+        ObjectManager.ui.display_dialog(message)
         ObjectManager.ui.refresh()
 
     def start_cooking(self):
@@ -444,9 +442,8 @@ class Game(object):
         item.equiped = creature
         ObjectManager.ui.refresh()
 
-    def start_fight(self, creature, enemy):
-        fight = creature.activity
-        fight.start(enemy)
+    def start_fight(self, creature, enemy_id):
+        fight = Fight(self.enemies[enemy_id])
 
         creature.logger.add_entry(
             self.date,
@@ -457,37 +454,57 @@ class Game(object):
             ENTRY_TYPE.IMPORTANT
         )
 
+        creature.set_activity(
+            fight, ACTIVITY_TYPE.FIGHTING, -1,
+            update_callback=partial(ObjectManager.game.update_fight, creature),
+            end_callback=partial(
+                ObjectManager.game.finish_fight, creature, fight
+            )
+        )
+
     def update_fight(self, creature):
-        creature.activity.update(creature, self.date)
+        fight = creature.activity.activity
+        fight.update(creature, self.date)
 
-    def end_fight(self, creature):
-        fight = creature.activity
-
+    def finish_fight(self, creature, fight):
         if fight.outcome == FIGHT_OUTCOME.WON:
             creature.logger.add_entry(
-                '{}.{}'.format(self.date, fight.turn_counter),
+                self.date,
                 '{} killed {} !'.format(creature.name, fight.enemy.name),
                 ACTIVITY_TYPE.FIGHTING,
                 ENTRY_TYPE.IMPORTANT
             )
+            creature.add_to_inventory(fight.enemy.get_loot())
         elif fight.outcome == FIGHT_OUTCOME.LOST:
             creature.logger.add_entry(
-                '{}.{}'.format(self.date, fight.turn_counter),
+                self.date,
                 '{} fled from {} !'.format(
                     creature.name, fight.enemy.name
                 ),
                 ACTIVITY_TYPE.FIGHTING,
                 ENTRY_TYPE.CRITICAL
             )
+            # Stop all activities
+            creature.free(free_all=True, ignore_callbacks=True)
+            # Loose part of the inventory
+            items = random.choice(creature.inventory.keys())
+            for item_name in items:
+                quantity = round(
+                    random.random() * creature.inventory[item_name]
+                )
+                creature.remove_from_inventory({item_name: quantity})
         elif fight.outcome == FIGHT_OUTCOME.DRAW:
             creature.logger.add_entry(
-                '{}.{}'.format(self.date, fight.turn_counter),
+                self.date,
                 '{} gave up fighting {}.'.format(
                     creature.name, fight.enemy.name
                 ),
                 ACTIVITY_TYPE.FIGHTING,
                 ENTRY_TYPE.CRITICAL
             )
+            # Stop all activities
+            creature.free(free_all=True, ignore_callbacks=True)
+
         del fight.enemy
 
     def draw(self):

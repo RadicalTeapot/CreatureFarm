@@ -11,17 +11,11 @@ from Constants import STATS
 from Constants import FIGHT_OUTCOME
 
 
-# TODO: Finish implementing
-
 class Fight(object):
-    def __init__(self):
-        self.enemy = None
+    def __init__(self, enemy):
+        self.enemy = copy.deepcopy(enemy)
         self.turn_count = 0
         self.outcome = None
-
-    def start(self, enemy):
-        # Copy the enemy
-        self.enemy = copy.deepcopy(enemy)
 
     def update(self, creature, date):
         # TODO: Switch to a more complete fight system
@@ -46,11 +40,19 @@ class Fight(object):
             # 1% melee increase
             creature.gain_experience(STATS.MELEE, 0.01)
 
-            # TODO: add fight counter to the date
             creature.logger.add_entry(
                 date,
                 '{} hit {} for {} damage'.format(
                     creature.name, self.enemy.name, int(damages)
+                ),
+                ACTIVITY_TYPE.FIGHTING,
+                ENTRY_TYPE.INFO
+            )
+        else:
+            creature.logger.add_entry(
+                date,
+                '{} attacks but the {} dodges'.format(
+                    creature.name, self.enemy.name
                 ),
                 ACTIVITY_TYPE.FIGHTING,
                 ENTRY_TYPE.INFO
@@ -84,17 +86,24 @@ class Fight(object):
             # 1% evasion increase
             creature.gain_experience(STATS.EVASION, 0.01)
 
+            creature.logger.add_entry(
+                date,
+                'The {} attacks but {} dodges'.format(
+                    self.enemy.name, creature.name
+                ),
+                ACTIVITY_TYPE.FIGHTING,
+                ENTRY_TYPE.INFO
+            )
+
         if creature.hp <= 0:
             return self.lost(creature)
 
     def won(self, creature):
         self.outcome = FIGHT_OUTCOME.WON
-        # TODO: Add rewards to creature inventory
         creature.free()
 
     def lost(self, creature):
         self.outcome = FIGHT_OUTCOME.LOST
-        # TODO: Also stop adventuring and handle loosing some/all inventory
         creature.free()
 
     def draw(self, creature):

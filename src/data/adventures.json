@@ -1,48 +1,26 @@
 {
     "forest_hunt": {
         "title": "Forest hunt",
-        "duration": 10,
         "enemies": [
-            {"enemy": "enemies.goblin", "chance": 0.25},
-            {"enemy": "enemies.orc", "chance": 0.05}
+            {"enemy": "enemies.goblin", "chance": 0.1},
+            {"enemy": "enemies.orc", "chance": 0.025}
         ],
         "rewards": [
-            {
-                "item": "items.food.raw_meat",
-                "quantity_range": [1, 5],
-                "curve": 1.0,
-                "chance": 1.0
-            },
-            {
-                "item": "items.food.raw_vegetables",
-                "quantity_range": [2, 10],
-                "curve": 1.0,
-                "chance": 1.0
-            }
+            {"item": "items.food.raw_meat", "chance": 0.025},
+            {"item": "items.food.raw_vegetables", "chance": 0.1}
         ],
         "description": "Placeholder adventure description"
     },
 
     "cave_exploration": {
         "title": "Cave exploration",
-        "duration": 15,
         "enemies": [
             {"enemy": "enemies.goblin", "chance": 0.1},
             {"enemy": "enemies.orc", "chance": 0.1}
         ],
         "rewards": [
-            {
-                "item": "items.weapon.sword",
-                "quantity_range": [1, 1],
-                "curve": 1.0,
-                "chance": 0.25
-            },
-            {
-                "item": "items.armor.chestplate",
-                "quantity_range": [1, 1],
-                "curve": 1.0,
-                "chance": 0.25
-            }
+            {"item": "items.weapon.sword", "chance": 0.005},
+            {"item": "items.armor.chestplate", "chance": 0.005}
         ],
         "description": "Placeholder adventure description"
     }

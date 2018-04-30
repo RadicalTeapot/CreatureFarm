@@ -274,14 +274,12 @@ class CurrentAdventureState(UiState):
             count = len([
                 creature
                 for creature in ObjectManager.game.creatures
-                if creature.activity == adventure
+                if creature.has_activity(adventure)
             ])
             if count == 0:
                 continue
             button = Button('{} ({})'.format(adventure.title, count))
-            button.register_handler(
-                partial(self.select_adventure, adventure)
-            )
+            button.register_handler(partial(self.select_adventure, adventure))
             buttons.append(button)
             button.pressed = (adventure == self.selected_adventure)
         self.ui.left_panel.add_buttons(tab, buttons)
@@ -301,7 +299,7 @@ class CurrentAdventureState(UiState):
         creatures = [
             creature
             for creature in ObjectManager.game.creatures
-            if creature.activity == adventure
+            if creature.has_activity(adventure)
         ]
 
         if (
@@ -341,11 +339,24 @@ class CurrentAdventureState(UiState):
             for creature in ObjectManager.game.creatures
             if creature.id == self.selected_creature
         ]
-        if creature:
-            creature = creature[0]
-            label = DescriptionLabel((
-                '{} turns left'.format(creature.timer)
-            ), tab.rect.width)
+        if not creature:
+            return
+
+        creature = creature[0]
+        # TODO: Display how many turns passed (and maybe other info) as
+        # description label
+
+        # Only recal if creature current activity is adventure (not in a fight
+        # or other sub-activity)
+        if (
+            creature.activity and
+            creature.activity.activity == self.selected_adventure
+        ):
+            button = Button('Recall', False)
+            button.register_handler(creature.free)
+            self.ui.right_panel.add_button(tab, button)
+        else:
+            label = DescriptionLabel('Cannot recall', tab.rect.width)
             self.ui.right_panel.add_label(tab, label)
 
 
