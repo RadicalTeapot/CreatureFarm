@@ -71,3 +71,25 @@ class Logger(object):
             ]
 
         return log
+
+    def serialize(self):
+        data = [
+            {
+                'date': entry.date,
+                'message': entry.message,
+                'entry_type': entry.entry_type,
+                'activity_type': entry.activity_type
+            }
+            for entry in self.entries
+        ]
+
+        return data
+
+    def deserialize(self, data):
+        for entry in data:
+            self.add_entry(
+                entry['date'],
+                entry['message'],
+                entry['activity_type'],
+                entry['entry_type']
+            )

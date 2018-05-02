@@ -238,3 +238,13 @@ class Inventory(object):
 
     def get_recipe(self, recipe_id):
         return self.recipes[recipe_id]
+
+    def serialize(self):
+        data = {}
+        for item_id, quantity in self.items.items():
+            data[item_id] = quantity
+        return data
+
+    def deserialize(self, data):
+        for item_id, quantity in data.items():
+            self.items[item_id].quantity = quantity

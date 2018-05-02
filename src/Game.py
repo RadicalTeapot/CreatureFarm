@@ -9,6 +9,7 @@ from Inventory import WeaponItem
 from Inventory import Recipe
 
 from Adventure import Adventure
+from Creature import Creature
 from Creature import Enemy
 
 from Fight import Fight
@@ -515,6 +516,24 @@ class Game(object):
             creature.free(free_all=True, ignore_callbacks=True)
 
         del fight.enemy
+
+    def serialize(self):
+        data = {}
+        data['inventory'] = self.inventory.serialize()
+        data['date'] = self.date
+        data['creatures'] = [
+            creature.serialize()
+            for creature in self.creatures
+        ]
+        return data
+
+    def deserialize(self, data):
+        self.date = data['date']
+        self.inventory.deserialize(data['inventory'])
+        self.creatures = [
+            Creature.deserialize(creature_data)
+            for creature_data in data['creatures']
+        ]
 
     def draw(self):
         self.window.clear()

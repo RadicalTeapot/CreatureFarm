@@ -8,6 +8,7 @@ from ObjectManager import ObjectManager
 
 import math
 import random
+import copy
 
 
 class Creature(object):
@@ -281,10 +282,27 @@ class Creature(object):
                 msg += '  {}: {}\n'.format(name, quantity)
         return msg
 
+    def serialize(self):
+        data = {}
+        data['id'] = self._model.id
+        data['name'] = self._model.name
+        data['stats'] = copy.deepcopy(self._model.stats)
+        data['equipment'] = copy.deepcopy(self._model.equipment)
+        data['inventory'] = copy.deepcopy(self._model.inventory)
+        data['activity_stack'] = [
+            activity.serialize()
+            for activity in self._model.activity_stack
+        ]
+        data['log'] = self.logger.serialize()
+
+        return data
+
+    def deserialize(self, data):
+        pass
+
 
 class Model(object):
     def __init__(self):
-        # TODO Use Constant stats
         self.id = -1
         self.name = ''
 
