@@ -12,7 +12,6 @@
 
 
 # TODO
-- __Move all activity python files in an activity folder__
 - __Finish load/save code and make a start menu__
 - Add options to give creatures potions/food/items before going to adventures to be used in adventure (at cost of inventory space)
 - Add min level caps to activities and implement gaining exp when activity is done

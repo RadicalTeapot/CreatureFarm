@@ -8,11 +8,11 @@ from Inventory import FoodItem
 from Inventory import WeaponItem
 from Inventory import Recipe
 
-from Adventure import Adventure
+from activity.Adventure import Adventure
 from Creature import Creature
 from Creature import Enemy
 
-from Fight import Fight
+from activity.Fight import Fight
 
 from Constants import ACTIVITY_TYPE
 from Constants import ENTRY_TYPE
