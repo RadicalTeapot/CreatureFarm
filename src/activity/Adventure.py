@@ -8,8 +8,10 @@ from Constants import ENTRY_TYPE
 
 from ObjectManager import ObjectManager
 
+from activity import Activity
 
-class Adventure(object):
+
+class AdventureTemplate(object):
     def __init__(self):
         self.id = None
         self.title = None
@@ -17,40 +19,11 @@ class Adventure(object):
         self.enemies = {}
         self.rewards = {}
 
-    def add_reward(self, item_id, chance):
-        self.rewards[item_id] = chance
-
     def add_enemy(self, enemy_id, chance):
         self.enemies[enemy_id] = chance
 
-    def start(self, creature, date):
-        creature.logger.add_entry(
-            date,
-            '{} started adventure {}'.format(creature.name, self.title),
-            ACTIVITY_TYPE.ADVENTURE,
-            ENTRY_TYPE.INFO
-        )
-
-    def update(self, creature, date):
-        for enemy_id, chance in self.enemies.items():
-            if random.random() < chance:
-                ObjectManager.game.start_fight(creature, enemy_id)
-                return
-
-        for item_id, chance in self.rewards.items():
-            if random.random() < chance:
-                creature.add_to_inventory({item_id: 1})
-
-                creature.logger.add_entry(
-                    date,
-                    '{} found one {}'.format(
-                        creature.name,
-                        ObjectManager.game.inventory.get_item(item_id).name
-                    ),
-                    ACTIVITY_TYPE.ADVENTURE,
-                    ENTRY_TYPE.INFO
-                )
-                break
+    def add_reward(self, item_id, chance):
+        self.rewards[item_id] = chance
 
     def is_available(self, creature):
         return True
@@ -58,14 +31,69 @@ class Adventure(object):
     def get_description(self):
         return 'Adventure description placeholder'
 
+
+class Adventure(Activity):
+    def __init__(self, creature=None, template=None):
+        super().__init__(ACTIVITY_TYPE.ADVENTURE, creature, -1)
+        self.template = template
+
+    def start(self):
+        self.creature.logger.add_entry(
+            ObjectManager.game.date,
+            '{} started adventure {}'.format(
+                self.creature.name, self.template.title
+            ),
+            self.activity_type,
+            ENTRY_TYPE.INFO
+        )
+
+    def update(self):
+        for enemy_id, chance in self.template.enemies.items():
+            if random.random() < chance:
+                ObjectManager.game.start_fight(self.creature, enemy_id)
+                return
+
+        for item_id, chance in self.template.rewards.items():
+            if random.random() < chance:
+                self.creature.add_to_inventory({item_id: 1})
+
+                self.creature.logger.add_entry(
+                    ObjectManager.game.date,
+                    '{} found one {}'.format(
+                        self.creature.name,
+                        ObjectManager.game.inventory.get_item(item_id).name
+                    ),
+                    self.activity_type,
+                    ENTRY_TYPE.INFO
+                )
+                break
+
+    def end(self):
+        message = '{} just finished adventure {} !\n\nThey found:\n'.format(
+            self.reature.name, self.template.title
+        )
+        for item_id, quantity in self.creature.inventory.items():
+            message += '    {}: {}\n'.format(
+                ObjectManager.game.inventory.get_item(item_id).name,
+                quantity
+            )
+        self.inventory.add_items(self.creature.inventory)
+        self.creature.inventory.clear()
+
+        ObjectManager.ui.display_dialog(message)
+        ObjectManager.ui.refresh()
+
     def serialize(self):
-        return self.id
+        data = super().serialize()
+        data['template'] = None if self.template is None else self.template.id
+        return data
 
     def deserialize(self, data):
-        adventure = [
+        super().deserialize(data)
+        template = [
             adventure
             for adventure in ObjectManager.game.adventures
-            if adventure.id == data
+            if adventure.id == data['template']
         ]
-        if adventure:
-            return adventure[0]
+        if template:
+            self.template = template[0]

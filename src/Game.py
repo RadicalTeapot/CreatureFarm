@@ -8,25 +8,23 @@ from Inventory import FoodItem
 from Inventory import WeaponItem
 from Inventory import Recipe
 
-from activity.Adventure import Adventure
 from Creature import Creature
-from Creature import Enemy
+from Enemy import Enemy
 
+from activity.Adventure import Adventure
+from activity.Adventure import AdventureTemplate
+from activity.Cook import Cook
+from activity.Feed import Feed
 from activity.Fight import Fight
 
-from Constants import ACTIVITY_TYPE
-from Constants import ENTRY_TYPE
 from Constants import BODY_PART
 from Constants import WEAPON_TYPE
 from Constants import STATS
-from Constants import FIGHT_OUTCOME
 from Constants import ITEM_CATEGORY
 
 from ObjectManager import ObjectManager
 
-from functools import partial
 import json
-import random
 
 
 class Game(object):
@@ -35,7 +33,7 @@ class Game(object):
 
         self.creatures = []
         self.enemies = {}
-        self.adventures = []
+        self.adventure_templates = []
         self.inventory = Inventory()
 
         # Turn counter
@@ -171,7 +169,7 @@ class Game(object):
         for adventure_id, adventure_data in data.items():
             adventure_id = 'adventures.{}'.format(adventure_id)
             self._validate_adventure(adventure_id, adventure_data, ids)
-            adventure = Adventure()
+            adventure = AdventureTemplate()
             adventure.id = adventure_id
             adventure.title = adventure_data['title']
             adventure.description = adventure_data['description']
@@ -236,21 +234,23 @@ class Game(object):
 
     def add_creature(self, creature):
         # TODO: Find a better id system
-        creature.id = len(self.creatures)
+        creature.id = 'creature.' + creature._model.name
         self.creatures.append(creature)
 
     def add_adventure(self, adventure):
-        self.adventures.append(adventure)
-        self.adventures = sorted(self.adventures, key=lambda adv: adv.title)
+        self.adventure_templates.append(adventure)
+        self.adventure_templates = sorted(
+            self.adventure_templates, key=lambda adv: adv.title
+        )
 
     def add_enemy(self, enemy):
         self.enemies[enemy.id] = enemy
 
     def start_adventure(self):
         creature = ObjectManager.ui._state.selected_creature
-        adventure = ObjectManager.ui._state.selected_adventure
+        adventure_template = ObjectManager.ui._state.selected_adventure
 
-        if adventure is None:
+        if adventure_template is None:
             ObjectManager.ui.display_dialog('No adventure selected')
             return
 
@@ -258,36 +258,7 @@ class Game(object):
             ObjectManager.ui.display_dialog('Invalid creature selection')
             return
 
-        creature.set_activity(
-            adventure,
-            ACTIVITY_TYPE.ADVENTURE,
-            -1,
-            update_callback=partial(
-                self.update_adventure, creature, adventure
-            ),
-            end_callback=partial(
-                self.finish_adventure, creature, adventure
-            )
-        )
-        adventure.start(creature, self.date)
-        ObjectManager.ui.refresh()
-
-    def update_adventure(self, creature, adventure):
-        adventure.update(creature, self.date)
-
-    def finish_adventure(self, creature, adventure):
-        message = '{} just finished adventure {} !\n\nThey found:\n'.format(
-            creature.name, adventure.title
-        )
-        for item_id, quantity in creature.inventory.items():
-            message += '    {}: {}\n'.format(
-                self.inventory.get_item(item_id).name,
-                quantity
-            )
-        self.inventory.add_items(creature.inventory)
-        creature.inventory.clear()
-
-        ObjectManager.ui.display_dialog(message)
+        creature.add_activity(Adventure(creature, adventure_template))
         ObjectManager.ui.refresh()
 
     def start_cooking(self):
@@ -312,88 +283,10 @@ class Game(object):
             ObjectManager.ui.display_dialog('Ingredients not available.')
             return
 
-        creature.set_activity(
-            recipe,
-            ACTIVITY_TYPE.COOK,
-            recipe.duration,
-            end_callback=partial(
-                self.finish_cooking, creature, recipe
-            )
-        )
-        self.inventory.take_items(recipe.ingredients)
+        creature.add_activity(Cook(creature, recipe))
         ObjectManager.ui.refresh()
 
-    def finish_cooking(self, creature, recipe):
-        diff = creature.cooking - recipe.complexity
-
-        failed = True
-        rand = random.random()
-        if diff == -1 and rand < 0.1:
-            ObjectManager.ui.display_dialog = (
-                '{} failed cooking {} and wasted the ingredients.'
-            ).format(
-                creature.name, recipe.name
-            )
-        elif (diff == 0 and rand < 0.1) or (diff == -1 and rand < .33):
-            ObjectManager.ui.display_dialog = (
-                '{} failed cooking {} but did not waste the ingredients.'
-            ).format(
-                creature.name, recipe.name
-            )
-            self.inventory.add_items(recipe.ingredients)
-        else:
-            message = '{} just finished cooking !\n\nThey used:\n'.format(
-                creature.name
-            )
-            for item_id, quantity in recipe.ingredients.items():
-                name = self.inventory.get_item(item_id).name
-                message += '    {}x {}\n'.format(quantity, name)
-            message += '\nAnd produced:\n'
-            for item_id, quantity in recipe.results.items():
-                name = self.inventory.get_item(item_id).name
-                message += '    {}x {}\n'.format(quantity, name)
-            ObjectManager.ui.display_dialog(message)
-
-            self.inventory.add_items(recipe.results)
-            failed = False
-
-        xp_gain = 0.
-        if diff == -1:  # One level above creature level
-            xp_gain = 0.5  # 50 % xp gain
-        elif diff == 0:  # Same level
-            xp_gain = .2
-        elif diff == 1:  # One level below creature level
-            xp_gain = .1
-        elif diff == 2:  # Two levels below creature level
-            xp_gain = .05
-
-        if failed:  # Get only a third of xp when failing
-            xp_gain *= 0.33
-        creature.gain_experience(STATS.COOKING, xp_gain)
-
-        log_message = (
-            "The recipe was too simple to improve {}'s cooking skills."
-        ).format(creature.name)
-        if xp_gain > 0.0:
-            log_message = "{}'s cooking skills improved".format(creature.name)
-            if xp_gain < .1:
-                log_message += ' a bit.'
-            elif xp_gain > 0.4:
-                log_message += ' a lot.'
-            else:
-                log_message += '.'
-        result = 'Successfully cooked {}'.format(recipe.name)
-        if failed:
-            result = 'Failed to cook {}'.format(recipe.name)
-
-        creature.logger.add_entry(
-            self.date,
-            '{} ! {}'.format(result, log_message),
-            ACTIVITY_TYPE.COOK,
-            ENTRY_TYPE.INFO
-        )
-
-    def feed_creature(self):
+    def start_feeding(self):
         creature = ObjectManager.ui._state.selected_creature
         item = ObjectManager.ui._state.selected_item
 
@@ -411,26 +304,11 @@ class Game(object):
             )
             return
 
-        creature.set_activity(
-            item,
-            ACTIVITY_TYPE.FEED,
-            1,
-            end_callback=partial(
-                self.finish_feeding, creature, item
-            )
-        )
-        self.inventory.take_items({item.id: 1})
+        creature.add_activity(Feed(creature, item))
         ObjectManager.ui.refresh()
 
-    def finish_feeding(self, creature, item):
-        heal_amount = min(item.eat(), creature.max_hp - creature.hp)
-        creature.hp = creature.hp + heal_amount
-
-        ObjectManager.ui.display_dialog(
-            '{} finished eating {}.\nThey healed for {} hp'.format(
-                creature.name, item.name, heal_amount
-            )
-        )
+    def start_fight(self, creature, enemy_id):
+        creature.add_activity(Fight(self.enemies[enemy_id], creature))
 
     def equip_item(self):
         creature = ObjectManager.ui._state.selected_creature
@@ -451,71 +329,6 @@ class Game(object):
         creature.equipment[item.body_part] = item
         item.equiped = creature
         ObjectManager.ui.refresh()
-
-    def start_fight(self, creature, enemy_id):
-        fight = Fight(self.enemies[enemy_id])
-
-        creature.logger.add_entry(
-            self.date,
-            '{} encountered {} !'.format(
-                creature.name, fight.enemy.name
-            ),
-            ACTIVITY_TYPE.FIGHTING,
-            ENTRY_TYPE.IMPORTANT
-        )
-
-        creature.set_activity(
-            fight, ACTIVITY_TYPE.FIGHTING, -1,
-            update_callback=partial(ObjectManager.game.update_fight, creature),
-            end_callback=partial(
-                ObjectManager.game.finish_fight, creature, fight
-            )
-        )
-
-    def update_fight(self, creature):
-        fight = creature.activity.activity
-        fight.update(creature, self.date)
-
-    def finish_fight(self, creature, fight):
-        if fight.outcome == FIGHT_OUTCOME.WON:
-            creature.logger.add_entry(
-                self.date,
-                '{} killed {} !'.format(creature.name, fight.enemy.name),
-                ACTIVITY_TYPE.FIGHTING,
-                ENTRY_TYPE.IMPORTANT
-            )
-            creature.add_to_inventory(fight.enemy.get_loot())
-        elif fight.outcome == FIGHT_OUTCOME.LOST:
-            creature.logger.add_entry(
-                self.date,
-                '{} fled from {} !'.format(
-                    creature.name, fight.enemy.name
-                ),
-                ACTIVITY_TYPE.FIGHTING,
-                ENTRY_TYPE.CRITICAL
-            )
-            # Stop all activities
-            creature.free(free_all=True, ignore_callbacks=True)
-            # Loose part of the inventory
-            items = random.choice(creature.inventory.keys())
-            for item_name in items:
-                quantity = round(
-                    random.random() * creature.inventory[item_name]
-                )
-                creature.remove_from_inventory({item_name: quantity})
-        elif fight.outcome == FIGHT_OUTCOME.DRAW:
-            creature.logger.add_entry(
-                self.date,
-                '{} gave up fighting {}.'.format(
-                    creature.name, fight.enemy.name
-                ),
-                ACTIVITY_TYPE.FIGHTING,
-                ENTRY_TYPE.CRITICAL
-            )
-            # Stop all activities
-            creature.free(free_all=True, ignore_callbacks=True)
-
-        del fight.enemy
 
     def serialize(self):
         data = {}

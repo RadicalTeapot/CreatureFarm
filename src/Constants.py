@@ -42,7 +42,7 @@ class ACTIVITY_TYPE(Enum):
     ADVENTURE = 'on an adventure'
     COOK = 'cooking'
     FEED = 'eating'
-    FIGHTING = 'in a fight'
+    FIGHT = 'in a fight'
 
 
 class BODY_PART(Enum):
@@ -92,8 +92,3 @@ class STATS(Enum):
     BUILDING = 8
 
     INVENTORY_SIZE = 9
-
-class FIGHT_OUTCOME(Enum):
-    WON = 0
-    LOST = 1
-    DRAW = 2

@@ -9,6 +9,7 @@ from ui.Panel import Panel
 
 from ui.Buffer import Buffer
 
+from Constants import ACTIVITY_TYPE
 from Constants import ITEM_CATEGORY
 from Constants import UI_BUTTON
 from Constants import UI_STATE
@@ -234,22 +235,24 @@ class NewAdventureState(UiState):
         tab = self.ui.central_panel.get_tabs()[0]
         tab.clear()
         buttons = []
-        for adventure in ObjectManager.game.adventures:
+        for adventure_template in ObjectManager.game.adventure_templates:
             count = len([
                 creature
                 for creature in ObjectManager.game.creatures
-                if creature.activity == adventure
+                if creature.busy and
+                creature.activity.activity_type == ACTIVITY_TYPE.ADVENTURE and
+                creature.activity.template == adventure_template
             ])
-            button = Button('{} ({})'.format(adventure.title, count))
+            button = Button('{} ({})'.format(adventure_template.title, count))
             button.register_handler(
-                partial(self.select_adventure, adventure)
+                partial(self.select_adventure, adventure_template)
             )
             buttons.append(button)
-            button.pressed = (adventure == self.selected_adventure)
+            button.pressed = (adventure_template == self.selected_adventure)
         self.ui.central_panel.add_buttons(tab, buttons)
 
-    def select_adventure(self, adventure):
-        self.selected_adventure = adventure
+    def select_adventure(self, adventure_template):
+        self.selected_adventure = adventure_template
 
         tab = self.ui.right_panel.get_tabs()[0]
         tab.clear()
@@ -274,18 +277,22 @@ class CurrentAdventureState(UiState):
         # Left panel
         tab = self.ui.left_panel.add_tab(True, 'Adventures', 1)
         buttons = []
-        for adventure in ObjectManager.game.adventures:
+        for adventure_template in ObjectManager.game.adventure_templates:
             count = len([
                 creature
                 for creature in ObjectManager.game.creatures
-                if creature.has_activity(adventure)
+                if creature.busy and
+                creature.activity.activity_type == ACTIVITY_TYPE.ADVENTURE and
+                creature.activity.template == adventure_template
             ])
             if count == 0:
                 continue
-            button = Button('{} ({})'.format(adventure.title, count))
-            button.register_handler(partial(self.select_adventure, adventure))
+            button = Button('{} ({})'.format(adventure_template.title, count))
+            button.register_handler(
+                partial(self.select_adventure, adventure_template)
+            )
             buttons.append(button)
-            button.pressed = (adventure == self.selected_adventure)
+            button.pressed = (adventure_template == self.selected_adventure)
         self.ui.left_panel.add_buttons(tab, buttons)
 
         # Central panel
@@ -297,13 +304,14 @@ class CurrentAdventureState(UiState):
         if self.selected_adventure:
             self.select_adventure(self.selected_adventure)
 
-    def select_adventure(self, adventure):
-        self.selected_adventure = adventure
+    def select_adventure(self, adventure_template):
+        self.selected_adventure = adventure_template
 
         creatures = [
             creature
             for creature in ObjectManager.game.creatures
-            if creature.has_activity(adventure)
+            if creature.activity.activity_type == ACTIVITY_TYPE.ADVENTURE and
+            creature.activity.template == adventure_template
         ]
 
         if (
@@ -546,7 +554,8 @@ class FeedState(UiState):
             button.pressed = (item == self.selected_item)
         self.ui.central_panel.add_buttons(tab, buttons)
 
-        self.select_item(self.selected_item)
+        if self.selected_item is not None:
+            self.select_item(self.selected_item)
 
     def select_item(self, item):
         self.selected_item = item
@@ -557,7 +566,7 @@ class FeedState(UiState):
         self.ui.right_panel.add_label(tab, label)
 
         button = Button('Eat', False)
-        button.register_handler(ObjectManager.game.feed_creature)
+        button.register_handler(ObjectManager.game.start_feeding)
         self.ui.right_panel.add_button(tab, button)
 
 

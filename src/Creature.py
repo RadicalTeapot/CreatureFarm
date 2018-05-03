@@ -2,12 +2,14 @@
 """DOCSTRING."""
 
 from Logger import Logger
+from Constants import ACTIVITY_TYPE
 from Constants import BODY_PART
 from Constants import STATS
 from ObjectManager import ObjectManager
 
-import math
-import random
+from activity.Adventure import Adventure
+from activity.Fight import Fight
+
 import copy
 
 
@@ -220,23 +222,12 @@ class Creature(object):
     def hit(self, quantity):
         self.hp -= quantity
 
-    def set_activity(
-        self, activity, activity_type, timer,
-        start_callback=None, update_callback=None, end_callback=None
-    ):
-        activity = Activity(
-            activity, activity_type, timer,
-            start_callback, update_callback, end_callback
-        )
-        self._model.activity_stack.append(activity)
-
-        if callable(activity.start):
-            activity.start()
-
     def has_activity(self, activity):
-        return activity in [
-            item.activity for item in self._model.activity_stack
-        ]
+        return activity in self._model.activity_stack
+
+    def add_activity(self, activity):
+        self._model.activity_stack.append(activity)
+        activity.start()
 
     def update(self):
         if not self.busy:
@@ -244,12 +235,11 @@ class Creature(object):
 
         activity = self._model.activity_stack[-1]
         activity.turn_count += 1
-        if activity.timer != -1:
-            if activity.timer - activity.turn_count <= 0:
+        if activity.duration != -1:
+            if activity.duration - activity.turn_count <= 0:
                 return self.free()
 
-        if callable(activity.update):
-            activity.update()
+        activity.update()
 
     def free(self, free_all=False, ignore_callbacks=False):
         activities = []
@@ -263,7 +253,7 @@ class Creature(object):
             activities.append(self._model.activity_stack.pop())
 
         for activity in activities:
-            if not ignore_callbacks and callable(activity.end):
+            if not ignore_callbacks:
                 activity.end()
 
             del activity
@@ -272,7 +262,7 @@ class Creature(object):
         msg = 'Creature desciption placeholder\n'
         if self.busy:
             msg += 'It has been {} for {} turns.\n'.format(
-                self.activity.type.value, self.timer
+                self.activity.activity_type.value, self.timer
             )
 
         if self._model.inventory.items():
@@ -303,13 +293,18 @@ class Creature(object):
         self._model.stats = copy.deepcopy(data['stats'])
         self._model.equipment = copy.deepcopy(data['equipment'])
         self._model.inventory = copy.deepcopy(data['inventory'])
-        self._model.activity_stack = [
-            Activity()
-            for __ in data['activity_stack']
-        ]
-        for activity, activity_data in self._model.activity_stack:
-            activity.deserialize(data)
-        # TODO: finish deserialize, serialize fight and activity classes
+        self._model.activity_stack = []
+        for activity_data in data['activity_stack']:
+            activity = None
+            if activity_data['activity_type'] == ACTIVITY_TYPE.ADVENTURE:
+                activity = Adventure()
+            elif activity_data['activity_type'] == ACTIVITY_TYPE.FIGHT:
+                activity = Fight()
+            else:
+                raise RuntimeError('Cannot find activity type')
+            activity.deserialize(activity_data)
+            self._model.activity_stack.append(activity)
+        self.logger.deserialize(data['log'])
 
 
 class Model(object):
@@ -328,153 +323,3 @@ class Model(object):
             self.equipment[body_part] = None
 
         self.inventory = {}
-
-
-class Activity(object):
-    def __init__(
-        self, activity, activity_type, timer,
-        start_callback=None, update_callback=None, end_callback=None
-    ):
-        self.activity = activity
-        self.type = activity_type
-        self.timer = timer
-        self.turn_count = 0
-        self.start = start_callback
-        self.update = update_callback
-        self.end = end_callback
-
-    def serialize(self):
-        data = {}
-        data['activity'] = self.activity.serialize()
-        data['type'] = self.activity_type
-        data['timer'] = self.timer
-        data['start_callback'] = None
-        if callable(self.start):
-            data['start_callback'] = self.start.__name__
-        data['update_callback'] = None
-        if callable(self.update):
-            data['update_callback'] = self.update.__name__
-        data['end_callback'] = None
-        if callable(self.end):
-            data['end_callback'] = self.end.__name__
-        return data
-
-    def deserialize(self, data):
-        # self.activity = data['activity']
-        self.activity_type = data['type']
-        self.timer = data['timer']
-        self.start = None
-        # TODO: Finish parsing and normalize activity creation in game
-        if data['start'] is not None:
-            self.start = partial(
-                getattr(ObjectManager.game, data['start'])
-                creature, self.activity
-            )
-        self.update = None
-        if data['update'] is not None:
-            self.update = partial(
-                getattr(ObjectManager.game, data['update'])
-                creature, self.activity
-            )
-        self.end = None
-        if data['end'] is not None:
-            self.end = partial(
-                getattr(ObjectManager.game, data['end'])
-                creature, self.activity
-            )
-
-
-class Enemy(object):
-    def __init__(self):
-        # TODO Use Constant stats
-        self.name = None
-        self.level = None
-        self.description = None
-        self.loot = {}
-
-        self._max_hp = None
-        self._hp = None
-        self._strength = None
-        self._armor = None
-        self._agility = None
-
-    def get_loot(self):
-        rewards = {}
-        for item_id, data in self.loot.items():
-            # TODO: use creature stats to modify curve value
-            quantity_range, curve = data
-            # Remap curve for [0, 1] to [1.5, -0.5]
-            curve = min(max(curve, 0.), 1.0)
-            curve = (1 - curve) * 2 - 0.5
-            # Sigmoid curve
-            # for curve = 0.5 -> .1: .008, .5: .5, 1.: 0.998
-            quantity = 1 / (1 + math.exp(-12 * (random.random() - curve)))
-            # Remap quantity from [0, 1] to quantity range
-            quantity *= (quantity_range[1] - quantity_range[0])
-            quantity += quantity_range[0]
-            quantity = round(quantity)
-
-            if quantity > 0:
-                rewards[item_id] = int(quantity)
-
-        return rewards
-
-    @property
-    def max_hp(self):
-        return self._max_hp
-
-    @max_hp.setter
-    def max_hp(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._max_hp = value
-
-    @property
-    def hp(self):
-        return self._hp
-
-    @hp.setter
-    def hp(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._hp = value
-
-    @property
-    def strength(self):
-        return self._strength
-
-    @strength.setter
-    def strength(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._strength = value
-
-    @property
-    def armor(self):
-        return self._armor
-
-    @armor.setter
-    def armor(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._armor = value
-
-    @property
-    def agility(self):
-        return self._agility
-
-    @agility.setter
-    def agility(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._agility = value
