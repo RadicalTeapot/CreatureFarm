@@ -2,7 +2,7 @@
 """DOCSTRING."""
 
 import random
-import math
+
 from Constants import ACTIVITY_TYPE
 from Constants import ENTRY_TYPE
 
@@ -57,3 +57,15 @@ class Adventure(object):
 
     def get_description(self):
         return 'Adventure description placeholder'
+
+    def serialize(self):
+        return self.id
+
+    def deserialize(self, data):
+        adventure = [
+            adventure
+            for adventure in ObjectManager.game.adventures
+            if adventure.id == data
+        ]
+        if adventure:
+            return adventure[0]

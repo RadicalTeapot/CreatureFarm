@@ -298,7 +298,18 @@ class Creature(object):
         return data
 
     def deserialize(self, data):
-        pass
+        self._model.id = data['id']
+        self._model.name = data['name']
+        self._model.stats = copy.deepcopy(data['stats'])
+        self._model.equipment = copy.deepcopy(data['equipment'])
+        self._model.inventory = copy.deepcopy(data['inventory'])
+        self._model.activity_stack = [
+            Activity()
+            for __ in data['activity_stack']
+        ]
+        for activity, activity_data in self._model.activity_stack:
+            activity.deserialize(data)
+        # TODO: finish deserialize, serialize fight and activity classes
 
 
 class Model(object):
@@ -331,6 +342,46 @@ class Activity(object):
         self.start = start_callback
         self.update = update_callback
         self.end = end_callback
+
+    def serialize(self):
+        data = {}
+        data['activity'] = self.activity.serialize()
+        data['type'] = self.activity_type
+        data['timer'] = self.timer
+        data['start_callback'] = None
+        if callable(self.start):
+            data['start_callback'] = self.start.__name__
+        data['update_callback'] = None
+        if callable(self.update):
+            data['update_callback'] = self.update.__name__
+        data['end_callback'] = None
+        if callable(self.end):
+            data['end_callback'] = self.end.__name__
+        return data
+
+    def deserialize(self, data):
+        # self.activity = data['activity']
+        self.activity_type = data['type']
+        self.timer = data['timer']
+        self.start = None
+        # TODO: Finish parsing and normalize activity creation in game
+        if data['start'] is not None:
+            self.start = partial(
+                getattr(ObjectManager.game, data['start'])
+                creature, self.activity
+            )
+        self.update = None
+        if data['update'] is not None:
+            self.update = partial(
+                getattr(ObjectManager.game, data['update'])
+                creature, self.activity
+            )
+        self.end = None
+        if data['end'] is not None:
+            self.end = partial(
+                getattr(ObjectManager.game, data['end'])
+                creature, self.activity
+            )
 
 
 class Enemy(object):

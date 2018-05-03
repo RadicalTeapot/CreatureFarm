@@ -531,9 +531,11 @@ class Game(object):
         self.date = data['date']
         self.inventory.deserialize(data['inventory'])
         self.creatures = [
-            Creature.deserialize(creature_data)
-            for creature_data in data['creatures']
+            Creature()
+            for __ in data['creatures']
         ]
+        for creature, creature_data in zip(self.creatures, data['creatures']):
+            creature.deserialize(creature_data)
 
     def draw(self):
         self.window.clear()
