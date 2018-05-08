@@ -241,8 +241,8 @@ class Inventory(object):
 
     def serialize(self):
         data = {}
-        for item_id, quantity in self.items.items():
-            data[item_id] = quantity
+        for item_id, item in self.items.items():
+            data[item_id] = item.quantity
         return data
 
     def deserialize(self, data):

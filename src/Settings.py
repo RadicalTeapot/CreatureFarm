@@ -7,3 +7,5 @@ class Settings(object):
     HEIGHT = 600
 
     SCROLL_SPEED = 30
+
+    SAVE_FOLDER = 'saves'

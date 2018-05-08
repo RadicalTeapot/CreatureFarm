@@ -14,11 +14,25 @@ import copy
 
 
 class Creature(object):
-    def __init__(self, name):
+    def __init__(self, name=None):
         self._model = Model()
         self.logger = Logger(name)
 
-        self.hatch(name)
+        self.name = name
+        self.hp = 10
+        self.max_hp = 10
+
+        self.strength = 1.0
+        self.melee = 1.0
+        self.marksmanship = 1.0
+
+        self.evasion = 1.0
+        self.armor = 0.0
+
+        self.cooking = 1.0
+        self.building = 1.0
+
+        self.inventory_size = 10
 
     # ####################################################################### #
     #                           Getters / Setters                             #
@@ -202,23 +216,6 @@ class Creature(object):
             if self._model.inventory[item_id] <= 0:
                 del self._model.inventory[item_id]
 
-    def hatch(self, name):
-        self.name = name
-        self.hp = 10
-        self.max_hp = 10
-
-        self.strength = 1.0
-        self.melee = 1.0
-        self.marksmanship = 1.0
-
-        self.evasion = 1.0
-        self.armor = 0.0
-
-        self.cooking = 1.0
-        self.building = 1.0
-
-        self.inventory_size = 10
-
     def hit(self, quantity):
         self.hp -= quantity
 
@@ -276,8 +273,12 @@ class Creature(object):
         data = {}
         data['id'] = self._model.id
         data['name'] = self._model.name
-        data['stats'] = copy.deepcopy(self._model.stats)
-        data['equipment'] = copy.deepcopy(self._model.equipment)
+        data['stats'] = {}
+        for stat, value in self._model.stats.items():
+            data['stats'][stat.value] = value
+        data['equipment'] = {}
+        for body_part, item in self._model.equipment.items():
+            data['equipment'][body_part.value] = item
         data['inventory'] = copy.deepcopy(self._model.inventory)
         data['activity_stack'] = [
             activity.serialize()
@@ -290,8 +291,18 @@ class Creature(object):
     def deserialize(self, data):
         self._model.id = data['id']
         self._model.name = data['name']
-        self._model.stats = copy.deepcopy(data['stats'])
-        self._model.equipment = copy.deepcopy(data['equipment'])
+        self._model.stats = {}
+        for stat, value in data['stats'].items():
+            # HACK: Find better way to get correct stat
+            for s in STATS:
+                if s.value == stat:
+                    self._model.stats[s] = value
+        self._model.equipment = {}
+        for stat, value in data['equipment'].items():
+            # HACK: Find better way to get correct stat
+            for s in STATS:
+                if s.value == stat:
+                    self._model.equipment[s] = value
         self._model.inventory = copy.deepcopy(data['inventory'])
         self._model.activity_stack = []
         for activity_data in data['activity_stack']:

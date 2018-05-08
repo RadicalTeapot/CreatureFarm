@@ -29,6 +29,8 @@ class UI_BUTTON(Enum):
     COOK = 5
     FEED = 6
     EQUIP = 7
+    LOAD = 8
+    SAVE = 9
 
 
 class ITEM_CATEGORY(Enum):

@@ -20,6 +20,7 @@ from Settings import Settings
 from functools import partial
 
 import pyglet
+import os
 
 
 class Rect(object):
@@ -83,22 +84,19 @@ class Rect(object):
 
 
 class UiState(object):
-    def __init__(self, ui):
-        self.ui = ui
-
     def enter(self):
-        self.ui.left_panel.clear()
-        self.ui.central_panel.clear()
-        self.ui.right_panel.clear()
+        ObjectManager.ui.left_panel.clear()
+        ObjectManager.ui.central_panel.clear()
+        ObjectManager.ui.right_panel.clear()
 
     @classmethod
-    def refresh(cls, ui):
+    def refresh(cls):
         return cls.enter()
 
 
 class CreatureState(UiState):
-    def __init__(self, ui):
-        super().__init__(ui)
+    def __init__(self):
+        super().__init__()
         self.selected_creature = None
 
     def enter(self):
@@ -108,7 +106,7 @@ class CreatureState(UiState):
             self.selected_creature = ObjectManager.game.creatures[0]
 
         # Left panel
-        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
         for creature in ObjectManager.game.creatures:
             name = creature.name
@@ -118,13 +116,13 @@ class CreatureState(UiState):
             )
             buttons.append(button)
             button.pressed = (creature == self.selected_creature)
-        self.ui.left_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.left_panel.add_buttons(tab, buttons)
 
         # Central panel
-        self.ui.central_panel.add_tab(True, 'Stats', 1)
+        ObjectManager.ui.central_panel.add_tab(True, 'Stats', 1)
 
         # Right panel
-        self.ui.right_panel.add_tab(True, 'Description', 1)
+        ObjectManager.ui.right_panel.add_tab(True, 'Description', 1)
 
         self.select_creature(self.selected_creature)
 
@@ -134,7 +132,7 @@ class CreatureState(UiState):
         self.display_creature_description()
 
     def display_creature_stats(self):
-        tab = self.ui.central_panel.get_tabs()[0]
+        tab = ObjectManager.ui.central_panel.get_tabs()[0]
         tab.clear()
 
         if self.selected_creature is None:
@@ -190,7 +188,7 @@ class CreatureState(UiState):
         tab.add_label(label)
 
     def display_creature_description(self):
-        tab = self.ui.right_panel.get_tabs()[0]
+        tab = ObjectManager.ui.right_panel.get_tabs()[0]
         tab.clear()
 
         if self.selected_creature is None:
@@ -199,12 +197,12 @@ class CreatureState(UiState):
         label = DescriptionLabel(
             self.selected_creature.get_description(), tab.rect.width
         )
-        self.ui.right_panel.add_label(tab, label)
+        ObjectManager.ui.right_panel.add_label(tab, label)
 
 
 class NewAdventureState(UiState):
-    def __init__(self, ui):
-        super().__init__(ui)
+    def __init__(self):
+        super().__init__()
         self.selected_creature = None
         self.selected_adventure = None
 
@@ -213,11 +211,11 @@ class NewAdventureState(UiState):
         self.selected_creature = None
         self.selected_adventure = None
 
-        self.ui.central_panel.add_tab(True, 'Adventures', 1)
-        self.ui.right_panel.add_tab(True, 'Description', 1)
+        ObjectManager.ui.central_panel.add_tab(True, 'Adventures', 1)
+        ObjectManager.ui.right_panel.add_tab(True, 'Description', 1)
 
         # Left panel
-        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
         for creature in ObjectManager.game.creatures:
             name = creature.name
@@ -227,12 +225,12 @@ class NewAdventureState(UiState):
             )
             buttons.append(button)
             button.pressed = (creature == self.selected_creature)
-        self.ui.left_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.left_panel.add_buttons(tab, buttons)
 
     def select_creature(self, creature):
         self.selected_creature = creature
 
-        tab = self.ui.central_panel.get_tabs()[0]
+        tab = ObjectManager.ui.central_panel.get_tabs()[0]
         tab.clear()
         buttons = []
         for adventure_template in ObjectManager.game.adventure_templates:
@@ -249,33 +247,33 @@ class NewAdventureState(UiState):
             )
             buttons.append(button)
             button.pressed = (adventure_template == self.selected_adventure)
-        self.ui.central_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.central_panel.add_buttons(tab, buttons)
 
     def select_adventure(self, adventure_template):
         self.selected_adventure = adventure_template
 
-        tab = self.ui.right_panel.get_tabs()[0]
+        tab = ObjectManager.ui.right_panel.get_tabs()[0]
         tab.clear()
         label = DescriptionLabel(
             self.selected_adventure.get_description(), tab.rect.width
         )
-        self.ui.right_panel.add_label(tab, label)
+        ObjectManager.ui.right_panel.add_label(tab, label)
         if self.selected_adventure.is_available(self.selected_creature):
             button = Button('Start', False)
             button.register_handler(ObjectManager.game.start_adventure)
-            self.ui.right_panel.add_button(tab, button)
+            ObjectManager.ui.right_panel.add_button(tab, button)
 
 
 class CurrentAdventureState(UiState):
-    def __init__(self, ui):
-        super().__init__(ui)
+    def __init__(self):
+        super().__init__()
         self.selected_adventure = None
         self.selected_creature = None
 
     def enter(self):
         super().enter()
         # Left panel
-        tab = self.ui.left_panel.add_tab(True, 'Adventures', 1)
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Adventures', 1)
         buttons = []
         for adventure_template in ObjectManager.game.adventure_templates:
             count = len([
@@ -293,13 +291,13 @@ class CurrentAdventureState(UiState):
             )
             buttons.append(button)
             button.pressed = (adventure_template == self.selected_adventure)
-        self.ui.left_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.left_panel.add_buttons(tab, buttons)
 
         # Central panel
-        self.ui.central_panel.add_tab(True, 'Creatures', 1)
+        ObjectManager.ui.central_panel.add_tab(True, 'Creatures', 1)
 
         # Right panel
-        self.ui.right_panel.add_tab(True, 'Description', 1)
+        ObjectManager.ui.right_panel.add_tab(True, 'Description', 1)
 
         if self.selected_adventure:
             self.select_adventure(self.selected_adventure)
@@ -325,7 +323,7 @@ class CurrentAdventureState(UiState):
         ):
             self.selected_creature = creatures[0].id
 
-        tab = self.ui.central_panel.get_tabs()[0]
+        tab = ObjectManager.ui.central_panel.get_tabs()[0]
         tab.clear()
         buttons = []
         for creature in creatures:
@@ -336,14 +334,14 @@ class CurrentAdventureState(UiState):
             )
             buttons.append(button)
             button.pressed = (creature.id == self.selected_creature)
-        self.ui.central_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.central_panel.add_buttons(tab, buttons)
 
         self.select_creature(self.selected_creature)
 
     def select_creature(self, creature_id):
         self.selected_creature = creature_id
 
-        tab = self.ui.right_panel.get_tabs()[0]
+        tab = ObjectManager.ui.right_panel.get_tabs()[0]
         tab.clear()
 
         creature = [
@@ -366,24 +364,24 @@ class CurrentAdventureState(UiState):
         ):
             button = Button('Recall', False)
             button.register_handler(creature.free)
-            self.ui.right_panel.add_button(tab, button)
+            ObjectManager.ui.right_panel.add_button(tab, button)
         else:
             label = DescriptionLabel('Cannot recall', tab.rect.width)
-            self.ui.right_panel.add_label(tab, label)
+            ObjectManager.ui.right_panel.add_label(tab, label)
 
 
 class InventoryState(UiState):
-    def __init__(self, ui):
-        super().__init__(ui)
+    def __init__(self):
+        super().__init__()
         self.selected_category = None
         self.selected_item = None
 
     def enter(self):
         super().enter()
 
-        tab = self.ui.left_panel.add_tab(True, 'Categories', 1)
-        self.ui.central_panel.add_tab(True, 'Items', 1)
-        self.ui.right_panel.add_tab(True, 'Description', 1)
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Categories', 1)
+        ObjectManager.ui.central_panel.add_tab(True, 'Items', 1)
+        ObjectManager.ui.right_panel.add_tab(True, 'Description', 1)
 
         if self.selected_category is None:
             self.selected_category = ITEM_CATEGORY.FOOD
@@ -391,7 +389,7 @@ class InventoryState(UiState):
         for category in ITEM_CATEGORY:
             button = Button(category.value)
             button.register_handler(partial(self.select_category, category))
-            self.ui.left_panel.add_button(tab, button)
+            ObjectManager.ui.left_panel.add_button(tab, button)
             button.pressed = (self.selected_category == category)
 
         self.select_category(self.selected_category)
@@ -412,7 +410,7 @@ class InventoryState(UiState):
         elif not items:
             self.selected_item = None
 
-        tab = self.ui.central_panel.get_tabs()[0]
+        tab = ObjectManager.ui.central_panel.get_tabs()[0]
         tab.clear()
         buttons = []
         for item in items:
@@ -420,7 +418,7 @@ class InventoryState(UiState):
             button.register_handler(partial(self.select_item, item.name))
             button.pressed = (item.name == self.selected_item)
             buttons.append(button)
-        self.ui.central_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.central_panel.add_buttons(tab, buttons)
 
         self.select_item(self.selected_item)
 
@@ -440,28 +438,28 @@ class InventoryState(UiState):
         if not item:
             raise RuntimeError('Cannot find item')
 
-        tab = self.ui.right_panel.get_tabs()[0]
+        tab = ObjectManager.ui.right_panel.get_tabs()[0]
         tab.clear()
         label = DescriptionLabel(item[0].get_description(), tab.rect.width)
-        self.ui.right_panel.add_label(tab, label)
+        ObjectManager.ui.right_panel.add_label(tab, label)
 
 
 class CookState(UiState):
-    def __init__(self, ui):
-        super().__init__(ui)
+    def __init__(self):
+        super().__init__()
         self.selected_creature = None
         self.selected_recipe = None
 
     def enter(self):
         super().enter()
 
-        self.ui.central_panel.add_tab(True, 'Recipes', 1)
-        self.ui.right_panel.add_tab(True, 'Description', 1)
+        ObjectManager.ui.central_panel.add_tab(True, 'Recipes', 1)
+        ObjectManager.ui.right_panel.add_tab(True, 'Description', 1)
 
         if self.selected_creature is None and ObjectManager.game.creatures:
             self.selected_creature = ObjectManager.game.creatures[0]
 
-        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
         for creature in ObjectManager.game.creatures:
             name = creature.name
@@ -469,7 +467,7 @@ class CookState(UiState):
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
             button.pressed = (creature == self.selected_creature)
-        self.ui.left_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.left_panel.add_buttons(tab, buttons)
 
         self.select_creature(self.selected_creature)
 
@@ -480,7 +478,7 @@ class CookState(UiState):
         if self.selected_recipe is None and recipes:
             self.selected_recipe = recipes[0]
 
-        tab = self.ui.central_panel.get_tabs()[0]
+        tab = ObjectManager.ui.central_panel.get_tabs()[0]
         tab.clear()
         buttons = []
         # TODO: Display available recipes first then rest greyed out
@@ -492,39 +490,39 @@ class CookState(UiState):
             button.register_handler(partial(self.select_recipe, recipe))
             buttons.append(button)
             button.pressed = (recipe == self.selected_recipe)
-        self.ui.central_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.central_panel.add_buttons(tab, buttons)
 
         self.select_recipe(self.selected_recipe)
 
     def select_recipe(self, recipe):
         self.selected_recipe = recipe
 
-        tab = self.ui.right_panel.get_tabs()[0]
+        tab = ObjectManager.ui.right_panel.get_tabs()[0]
         tab.clear()
         label = DescriptionLabel(recipe.get_description(), tab.rect.width)
-        self.ui.right_panel.add_label(tab, label)
+        ObjectManager.ui.right_panel.add_label(tab, label)
         if recipe.is_available(self.selected_creature):
             button = Button('Cook', False)
             button.register_handler(ObjectManager.game.start_cooking)
-            self.ui.right_panel.add_button(tab, button)
+            ObjectManager.ui.right_panel.add_button(tab, button)
 
 
 class FeedState(UiState):
-    def __init__(self, ui):
-        super().__init__(ui)
+    def __init__(self):
+        super().__init__()
         self.selected_creature = None
         self.selected_item = None
 
     def enter(self):
         super().enter()
 
-        self.ui.central_panel.add_tab(True, 'Food', 1)
-        self.ui.right_panel.add_tab(True, 'Description', 1)
+        ObjectManager.ui.central_panel.add_tab(True, 'Food', 1)
+        ObjectManager.ui.right_panel.add_tab(True, 'Description', 1)
 
         if self.selected_creature is None and ObjectManager.game.creatures:
             self.selected_creature = ObjectManager.game.creatures[0]
 
-        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
         for creature in ObjectManager.game.creatures:
             name = creature.name
@@ -532,7 +530,7 @@ class FeedState(UiState):
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
             button.pressed = (creature == self.selected_creature)
-        self.ui.left_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.left_panel.add_buttons(tab, buttons)
 
         self.select_creature(self.selected_creature)
 
@@ -543,7 +541,7 @@ class FeedState(UiState):
         if self.selected_item is None and food:
             self.selected_item = food[0]
 
-        tab = self.ui.central_panel.get_tabs()[0]
+        tab = ObjectManager.ui.central_panel.get_tabs()[0]
         tab.clear()
         buttons = []
         for item in food:
@@ -552,7 +550,7 @@ class FeedState(UiState):
             button.register_handler(partial(self.select_item, item))
             buttons.append(button)
             button.pressed = (item == self.selected_item)
-        self.ui.central_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.central_panel.add_buttons(tab, buttons)
 
         if self.selected_item is not None:
             self.select_item(self.selected_item)
@@ -560,32 +558,32 @@ class FeedState(UiState):
     def select_item(self, item):
         self.selected_item = item
 
-        tab = self.ui.right_panel.get_tabs()[0]
+        tab = ObjectManager.ui.right_panel.get_tabs()[0]
         tab.clear()
         label = DescriptionLabel(item.get_description(), tab.rect.width)
-        self.ui.right_panel.add_label(tab, label)
+        ObjectManager.ui.right_panel.add_label(tab, label)
 
         button = Button('Eat', False)
         button.register_handler(ObjectManager.game.start_feeding)
-        self.ui.right_panel.add_button(tab, button)
+        ObjectManager.ui.right_panel.add_button(tab, button)
 
 
 class EquipState(UiState):
-    def __init__(self, ui):
-        super().__init__(ui)
+    def __init__(self):
+        super().__init__()
         self.selected_creature = None
         self.selected_item = None
 
     def enter(self):
         super().enter()
 
-        self.ui.central_panel.add_tab(True, "Items", 1)
-        self.ui.right_panel.add_tab(True, "Compare", 1)
+        ObjectManager.ui.central_panel.add_tab(True, "Items", 1)
+        ObjectManager.ui.right_panel.add_tab(True, "Compare", 1)
 
         if self.selected_creature is None and ObjectManager.game.creatures:
             self.selected_creature = ObjectManager.game.creatures[0]
 
-        tab = self.ui.left_panel.add_tab(True, 'Creatures', 1)
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Creatures', 1)
         buttons = []
         for creature in ObjectManager.game.creatures:
             name = creature.name
@@ -593,7 +591,7 @@ class EquipState(UiState):
             button.register_handler(partial(self.select_creature, creature))
             buttons.append(button)
             button.pressed = (creature == self.selected_creature)
-        self.ui.left_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.left_panel.add_buttons(tab, buttons)
 
         if self.selected_creature is not None:
             self.select_creature(self.selected_creature)
@@ -601,7 +599,7 @@ class EquipState(UiState):
     def select_creature(self, creature):
         self.selected_creature = creature
 
-        tab = self.ui.central_panel.get_tabs()[0]
+        tab = ObjectManager.ui.central_panel.get_tabs()[0]
         tab.clear()
 
         # TODO: Put weapons and armors in different tabs
@@ -641,7 +639,7 @@ class EquipState(UiState):
             buttons.append(button)
             button.pressed = (item == self.selected_item)
 
-        self.ui.central_panel.add_buttons(tab, buttons)
+        ObjectManager.ui.central_panel.add_buttons(tab, buttons)
 
         if self.selected_item is not None:
             self.select_item(self.selected_item)
@@ -649,7 +647,7 @@ class EquipState(UiState):
     def select_item(self, item):
         self.selected_item = item
 
-        tab = self.ui.right_panel.get_tabs()[0]
+        tab = ObjectManager.ui.right_panel.get_tabs()[0]
         tab.clear()
 
         body_part = self.selected_item.body_part
@@ -664,11 +662,32 @@ class EquipState(UiState):
             self.selected_item.get_description()
         )
         label = DescriptionLabel(description, tab.rect.width)
-        self.ui.right_panel.add_label(tab, label)
+        ObjectManager.ui.right_panel.add_label(tab, label)
 
         button = Button('Equip', False)
         button.register_handler(ObjectManager.game.equip_item)
-        self.ui.right_panel.add_button(tab, button)
+        ObjectManager.ui.right_panel.add_button(tab, button)
+
+
+class LoadState(UiState):
+    def __init__(self):
+        super().__init__()
+
+    def enter(self):
+        super().enter()
+
+        tab = ObjectManager.ui.left_panel.add_tab(True, 'Files', 1)
+        buttons = []
+        for save_file in os.listdir(os.path.abspath(Settings.SAVE_FOLDER)):
+            button = Button(save_file, False)
+            button.register_handler(partial(self.select_file, save_file))
+            buttons.append(button)
+        ObjectManager.ui.left_panel.add_buttons(tab, buttons)
+
+    def select_file(self, save_file):
+        ObjectManager.game.load(os.path.normpath(os.path.join(
+            os.path.abspath(Settings.SAVE_FOLDER), save_file
+        )))
 
 
 class Ui(object):
@@ -679,7 +698,6 @@ class Ui(object):
         self.create_states()
         self.create_callbacks()
         self.buffer = Buffer()
-        self.build()
 
     def create_callbacks(self):
         self.callbacks = dict([
@@ -714,19 +732,27 @@ class Ui(object):
             UI_BUTTON.EQUIP,
             partial(self.set_state, UI_STATE.EQUIP)
         )
+        self.register_callback(
+            UI_BUTTON.LOAD,
+            partial(self.set_state, UI_STATE.LOAD)
+        )
 
         self.register_callback(
             UI_BUTTON.FINISH_TURN, ObjectManager.game.update
         )
+        self.register_callback(
+            UI_BUTTON.SAVE, ObjectManager.game.save
+        )
 
     def create_states(self):
-        UI_STATE.CREATURE = CreatureState(self)
-        UI_STATE.NEW_ADVENTURE = NewAdventureState(self)
-        UI_STATE.CURRENT_ADVENTURE = CurrentAdventureState(self)
-        UI_STATE.INVENTORY = InventoryState(self)
-        UI_STATE.COOK = CookState(self)
-        UI_STATE.FEED = FeedState(self)
-        UI_STATE.EQUIP = EquipState(self)
+        UI_STATE.CREATURE = CreatureState()
+        UI_STATE.NEW_ADVENTURE = NewAdventureState()
+        UI_STATE.CURRENT_ADVENTURE = CurrentAdventureState()
+        UI_STATE.INVENTORY = InventoryState()
+        UI_STATE.COOK = CookState()
+        UI_STATE.FEED = FeedState()
+        UI_STATE.EQUIP = EquipState()
+        UI_STATE.LOAD = LoadState()
 
         self._state = UI_STATE.CREATURE
 
@@ -793,6 +819,12 @@ class Ui(object):
         finish_turn_button = Button('(t) Finish Turn', False)
         self.bottom_panel.add_button(tab, finish_turn_button)
 
+        load_button = Button('(l) Load', False)
+        self.bottom_panel.add_button(tab, load_button)
+
+        save_button = Button('(v) Save', False)
+        self.bottom_panel.add_button(tab, save_button)
+
         # Callbacks
         creature_button.register_handler(
             partial(self.callback, UI_BUTTON.CREATURE)
@@ -817,6 +849,12 @@ class Ui(object):
         )
         equip_button.register_handler(
             partial(self.callback, UI_BUTTON.EQUIP)
+        )
+        load_button.register_handler(
+            partial(self.callback, UI_BUTTON.LOAD)
+        )
+        save_button.register_handler(
+            partial(self.callback, UI_BUTTON.SAVE)
         )
 
     def display_dialog(self, text):

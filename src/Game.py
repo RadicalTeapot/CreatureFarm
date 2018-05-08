@@ -330,6 +330,20 @@ class Game(object):
         item.equiped = creature
         ObjectManager.ui.refresh()
 
+    def load(self, path):
+        with open(path, 'r') as save_file:
+            self.deserialize(json.loads(save_file.read()))
+
+    def save(self):
+        data = self.serialize()
+        # print(data)
+        path = os.path.normpath(os.path.join(
+            os.path.abspath(Settings.SAVE_FOLDER),
+            'save'
+        ))
+        with open(path, 'w') as save_file:
+            save_file.write(json.dumps(data))
+
     def serialize(self):
         data = {}
         data['inventory'] = self.inventory.serialize()

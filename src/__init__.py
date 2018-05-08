@@ -24,6 +24,7 @@ if __name__ == '__main__':
     object_manager = ObjectManager()
     object_manager.add_object('game', Game(window))
     object_manager.add_object('ui', Ui())
+    ObjectManager.ui.build()
 
     ObjectManager.game.add_creature(Creature('RadicalTeapot'))
 
