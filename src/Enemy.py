@@ -3,64 +3,67 @@
 
 import math
 import random
-import copy
+
+from ObjectManager import ObjectManager
 
 
 class EnemyTemplate:
     def __init__(self):
-        # TODO Use Constant stats
+        self.id = None
         self.name = None
         self.level = None
         self.description = None
-        self.loot = {}
+        self.knowledge = {}
+        self.biomass = None
 
-        self.max_hp = None
         self.hp = None
         self.strength = None
         self.armor = None
         self.agility = None
 
     @classmethod
-    def from_data(cls, id, data):
+    def from_data(cls, id_, data):
         cls.validate_data(data)
         instance = cls()
-        instance.id = 'enemies.{}'.format(id)
+        instance.id = 'enemies.{}'.format(id_)
         instance.name = data['name']
         instance.description = data['description']
-        instance.max_hp = data['hp']
         instance.hp = data['hp']
         instance.strength = data['strength']
         instance.armor = data['armor']
         instance.agility = data['agility']
-        for loot in data['loot']:
-            instance.loot[loot['item']] = (loot['quantity'], loot['curve'])
+        instance.knowledge[data['knowledge']['type']] = (
+            data['knowledge']['quantity']
+        )
+        instance.biomass = data['biomass']
 
         return instance
 
     @staticmethod
     def validate_data(data):
         attributes = [
-            "name", "hp", "strength", "armor", "agility", "description"
+            "name", "hp", "strength", "armor", "agility", "description",
+            "knowledge", "biomass"
         ]
         for attribute in attributes:
             if attribute not in data:
                 raise KeyError('Missing {} attribute'.format(attribute))
-        # TODO: Check loot validity as well
+        for item in data['knowledge']:
+            if 'type' not in item or 'quantity' not in item:
+                raise KeyError('Badly formed knowledge attribute')
 
 
-class Enemy(object):
-    def __init__(self):
-        # TODO Use Constant stats
-        self.name = None
-        self.level = None
-        self.description = None
-        self.loot = {}
+class Enemy:
+    def __init__(self, template=None):
+        self.template = None
+        self.hp = None
+        if self.template:
+            self.hp = template.hp
 
-        self._max_hp = None
-        self._hp = None
-        self._strength = None
-        self._armor = None
-        self._agility = None
+    @classmethod
+    def from_template(cls, template):
+        instance = cls(template)
+        instance.hp = template.hp
 
     def get_loot(self):
         rewards = {}
@@ -84,45 +87,20 @@ class Enemy(object):
         return rewards
 
     def serialize(self):
-        data = {}
-        data['name'] = self.name
-        data['level'] = self.level
-        data['desciption'] = self.description
-        data['loot'] = copy.deepcopy(self.loot)
-        data['max_hp'] = self._max_hp
-        data['hp'] = self._hp
-        data['strength'] = self._strength
-        data['armor'] = self._armor
-        data['agility'] = self._agility
+        return {'hp': self.hp, 'template': self.template.id}
 
-        return data
+    @classmethod
+    def deserialize(cls, data):
+        instance = cls.from_template(
+            ObjectManager.game.enemy_templates.data['template']
+        )
+        instance.hp = data['hp']
 
-    def deserialize(self, data):
-        self.name = data['name']
-        self.level = data['level']
-        self.description = data['description']
-        self.loot = copy.deepcopy(data['loot'])
-        self._max_hp = data['max_hp']
-        self._hp = data['hp']
-        self._strength = data['strength']
-        self._armor = data['armor']
-        self._agility = data['agility']
-
-    @property
-    def max_hp(self):
-        return self._max_hp
-
-    @max_hp.setter
-    def max_hp(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._max_hp = value
+        return instance
 
     @property
     def hp(self):
-        return self._hp
+        return self.hp
 
     @hp.setter
     def hp(self, value):
@@ -130,40 +108,19 @@ class Enemy(object):
             raise TypeError('Expected float, got {} instead'.format(
                 type(value).__name__
             ))
-        self._hp = value
+        self.hp = value
 
     @property
     def strength(self):
-        return self._strength
-
-    @strength.setter
-    def strength(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._strength = value
+        assert self.template is not None
+        return self.template.strength
 
     @property
     def armor(self):
-        return self._armor
-
-    @armor.setter
-    def armor(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._armor = value
+        assert self.template is not None
+        return self.template.armor
 
     @property
     def agility(self):
-        return self._agility
-
-    @agility.setter
-    def agility(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self._agility = value
+        assert self.template is not None
+        return self.template.agility

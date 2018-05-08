@@ -11,7 +11,7 @@ from ObjectManager import ObjectManager
 from activity import Activity
 
 
-class AdventureTemplate(object):
+class AdventureTemplate:
     def __init__(self):
         self.id = None
         self.title = None
@@ -20,11 +20,11 @@ class AdventureTemplate(object):
         self.rewards = {}
 
     @classmethod
-    def from_data(cls, id, data):
+    def from_data(cls, id_, data):
         cls.validate_data(data)
 
         instance = cls()
-        instance.id = 'adventures.{}'.format(id)
+        instance.id = 'adventures.{}'.format(id_)
         instance.title = data['title']
         instance.description = data['description']
 

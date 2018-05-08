@@ -53,72 +53,24 @@ class Game(object):
     def __init__(self, window):
         self.window = window
 
-        self._parse_data()
-
-    def _parse_data(self):
+        self._parse_enemies()
+        self._parse_adventures()
         # with open("src/data/recipes.json", 'r') as recipe_data:
         #     self._parse_recipes(json.loads(recipe_data.read()))
-        with open("src/data/enemies.json", 'r') as enemy_data:
-            self._parse_enemies(json.loads(enemy_data.read()))
-        with open("src/data/adventures.json", 'r') as adventure_data:
-            self._parse_adventures(json.loads(adventure_data.read()))
-
-    # def _parse_recipes(self, data, ids):
-    #     for recipe_id, recipe_data in data.items():
-    #         recipe_id = 'recipes.{}'.format(recipe_id)
-    #         self._validate_recipe(recipe_id, recipe_data, ids)
-    #         recipe = Recipe()
-    #         recipe.game = self
-    #         recipe.id = recipe_id
-    #         recipe.name = recipe_data['name']
-    #         for ingredient in recipe_data['ingredients']:
-    #             recipe.ingredients[ingredient['item']] = ingredient['quantity']
-    #         for result in recipe_data['results']:
-    #             recipe.results[result['item']] = result['quantity']
-    #         recipe.complexity = recipe_data['complexity']
-    #         recipe.duration = recipe_data['duration']
-    #         recipe.description = recipe_data['description']
-    #         ids.add(recipe_id)
-    #         self.inventory.add_recipe(recipe)
-    #     return ids
-
-    # def _validate_recipe(self, recipe_id, recipe, ids):
-    #     attributes = [
-    #         "name", "ingredients", "results", "complexity",
-    #         "duration", "description"
-    #     ]
-    #     for attribute in attributes:
-    #         if attribute not in recipe:
-    #             raise KeyError('Missing {} attribute'.format(attribute))
-
-    #     for ingredient in recipe['ingredients']:
-    #         if not self.inventory.has_item(ingredient['item']):
-    #             raise RuntimeError(
-    #                 'Unknown item with id {} in recipe {}'.format(
-    #                     ingredient['item'], recipe['name']
-    #                 )
-    #             )
-    #     for ingredient in recipe['results']:
-    #         if not self.inventory.has_item(ingredient['item']):
-    #             raise RuntimeError(
-    #                 'Unknown item with id {} in recipe {}'.format(
-    #                     ingredient['item'], recipe['name']
-    #                 )
-    #             )
-    #     if recipe_id in ids:
-    #         raise RuntimeError('Duplicate id')
 
     def _parse_adventures(self, data):
-        for adventure_id, adventure_data in data.items():
-            GameModel.adventure_templates[adventure_id] = (
-                AdventureTemplate.from_data(adventure_id, adventure_data)
-            )
+        with open("src/data/enemies.json", 'r') as data:
+            for adventure_id, adventure_data in data.items():
+                GameModel.adventure_templates[adventure_id] = (
+                    AdventureTemplate.from_data(adventure_id, adventure_data)
+                )
 
-    def _parse_enemies(self, data, ids):
-        for enemy_id, enemy_data in data.items():
-            GameModel.enemy_templates[enemy_id] = EnemyTemplate.from_data(
-                enemy_id, enemy_data
-            )
+    def _parse_enemies(self, data):
+        with open("src/data/adventures.json", 'r') as data:
+            for enemy_id, enemy_data in data.items():
+                GameModel.enemy_templates[enemy_id] = EnemyTemplate.from_data(
+                    enemy_id, enemy_data
+                )
 
     def update(self):
         for creature in self.creatures:
