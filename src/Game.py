@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from Inventory import Inventory
-from Inventory import Item
-from Inventory import ArmorItem
-from Inventory import FoodItem
-from Inventory import WeaponItem
-from Inventory import Recipe
-
 from Creature import Creature
-from Enemy import Enemy
+from Enemy import EnemyTemplate
 
 from activity.Adventure import Adventure
 from activity.Adventure import AdventureTemplate
@@ -23,208 +16,109 @@ from Constants import STATS
 from Constants import ITEM_CATEGORY
 
 from ObjectManager import ObjectManager
+from Settings import Settings
 
 import json
+import os
+
+
+class GameModel:
+    """Store data of Game."""
+
+    genetic_material = 0
+    # TODO: Convert this to per-recipe knowledge
+    knowledge_points = 0
+
+    creatures = {}
+    creature_templates = {}
+
+    mutation_templates = {}
+    enemy_templates = {}
+    adventure_templates = {}
+
+    date = 0
+
+    @classmethod
+    def serialize(cls):
+        """Convert data to json compatible dict."""
+        raise NotImplementedError()
+
+    @classmethod
+    def deserialize(cls, data):
+        """Read input data to attributes."""
+        raise NotImplementedError()
 
 
 class Game(object):
     def __init__(self, window):
         self.window = window
 
-        self.creatures = []
-        self.enemies = {}
-        self.adventure_templates = []
-        self.inventory = Inventory()
-
-        # Turn counter
-        self.date = 0
-
         self._parse_data()
 
     def _parse_data(self):
-        ids = set()
-        with open("src/data/items.json", 'r') as item_data:
-            ids = self._parse_items(json.loads(item_data.read()), ids)
-        with open("src/data/recipes.json", 'r') as recipe_data:
-            ids = self._parse_recipes(json.loads(recipe_data.read()), ids)
+        # with open("src/data/recipes.json", 'r') as recipe_data:
+        #     self._parse_recipes(json.loads(recipe_data.read()))
         with open("src/data/enemies.json", 'r') as enemy_data:
-            ids = self._parse_enemies(json.loads(enemy_data.read()), ids)
+            self._parse_enemies(json.loads(enemy_data.read()))
         with open("src/data/adventures.json", 'r') as adventure_data:
-            ids = self._parse_adventures(
-                json.loads(adventure_data.read()), ids
-            )
+            self._parse_adventures(json.loads(adventure_data.read()))
 
-    def _parse_items(self, data, ids):
-        for item_id, item_data in data.items():
-            item_id = 'items.{}'.format(item_id)
-            self._validate_item(item_id, item_data, ids)
-            item = None
-            # Food
-            if item_data['type'] == 'food':
-                item = FoodItem()
-                item.is_raw = item_data['is_raw']
-                item.nutrition_value = item_data['nutrition_value']
-            # Armor
-            elif item_data['type'] in ['armor', 'utility']:
-                item = ArmorItem()
-                for body_part in BODY_PART:
-                    item_part = item_data['body_part'].lower()
-                    if item_data['type'] == 'utility':
-                        item.category = ITEM_CATEGORY.UTILITY
-                        item_part = 'utility_' + item_part
-                    if item_part == body_part.name.lower():
-                        item.body_part = body_part
-                        break
-                for stat in item_data['modified_stats']:
-                    modified_stat = [
-                        s
-                        for s in STATS
-                        if s.name.lower() == stat['type']
-                    ]
-                    if modified_stat:
-                        item.modified_stats[modified_stat[0]] = stat['value']
-            # Weapon
-            elif item_data['type'] == 'weapon':
-                item = WeaponItem()
-                for weapon_type in WEAPON_TYPE:
-                    if weapon_type.name.lower() in item_data['flags']:
-                        item.types.add(weapon_type)
-                for stat in item_data['modified_stats']:
-                    modified_stat = [
-                        s
-                        for s in STATS
-                        if s.name.lower() == stat['type']
-                    ]
-                    if modified_stat:
-                        item.modified_stats[modified_stat[0]] = stat['value']
-            elif item_data['type'] == 'utility':
-                # TODO: implement utility item (creature should be able to
-                # equip one utility item per body part on top of their armor)
-                pass
-            else:
-                item = Item()
+    # def _parse_recipes(self, data, ids):
+    #     for recipe_id, recipe_data in data.items():
+    #         recipe_id = 'recipes.{}'.format(recipe_id)
+    #         self._validate_recipe(recipe_id, recipe_data, ids)
+    #         recipe = Recipe()
+    #         recipe.game = self
+    #         recipe.id = recipe_id
+    #         recipe.name = recipe_data['name']
+    #         for ingredient in recipe_data['ingredients']:
+    #             recipe.ingredients[ingredient['item']] = ingredient['quantity']
+    #         for result in recipe_data['results']:
+    #             recipe.results[result['item']] = result['quantity']
+    #         recipe.complexity = recipe_data['complexity']
+    #         recipe.duration = recipe_data['duration']
+    #         recipe.description = recipe_data['description']
+    #         ids.add(recipe_id)
+    #         self.inventory.add_recipe(recipe)
+    #     return ids
 
-            item.name = item_data['name']
-            item.description = item_data['description']
-            item.id = item_id
+    # def _validate_recipe(self, recipe_id, recipe, ids):
+    #     attributes = [
+    #         "name", "ingredients", "results", "complexity",
+    #         "duration", "description"
+    #     ]
+    #     for attribute in attributes:
+    #         if attribute not in recipe:
+    #             raise KeyError('Missing {} attribute'.format(attribute))
 
-            ids.add(item_id)
-            self.inventory.add_item(item)
-        return ids
+    #     for ingredient in recipe['ingredients']:
+    #         if not self.inventory.has_item(ingredient['item']):
+    #             raise RuntimeError(
+    #                 'Unknown item with id {} in recipe {}'.format(
+    #                     ingredient['item'], recipe['name']
+    #                 )
+    #             )
+    #     for ingredient in recipe['results']:
+    #         if not self.inventory.has_item(ingredient['item']):
+    #             raise RuntimeError(
+    #                 'Unknown item with id {} in recipe {}'.format(
+    #                     ingredient['item'], recipe['name']
+    #                 )
+    #             )
+    #     if recipe_id in ids:
+    #         raise RuntimeError('Duplicate id')
 
-    def _validate_item(self, item_id, item, ids):
-        for attribute in ['name', 'description']:
-            if attribute not in item:
-                raise KeyError('Missing {} attribute'.format(attribute))
-        if item_id in ids:
-            raise RuntimeError('Duplicate id')
-        # TODO: check components validity as well
-
-    def _parse_recipes(self, data, ids):
-        for recipe_id, recipe_data in data.items():
-            recipe_id = 'recipes.{}'.format(recipe_id)
-            self._validate_recipe(recipe_id, recipe_data, ids)
-            recipe = Recipe()
-            recipe.game = self
-            recipe.id = recipe_id
-            recipe.name = recipe_data['name']
-            for ingredient in recipe_data['ingredients']:
-                recipe.ingredients[ingredient['item']] = ingredient['quantity']
-            for result in recipe_data['results']:
-                recipe.results[result['item']] = result['quantity']
-            recipe.complexity = recipe_data['complexity']
-            recipe.duration = recipe_data['duration']
-            recipe.description = recipe_data['description']
-            ids.add(recipe_id)
-            self.inventory.add_recipe(recipe)
-        return ids
-
-    def _validate_recipe(self, recipe_id, recipe, ids):
-        attributes = [
-            "name", "ingredients", "results", "complexity",
-            "duration", "description"
-        ]
-        for attribute in attributes:
-            if attribute not in recipe:
-                raise KeyError('Missing {} attribute'.format(attribute))
-
-        for ingredient in recipe['ingredients']:
-            if not self.inventory.has_item(ingredient['item']):
-                raise RuntimeError(
-                    'Unknown item with id {} in recipe {}'.format(
-                        ingredient['item'], recipe['name']
-                    )
-                )
-        for ingredient in recipe['results']:
-            if not self.inventory.has_item(ingredient['item']):
-                raise RuntimeError(
-                    'Unknown item with id {} in recipe {}'.format(
-                        ingredient['item'], recipe['name']
-                    )
-                )
-        if recipe_id in ids:
-            raise RuntimeError('Duplicate id')
-
-    def _parse_adventures(self, data, ids):
+    def _parse_adventures(self, data):
         for adventure_id, adventure_data in data.items():
-            adventure_id = 'adventures.{}'.format(adventure_id)
-            self._validate_adventure(adventure_id, adventure_data, ids)
-            adventure = AdventureTemplate()
-            adventure.id = adventure_id
-            adventure.title = adventure_data['title']
-            adventure.description = adventure_data['description']
-
-            for enemy in adventure_data.get('enemies', []):
-                adventure.add_enemy(enemy['enemy'], enemy['chance'])
-
-            for reward in adventure_data.get('rewards', []):
-                adventure.add_reward(reward['item'], reward['chance'])
-
-            ids.add(adventure_id)
-            self.add_adventure(adventure)
-        return ids
-
-    def _validate_adventure(self, adventure_id, adventure, ids):
-        attributes = [
-            "title", "enemies", "rewards", "description"
-        ]
-        for attribute in attributes:
-            if attribute not in adventure:
-                raise KeyError('Missing {} attribute'.format(attribute))
-        if adventure_id in ids:
-            raise RuntimeError('Duplicate id')
-        # TODO check rewards validity as well
-        # TODO check enemies validity as well
+            GameModel.adventure_templates[adventure_id] = (
+                AdventureTemplate.from_data(adventure_id, adventure_data)
+            )
 
     def _parse_enemies(self, data, ids):
         for enemy_id, enemy_data in data.items():
-            enemy_id = 'enemies.{}'.format(enemy_id)
-            self._validate_enemy(enemy_id, enemy_data, ids)
-            enemy = Enemy()
-            enemy.id = enemy_id
-            enemy.name = enemy_data['name']
-            enemy.description = enemy_data['description']
-            enemy.max_hp = enemy_data['hp']
-            enemy.hp = enemy_data['hp']
-            enemy.strength = enemy_data['strength']
-            enemy.armor = enemy_data['armor']
-            enemy.agility = enemy_data['agility']
-            for loot in enemy_data['loot']:
-                enemy.loot[loot['item']] = (loot['quantity'], loot['curve'])
-            ids.add(enemy_id)
-            self.add_enemy(enemy)
-        return ids
-
-    def _validate_enemy(self, enemy_id, enemy, ids):
-        attributes = [
-            "name", "hp", "strength", "armor", "agility", "description"
-        ]
-        for attribute in attributes:
-            if attribute not in enemy:
-                raise KeyError('Missing {} attribute'.format(attribute))
-        if enemy_id in ids:
-            raise RuntimeError('Duplicate id')
-        # TODO: check loot validity as well
+            GameModel.enemy_templates[enemy_id] = EnemyTemplate.from_data(
+                enemy_id, enemy_data
+            )
 
     def update(self):
         for creature in self.creatures:
@@ -236,15 +130,6 @@ class Game(object):
         # TODO: Find a better id system
         creature.id = 'creature.' + creature._model.name
         self.creatures.append(creature)
-
-    def add_adventure(self, adventure):
-        self.adventure_templates.append(adventure)
-        self.adventure_templates = sorted(
-            self.adventure_templates, key=lambda adv: adv.title
-        )
-
-    def add_enemy(self, enemy):
-        self.enemies[enemy.id] = enemy
 
     def start_adventure(self):
         creature = ObjectManager.ui._state.selected_creature

@@ -6,6 +6,48 @@ import random
 import copy
 
 
+class EnemyTemplate:
+    def __init__(self):
+        # TODO Use Constant stats
+        self.name = None
+        self.level = None
+        self.description = None
+        self.loot = {}
+
+        self.max_hp = None
+        self.hp = None
+        self.strength = None
+        self.armor = None
+        self.agility = None
+
+    @classmethod
+    def from_data(cls, id, data):
+        cls.validate_data(data)
+        instance = cls()
+        instance.id = 'enemies.{}'.format(id)
+        instance.name = data['name']
+        instance.description = data['description']
+        instance.max_hp = data['hp']
+        instance.hp = data['hp']
+        instance.strength = data['strength']
+        instance.armor = data['armor']
+        instance.agility = data['agility']
+        for loot in data['loot']:
+            instance.loot[loot['item']] = (loot['quantity'], loot['curve'])
+
+        return instance
+
+    @staticmethod
+    def validate_data(data):
+        attributes = [
+            "name", "hp", "strength", "armor", "agility", "description"
+        ]
+        for attribute in attributes:
+            if attribute not in data:
+                raise KeyError('Missing {} attribute'.format(attribute))
+        # TODO: Check loot validity as well
+
+
 class Enemy(object):
     def __init__(self):
         # TODO Use Constant stats
