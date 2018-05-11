@@ -2,18 +2,15 @@
 """DOCSTRING."""
 
 from Creature import Creature
+
+from activity.Adventure import AdventureTemplate
 from Enemy import EnemyTemplate
+from Mutation import MutationTemplate
 
 from activity.Adventure import Adventure
-from activity.Adventure import AdventureTemplate
 from activity.Cook import Cook
 from activity.Feed import Feed
 from activity.Fight import Fight
-
-from Constants import BODY_PART
-from Constants import WEAPON_TYPE
-from Constants import STATS
-from Constants import ITEM_CATEGORY
 
 from ObjectManager import ObjectManager
 from Settings import Settings
@@ -21,20 +18,23 @@ from Settings import Settings
 import json
 import os
 
+from collections import namedtuple
+
+Knowledge = namedtuple('Knowledge', 'base_cost current_level')
+
 
 class GameModel:
     """Store data of Game."""
 
     genetic_material = 0
-    # TODO: Convert this to per-recipe knowledge
-    knowledge_points = 0
 
     creatures = {}
     creature_templates = {}
 
-    mutation_templates = {}
-    enemy_templates = {}
     adventure_templates = {}
+    enemy_templates = {}
+    mutation_templates = {}
+    knowledge = {}
 
     date = 0
 
@@ -53,24 +53,44 @@ class Game(object):
     def __init__(self, window):
         self.window = window
 
-        self._parse_enemies()
         self._parse_adventures()
-        # with open("src/data/recipes.json", 'r') as recipe_data:
-        #     self._parse_recipes(json.loads(recipe_data.read()))
+        self._parse_enemies()
+        self._parse_mutations()
+        self._parse_knowledge()
 
-    def _parse_adventures(self, data):
-        with open("src/data/enemies.json", 'r') as data:
-            for adventure_id, adventure_data in data.items():
-                GameModel.adventure_templates[adventure_id] = (
-                    AdventureTemplate.from_data(adventure_id, adventure_data)
-                )
+    def _parse_adventures(self):
+        with open("src/data/enemies.json", 'r') as json_data:
+            items = json.loads(json_data.read()).items()
 
-    def _parse_enemies(self, data):
-        with open("src/data/adventures.json", 'r') as data:
-            for enemy_id, enemy_data in data.items():
-                GameModel.enemy_templates[enemy_id] = EnemyTemplate.from_data(
-                    enemy_id, enemy_data
-                )
+        for id_, data in items:
+            GameModel.adventure_templates[id_] = (
+                AdventureTemplate.from_data(id_, data)
+            )
+
+    def _parse_enemies(self):
+        with open("src/data/adventures.json", 'r') as json_data:
+            items = json.loads(json_data.read()).items()
+
+        for id_, data in items:
+            GameModel.enemy_templates[id_] = (
+                EnemyTemplate.from_data(id_, data)
+            )
+
+    def _parse_mutations(self):
+        with open("src/data/mutations.json", 'r') as json_data:
+            items = json.loads(json_data.read()).items()
+
+        for id_, data in items:
+            GameModel.mutation_templates[id_] = (
+                MutationTemplate.fromdata(id_, data)
+            )
+
+    def _parse_knowledge(self):
+        with open("src/data/knowledge.json", 'r') as json_data:
+            items = json.loads(json_data.read()).items()
+
+        for id_, data in items:
+            GameModel.knowledge[id_] = Knowledge(data, 0.)
 
     def update(self):
         for creature in self.creatures:
@@ -78,10 +98,13 @@ class Game(object):
         self.date += 1
         ObjectManager.ui.refresh()
 
-    def add_creature(self, creature):
-        # TODO: Find a better id system
-        creature.id = 'creature.' + creature._model.name
-        self.creatures.append(creature)
+    def has_knowledge(self, knowledge_id):
+        if knowledge_id not in self.knowledge:
+            raise KeyError('Knowledge {} not found'.format(knowledge_id))
+        return (
+            self.knowledge[knowledge_id].current_level >=
+            self.knowledge[knowledge_id].base_cost
+        )
 
     def start_adventure(self):
         creature = ObjectManager.ui._state.selected_creature

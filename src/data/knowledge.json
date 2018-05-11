@@ -1,7 +1,14 @@
 {
-    "size": {
-        "tiny": 0.0,
-        "small": 10.0,
-        "medium": 100.0
-    }
+    "movement.crawl": 0.0,
+    "movement.quadruped": 100.0,
+    "movement.biped": 500.0,
+
+    "teeth.sharp": 0.0,
+    "teeth.razor": 100.0,
+
+    "hands.claws": 10.0,
+
+    "glands.venom": 100.0,
+
+    "augments.teeths.double_row": 10.0
 }

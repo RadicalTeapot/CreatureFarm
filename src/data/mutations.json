@@ -1,44 +1,41 @@
 {
-    "size.tiny": {
-        "name": "Tiny size",
-        "knowledge": "knowledge.size.tiny",
-        "biomass_cost": 0.1,
-        "body_part": null,
-        "description": "Size of a squirel"
+    "movement.crawl": {
+        "name": "Crawl",
+        "knowledge": ["knowledge.movement.crawl"],
+        "excludes": ["knowledge.arms", "knowledge.legs", "knowledge.movement"],
+        "biomass_cost": 1.0,
+        "description": "Crawl around."
     },
 
-    "size.small": {
-        "name": "Small size",
-        "knowledge": "knowledge.size.small",
-        "biomass_cost": 1.0,
-        "body_part": null,
-        "description": "Size of a dog"
+    "movement.quadruped": {
+        "name": "Quadruped",
+        "knowledge": ["knowledge.movement.quadruped"],
+        "excludes": ["knowledge.movement"],
+        "biomass_cost": 66.0,
+        "description": "Four limbs to run on."
+    },
+
+    "movement.biped": {
+        "name": "Biped",
+        "knowledge": ["knowledge.movement.biped"],
+        "excludes": ["knowledge.movement"],
+        "biomass_cost": 100.0,
+        "description": "Stand up."
     },
 
     "mouth.sharp_teeth" : {
-        "name": "",
-        "knowledge_type": "",
-        "knowledge_quantity": "",
-        "biomass_cost": "",
-        "body_part": "",
-        "description": ""
+        "name": "Sharp teeth",
+        "knowledge": ["knowledge.teeth.sharp"],
+        "excludes": ["knowledge.teeth"],
+        "biomass_cost": 1.0,
+        "description": "Pointy teeth."
     },
 
-    "mouth.tusk": {
-        "name": "",
-        "knowledge_type": "",
-        "knowledge_quantity": "",
-        "biomass_cost": "",
-        "body_part": "",
-        "description": ""
-    },
-
-    "hands.claws": {
-        "name": "",
-        "knowledge_type": "",
-        "knowledge_quantity": "",
-        "biomass_cost": "",
-        "body_part": "",
-        "description": ""
+    "mouth.venomous_bite": {
+        "name": "Venomous bite",
+        "knowledge": ["knowledge.teeth.sharp", "knowledge.glands.venom"],
+        "excludes": ["knowledge.teeth"],
+        "biomass_cost": 25.0,
+        "description": "Hollow tubes through the teeth deliver a potent neurotoxic venom on each bite."
     }
 }

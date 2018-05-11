@@ -60,11 +60,6 @@ class Enemy:
         if self.template:
             self.hp = template.hp
 
-    @classmethod
-    def from_template(cls, template):
-        instance = cls(template)
-        instance.hp = template.hp
-
     def get_loot(self):
         rewards = {}
         for item_id, data in self.loot.items():
