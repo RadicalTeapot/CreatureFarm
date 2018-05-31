@@ -1,0 +1,16 @@
+#:kivy 1.10.0
+
+<IconButton@Button>:
+    source: ''
+    RelativeLayout:
+        pos: root.pos
+        size: root.size
+        Image:
+            source: root.source
+            size_hint: (1., 1.)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+
+<TopBarButton@Button>:
+    size_hint: (None, 1.0)
+    width: 100

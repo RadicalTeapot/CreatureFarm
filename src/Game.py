@@ -22,15 +22,16 @@ from Constants import WEAPON_TYPE
 from Constants import STATS
 from Constants import ITEM_CATEGORY
 
+from Settings import Settings
+
 from ObjectManager import ObjectManager
 
 import json
+import os
 
 
-class Game(object):
-    def __init__(self, window):
-        self.window = window
-
+class Game:
+    def __init__(self):
         self.creatures = []
         self.enemies = {}
         self.adventure_templates = []
@@ -363,7 +364,3 @@ class Game(object):
         ]
         for creature, creature_data in zip(self.creatures, data['creatures']):
             creature.deserialize(creature_data)
-
-    def draw(self):
-        self.window.clear()
-        ObjectManager.ui.draw()
