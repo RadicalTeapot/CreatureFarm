@@ -57,7 +57,7 @@ class Game(object):
         self._parse_knowledge()
 
     def _parse_adventures(self):
-        with open("src/data/adventures.json", 'r') as json_data:
+        with open("data/json/adventures.json", 'r') as json_data:
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
@@ -66,7 +66,7 @@ class Game(object):
             )
 
     def _parse_enemies(self):
-        with open("src/data/enemies.json", 'r') as json_data:
+        with open("data/json/enemies.json", 'r') as json_data:
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
@@ -75,7 +75,7 @@ class Game(object):
             )
 
     def _parse_mutations(self):
-        with open("src/data/mutations.json", 'r') as json_data:
+        with open("data/json/mutations.json", 'r') as json_data:
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
@@ -84,7 +84,7 @@ class Game(object):
             )
 
     def _parse_knowledge(self):
-        with open("src/data/knowledge.json", 'r') as json_data:
+        with open("data/json/knowledge.json", 'r') as json_data:
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
