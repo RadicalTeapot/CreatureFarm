@@ -11,13 +11,41 @@ from ObjectManager import ObjectManager
 from activity import Activity
 
 
-class AdventureTemplate(object):
+class AdventureTemplate:
     def __init__(self):
         self.id = None
         self.title = None
         self.description = None
         self.enemies = {}
         self.rewards = {}
+
+    @classmethod
+    def from_data(cls, id_, data):
+        cls.validate_data(data)
+
+        instance = cls()
+        instance.id = 'adventures.{}'.format(id_)
+        instance.title = data['title']
+        instance.description = data['description']
+
+        for enemy in data.get('enemies', []):
+            instance.add_enemy(enemy['enemy'], enemy['chance'])
+
+        for reward in data.get('rewards', []):
+            instance.add_reward(reward['item'], reward['chance'])
+
+        return instance
+
+    @staticmethod
+    def validate_data(data):
+        attributes = [
+            "title", "enemies", "rewards", "description"
+        ]
+        for attribute in attributes:
+            if attribute not in data:
+                raise KeyError('Missing {} attribute'.format(attribute))
+        # TODO check rewards validity as well
+        # TODO check enemies validity as well
 
     def add_enemy(self, enemy_id, chance):
         self.enemies[enemy_id] = chance
