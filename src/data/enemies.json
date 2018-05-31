@@ -5,9 +5,7 @@
         "strength" : 2.0,
         "armor": 1.0,
         "agility": 0.5,
-        "knowledge": [
-            {"type": "claws", "quantity": 1.0}
-        ],
+        "knowledge": {"knowledge.hands.claws": 1.0},
         "biomass": 0.5,
         "description": "Enemy placeholder description"
     },
@@ -18,7 +16,7 @@
         "strength": 5.0,
         "armor": 10.0,
         "agility": 0.1,
-        "knowledge": [],
+        "knowledge": {},
         "biomass": 2.0,
         "description": "Enemy placeholder description"
     }

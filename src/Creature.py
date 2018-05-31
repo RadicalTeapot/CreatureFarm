@@ -2,7 +2,6 @@
 """DOCSTRING."""
 
 from Constants import ACTIVITY_TYPE
-from Constants import BODY_PART
 from Constants import STATS
 from ObjectManager import ObjectManager
 

@@ -50,16 +50,14 @@ class GameModel:
 
 
 class Game(object):
-    def __init__(self, window):
-        self.window = window
-
+    def __init__(self):
         self._parse_adventures()
         self._parse_enemies()
         self._parse_mutations()
         self._parse_knowledge()
 
     def _parse_adventures(self):
-        with open("src/data/enemies.json", 'r') as json_data:
+        with open("src/data/adventures.json", 'r') as json_data:
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
@@ -68,7 +66,7 @@ class Game(object):
             )
 
     def _parse_enemies(self):
-        with open("src/data/adventures.json", 'r') as json_data:
+        with open("src/data/enemies.json", 'r') as json_data:
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
@@ -82,7 +80,7 @@ class Game(object):
 
         for id_, data in items:
             GameModel.mutation_templates[id_] = (
-                MutationTemplate.fromdata(id_, data)
+                MutationTemplate.from_data(id_, data)
             )
 
     def _parse_knowledge(self):

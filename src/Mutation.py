@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-import copy
-
 
 class MutationTemplate:
     def __init__(self):
         self.name = ''
         self.knowledge = set()
-        self.body_part = {}
         self.biomass_cost = 0.
         self.description = ''
 
@@ -19,7 +16,6 @@ class MutationTemplate:
         instance.id = 'recipes.{}'.format(id_)
         instance.name = data['name']
         instance.knowledge = set(data['knowledge'])
-        instance.body_part = copy.deepcopy(data['body_part'])
         instance.biomass_cost = data['biomass_cost']
         instance.description = data['description']
 
@@ -28,7 +24,7 @@ class MutationTemplate:
     @staticmethod
     def validate_data(data):
         attributes = [
-            "name", "knowledge", "biomass_cost", "body_part", "description"
+            "name", "knowledge", "biomass_cost", "description"
         ]
         for attribute in attributes:
             if attribute not in data:

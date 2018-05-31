@@ -35,6 +35,13 @@ class UI_BUTTON(Enum):
 #                                   Logger                                    #
 # ########################################################################### #
 
+class ACTIVITY_TYPE(Enum):
+    ADVENTURE = 'on an adventure'
+    COOK = 'cooking'
+    FEED = 'eating'
+    FIGHT = 'in a fight'
+
+
 class ENTRY_TYPE(Enum):
     INFO = 1
     IMPORTANT = 2

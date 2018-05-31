@@ -3,6 +3,7 @@
 
 import math
 import random
+import copy
 
 from ObjectManager import ObjectManager
 
@@ -32,9 +33,7 @@ class EnemyTemplate:
         instance.strength = data['strength']
         instance.armor = data['armor']
         instance.agility = data['agility']
-        instance.knowledge[data['knowledge']['type']] = (
-            data['knowledge']['quantity']
-        )
+        instance.knowledge = copy.deepcopy(data['knowledge'])
         instance.biomass = data['biomass']
 
         return instance
@@ -48,9 +47,6 @@ class EnemyTemplate:
         for attribute in attributes:
             if attribute not in data:
                 raise KeyError('Missing {} attribute'.format(attribute))
-        for item in data['knowledge']:
-            if 'type' not in item or 'quantity' not in item:
-                raise KeyError('Badly formed knowledge attribute')
 
 
 class Enemy:
