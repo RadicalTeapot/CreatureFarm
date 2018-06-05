@@ -22,7 +22,9 @@ class Mission(UiState):
         self.selected_creature = None
 
         for mission in ['Scout', 'Forage', 'Attack']:
-            entry = ListEntry.simple({'name': mission})
+            entry = ListEntry.entry(
+                ListEntry.entry_type.SIMPLE, {'name': mission}
+            )
             entry.button.bind(on_press=partial(self.mission_selected, entry))
             self.left_panel.layout.add_widget(entry)
 

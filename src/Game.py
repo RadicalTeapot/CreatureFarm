@@ -104,6 +104,10 @@ class Game(object):
             self.knowledge[knowledge_id].base_cost
         )
 
+    def available_mutations(self):
+        # TODO Check for knowledge and return only available mutation
+        return GameModel.mutation_templates.values()
+
     def start_adventure(self):
         creature = ObjectManager.ui._state.selected_creature
         adventure_template = ObjectManager.ui._state.selected_adventure

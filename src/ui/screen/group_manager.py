@@ -21,11 +21,15 @@ class GroupManager(UiState):
 
     def build_entries(self):
         self.left_panel.layout.clear_widgets()
-        list_entry = ListEntry.simple({'name': 'New Group'})
+        list_entry = ListEntry.entry(
+            ListEntry.entry_type.SIMPLE, {'name': 'New Group'}
+        )
         list_entry.button.bind(on_press=self.new_group)
         self.left_panel.layout.add_widget(list_entry)
         for entry in self.entries:
-            list_entry = ListEntry.deletable({'name': entry})
+            list_entry = ListEntry.entry(
+                ListEntry.entry_type.DELETABLE, {'name': entry}
+            )
             list_entry.button.bind(
                 on_press=partial(self.load_group, list_entry.data)
             )

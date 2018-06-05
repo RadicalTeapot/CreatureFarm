@@ -1,10 +1,11 @@
 #:kivy 1.10.0
 
-<ListWidget@Widget>:
+<ListWidget@Widget, TogglableListWidget@Widget>:
     layout: list_layout
+    bg_color: (1., 1., 1.)
     canvas:
         Color:
-            rgb: 1.0, 1.0, 1.0
+            rgb: root.bg_color
         Rectangle:
             pos: self.pos
             size: self.size
@@ -24,7 +25,7 @@
             padding: 5
             height: self.minimum_height
 
-<SimpleListEntry@Widget, DeletableListEntry@Widget>:
+<SimpleListEntry@Widget, DeletableListEntry@Widget, TogglableListEntry@Widget>:
     size_hint: (1.0, None)
     height: 60
     data: {'name': ''}
@@ -67,6 +68,21 @@
             size_hint: (.2, 1.)
             source: 'data/icons/trash.png'
 
+<TogglableListEntry@Widget>:
+    name: ''
+    button: button
+    state: 'normal'
+    BoxLayout:
+        pos: root.pos
+        size: root.size
+        id: entry_layout
+        orientation: 'horizontal'
+
+        ToggleButton:
+            id: button
+            text: root.data['name']
+            state: root.state
+            on_press: root.state = self.state
 
 <TopBarLabel@Label>:
     size_hint_y: 1.
