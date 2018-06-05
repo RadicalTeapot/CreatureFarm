@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from kivy.factory import Factory
-
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
-
-from enum import Enum
-from functools import partial
 
 
 class ListWidget(Widget):
@@ -15,7 +10,11 @@ class ListWidget(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         self._entries = []
+        self.selected_entry = None
+
+        self.register_event_type('on_item_pressed')
 
     def __len__(self):
         return len(self._entries)
@@ -41,6 +40,9 @@ class ListWidget(Widget):
         self._entries.append(value)
         self.layout.add_widget(value)
 
+        if isinstance(value, TogglableListEntry):
+            value.bind(on_press=self.item_pressed)
+
     def insert(self, index, value):
         self._entries.insert(index, value)
         self.layout.add_widget(value, index)
@@ -58,48 +60,100 @@ class ListWidget(Widget):
                 index = i
         del self[index]
 
-
-class TogglableListWidget(ListWidget):
-    # _togglable_entry = Factory.TogglableListEntry().__class__
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.register_event_type('on_item_pressed')
-        self.selected_entry = None
-
-    def append(self, value):
-        # if not isinstance(value, self._togglable_entry):
-        #     raise TypeError('Wrong entry type')
-        super().append(value)
-        value.button.bind(on_press=partial(self.item_pressed, value))
-
-    def item_pressed(self, entry, button):
+    def item_pressed(self, entry):
         self.dispatch('on_item_pressed', entry)
 
     def on_item_pressed(self, instance):
-        if instance.state == 'normal':
-            self.selected_entry = None
-        else:
-            self.selected_entry = instance
+        if isinstance(instance, TogglableListEntry):
+            if instance.state == 'normal':
+                self.selected_entry = None
+            else:
+                self.selected_entry = instance
 
 
-class ListEntryType(Enum):
-    SIMPLE = 0
-    DELETABLE = 1
-    TOGGLABLE = 2
+class ListEntry(Widget):
+    entry_type = {
+        'SIMPLE': 0,
+        'DELETABLE': 1,
+        'TOGGLABLE': 2,
+    }
 
+    button = ObjectProperty()
 
-class ListEntry:
-    entry_type = ListEntryType
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.register_event_type('on_press')
+        self.button.bind(on_press=self.button_pressed)
 
-    @staticmethod
-    def entry(entry_type, data):
+    def button_pressed(self, button):
+        self.dispatch('on_press')
+
+    def on_press(self):
+        pass
+
+    @classmethod
+    def entry(cls, entry_type, name):
         instance = None
-        if entry_type == ListEntry.entry_type.SIMPLE:
-            instance = Factory.SimpleListEntry()
-        elif entry_type == ListEntry.entry_type.DELETABLE:
-            instance = Factory.DeletableListEntry()
-        elif entry_type == ListEntry.entry_type.TOGGLABLE:
-            instance = Factory.TogglableListEntry()
-        instance.data = data
+        if entry_type == cls.entry_type['SIMPLE']:
+            instance = SimpleListEntry()
+        elif entry_type == cls.entry_type['DELETABLE']:
+            instance = DeletableListEntry()
+        elif entry_type == cls.entry_type['TOGGLABLE']:
+            instance = TogglableListEntry()
+        instance.name = name
         return instance
+
+    @classmethod
+    def simple(cls, name):
+        return cls.entry(cls.entry_type['SIMPLE'], name)
+
+    @classmethod
+    def deletable(cls, name):
+        return cls.entry(cls.entry_type['DELETABLE'], name)
+
+    @classmethod
+    def togglable(cls, name):
+        return cls.entry(cls.entry_type['TOGGLABLE'], name)
+
+
+class SimpleListEntry(ListEntry):
+    pass
+
+
+class DeletableListEntry(ListEntry):
+    delete_button = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.register_event_type('on_delete')
+        self.delete_button.bind(on_press=self.delete_button_pressed)
+
+    def delete_button_pressed(self, button):
+        self.dispatch('on_delete')
+
+    def on_delete(self):
+        pass
+
+
+class TogglableListEntry(ListEntry):
+    _states = ['normal', 'down']
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    @property
+    def state(self):
+        return self.button.state
+
+    @state.setter
+    def state(self, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected str, got {} instead'.format(
+                type(value).__name__
+            ))
+        if value not in TogglableListEntry._states:
+            raise ValueError(
+                f'Wrong state, only {TogglableListEntry._states!r} '
+                f'are valid.'
+            )
+        self.button.state = value

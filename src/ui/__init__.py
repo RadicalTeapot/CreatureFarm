@@ -33,9 +33,9 @@ class Ui(App):
         self._states = {
             State.MAIN_MENU: MainMenu(),
             State.TEMPLATE_EDITOR: TemplateEditor(),
-            State.GROUP_MANAGER: GroupManager(),
-            State.MISSION: Mission(),
-            State.CURRENT_MISSION: CurrentMission(),
+            # State.GROUP_MANAGER: GroupManager(),
+            # State.MISSION: Mission(),
+            # State.CURRENT_MISSION: CurrentMission(),
         }
 
         # self.state = State.MAIN_MENU

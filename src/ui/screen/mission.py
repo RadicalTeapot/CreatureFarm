@@ -6,8 +6,6 @@ from ui.widget.widgets import ListEntry
 
 from kivy.properties import ObjectProperty
 
-from functools import partial
-
 
 class Mission(UiState):
     left_panel = ObjectProperty()
@@ -22,16 +20,14 @@ class Mission(UiState):
         self.selected_creature = None
 
         for mission in ['Scout', 'Forage', 'Attack']:
-            entry = ListEntry.entry(
-                ListEntry.entry_type.SIMPLE, {'name': mission}
-            )
-            entry.button.bind(on_press=partial(self.mission_selected, entry))
+            entry = ListEntry.simple({'name': mission})
+            entry.bind(on_press=self.mission_selected)
             self.left_panel.layout.add_widget(entry)
 
         self.creature_spinner.bind(text=self.select_creature)
         self.start_button.bind(on_press=self.start_mission)
 
-    def mission_selected(self, entry, button):
+    def mission_selected(self, entry):
         print(f"selected mission {entry.data['name']}")
         self.mission_label.text = entry.data['name']
         self.selected_mission = entry

@@ -2,11 +2,19 @@
 
 <TemplateForm@Widget>:
     template_name: ''
+
     available_list: available_list
     selected_list: selected_list
+
     add_button: add
     remove_button: remove
+    save_button: save
+    clear_button: clear
+
+    text_input: text_input
+
     biomass: '0'
+
     canvas:
         Color:
             rgb: 1.0, 1.0, 1.0
@@ -37,6 +45,7 @@
                 size_hint:(.9, 1.0)
                 pos_hint: {'right': 1., 'center_y': .5}
                 text: root.template_name
+                id: text_input
         BoxLayout:
             size_hint: (1.0, 1.0)
             orientation: 'horizontal'
@@ -54,7 +63,7 @@
                     text: 'Available'
                     color: 0., 0., 0., 1.
 
-                TogglableListWidget:
+                ListWidget:
                     id: available_list
                     size_hint: (1.0, 1.0)
                     bg_color: (.8, .8, .8)
@@ -84,7 +93,7 @@
                     text: 'Selected'
                     color: 0., 0., 0., 1.
 
-                TogglableListWidget:
+                ListWidget:
                     id: selected_list
                     bg_color: (.8, .8, .8)
 
@@ -106,18 +115,27 @@
                 spacing: 5
 
                 Button:
+                    id: save
                     text: 'Save'
                 Button:
-                    text: 'Cancel'
+                    id: clear
+                    text: 'Clear'
 
 <TemplateEditor>:
+    template_name: ''
     template_list: list
+    template_text_input: form.text_input
+
     available_list: form.available_list
     selected_list: form.selected_list
-    template_name: ''
+
     add_button: form.add_button
     remove_button: form.remove_button
+    save_button: form.save_button
+    clear_button: form.clear_button
+
     biomass: '0'
+
     canvas:
         Color:
             rgb: 0.25, 0.25, 0.25

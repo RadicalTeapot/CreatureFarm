@@ -1,6 +1,6 @@
 #:kivy 1.10.0
 
-<ListWidget@Widget, TogglableListWidget@Widget>:
+<ListWidget>:
     layout: list_layout
     bg_color: (1., 1., 1.)
     canvas:
@@ -25,10 +25,11 @@
             padding: 5
             height: self.minimum_height
 
-<SimpleListEntry@Widget, DeletableListEntry@Widget, TogglableListEntry@Widget>:
+<SimpleListEntry, DeletableListEntry, TogglableListEntry>:
+    name: ''
+
     size_hint: (1.0, None)
     height: 60
-    data: {'name': ''}
     canvas:
         Color:
             rgb: .25, .25, .25
@@ -36,8 +37,7 @@
             size: self.size
             pos: self.pos
 
-<SimpleListEntry@Widget>:
-    name: ''
+<SimpleListEntry>:
     button: button
     BoxLayout:
         pos: root.pos
@@ -47,10 +47,9 @@
 
         Button:
             id: button
-            text: root.data['name']
+            text: root.name
 
-<DeletableListEntry@Widget>:
-    name: ''
+<DeletableListEntry>:
     button: button
     delete_button: delete_button
     BoxLayout:
@@ -62,16 +61,14 @@
         Button:
             id: button
             size_hint: (.8, 1.)
-            text: root.data['name']
+            text: root.name
         IconButton:
             id: delete_button
             size_hint: (.2, 1.)
             source: 'data/icons/trash.png'
 
-<TogglableListEntry@Widget>:
-    name: ''
+<TogglableListEntry>:
     button: button
-    state: 'normal'
     BoxLayout:
         pos: root.pos
         size: root.size
@@ -80,9 +77,7 @@
 
         ToggleButton:
             id: button
-            text: root.data['name']
-            state: root.state
-            on_press: root.state = self.state
+            text: root.name
 
 <TopBarLabel@Label>:
     size_hint_y: 1.
