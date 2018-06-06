@@ -68,9 +68,9 @@ class TemplateEditor(UiState):
     def populate_template_list(self):
         self.template_list.clear()
 
-        list_entry = ListEntry.simple('New Template')
-        list_entry.bind(on_press=self.new_template)
-        self.template_list.append(list_entry)
+        entry = ListEntry.simple('New Template')
+        entry.bind(on_press=self.new_template)
+        self.template_list.append(entry)
 
         for name, mutations in self._model.templates.items():
             entry = ListEntry.deletable(name)
@@ -161,7 +161,7 @@ class TemplateEditor(UiState):
         # if self._model.name:
         #     del self._model.templates[self._model.name]
 
-        # TODO: Warn the user when name already exists
+        # TODO Warn the user when name already exists
         self._model.name = self.template_text_input.text
         # Shallow copy the list of mutations
         self._model.templates[self._model.name] = list(

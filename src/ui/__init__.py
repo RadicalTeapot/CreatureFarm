@@ -33,12 +33,12 @@ class Ui(App):
         self._states = {
             State.MAIN_MENU: MainMenu(),
             State.TEMPLATE_EDITOR: TemplateEditor(),
-            # State.GROUP_MANAGER: GroupManager(),
+            State.GROUP_MANAGER: GroupManager(),
             # State.MISSION: Mission(),
             # State.CURRENT_MISSION: CurrentMission(),
         }
 
-        self.set_state(State.TEMPLATE_EDITOR)
+        self.set_state(State.GROUP_MANAGER)
 
     def build(self):
         return self.main_widget

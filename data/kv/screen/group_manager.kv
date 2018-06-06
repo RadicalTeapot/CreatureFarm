@@ -2,6 +2,19 @@
 
 <GroupForm@Widget>:
     group_name: ''
+
+    text_input: text_input
+
+    available_list: available_list
+    selected_list: selected_list
+
+    add: add
+    remove: remove
+    save: save
+    clear: clear
+
+    biomass: '0'
+
     canvas:
         Color:
             rgb: 1.0, 1.0, 1.0
@@ -28,6 +41,7 @@
                 valign: 'center'
                 text_size: self.size
             TextInput:
+                id: text_input
                 multiline: False
                 size_hint:(.9, 1.0)
                 pos_hint: {'right': 1., 'center_y': .5}
@@ -50,22 +64,20 @@
                     color: 0., 0., 0., 1.
 
                 ListWidget:
+                    id: available_list
                     size_hint: (1.0, 1.0)
-                    canvas:
-                        Color:
-                            rgb: 1.0, 0.0, 0.0
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
+                    bg_color: (.8, .8, .8)
 
             RelativeLayout:
                 size_hint: (.1, 1.0)
                 Button:
+                    id: remove
                     size_hint: (1.0, .1)
                     pos_hint: {'x': 0., 'y': .3}
                     text: '<-'
 
                 Button:
+                    id: add
                     size_hint: (1.0, .1)
                     pos_hint: {'x': 0., 'top': .7}
                     text: '->'
@@ -82,12 +94,9 @@
                     color: 0., 0., 0., 1.
 
                 ListWidget:
-                    canvas:
-                        Color:
-                            rgb: 0.0, 0.0, 1.0
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
+                    id: selected_list
+                    size_hint: (1.0, 1.0)
+                    bg_color: (.8, .8, .8)
 
         RelativeLayout:
             size_hint: (1.0, None)
@@ -98,7 +107,7 @@
                 halign: 'left'
                 valign: 'center'
                 text_size: self.size
-                text: 'Cost: 0 biomass'
+                text: 'Cost: ' + root.biomass + ' biomass'
                 color: 0., 0., 0., 1.
             BoxLayout:
                 size_hint: (.3, 1.0)
@@ -107,13 +116,28 @@
                 spacing: 5
 
                 Button:
+                    id: save
                     text: 'Save'
                 Button:
-                    text: 'Cancel'
+                    id: clear
+                    text: 'Clear'
 
 <GroupManager>:
-    left_panel: list
     group_name: ''
+
+    group_list: list
+    group_text_input: form.text_input
+
+    available_list: form.available_list
+    selected_list: form.selected_list
+
+    add_button: form.add
+    remove_button: form.remove
+    save_button: form.save
+    clear_button: form.clear
+
+    biomass: '0'
+
     BoxLayout:
         orientation: 'horizontal'
         size: root.size
@@ -126,5 +150,7 @@
             size_hint: (.2, 1.0)
 
         GroupForm:
+            id: form
             size_hint: (.8, 1.0)
             group_name: root.group_name
+            biomass: root.biomass

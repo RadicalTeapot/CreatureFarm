@@ -7,29 +7,72 @@ from ui.widget.dialog import Dialog
 
 from kivy.properties import ObjectProperty
 
+from collections import OrderedDict
+from functools import partial
+
+
+class GroupManagerModel:
+    def __init__(self):
+        self.groups = OrderedDict()
+        self.all_templates = {}
+
+        self.name = ''
+        self.selected = {'selected': None, 'contents': []}
+        self.available = {'selected': None, 'contents': []}
+
 
 class GroupManager(UiState):
     left_panel = ObjectProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._model = GroupManagerModel()
 
-        # TODO: Switch to a a proper model when implementing
-        self.entries = ['Group A', 'Group B']
-        self.build_entries()
+        self.add_button.bind(
+            on_press=partial(
+                self.move_template,
+                source=self._model.available,
+                destination=self._model.selected
+            )
+        )
+        self.remove_button.bind(
+            on_press=partial(
+                self.move_template,
+                source=self._model.selected,
+                destination=self._model.available
+            )
+        )
+        self.group_text_input.bind(focus=self.update_group_name)
+        self.available_list.bind(on_item_pressed=self.select_template)
+        self.selected_list.bind(on_item_pressed=self.select_template)
+        self.save_button.bind(on_press=self.save_group)
+        self.clear_button.bind(on_press=lambda button: self.load_group())
 
-    def build_entries(self):
-        self.left_panel.layout.clear_widgets()
+    def __enter__(self):
+        self.update_templates()
+        self.populate_group_list()
+        self.load_group()
+        return self
 
-        list_entry = ListEntry.simple({'name': 'New Group'})
-        list_entry.bind(on_press=self.new_group)
-        self.left_panel.layout.add_widget(list_entry)
+    def update_templates(self):
+        # TODO Get template list and populate model dict with it
+        pass
 
-        for entry in self.entries:
-            list_entry = ListEntry.deletable({'name': entry})
-            list_entry.bind(on_press=self.load_group)
-            list_entry.bind(on_delete=self.delete_group)
-            self.left_panel.layout.add_widget(list_entry)
+    def update_group_name(self, text_input, focus):
+        self._model.name = self.template_text_input.text
+
+    def populate_group_list(self):
+        self.group_list.clear()
+
+        entry = ListEntry.simple('New Group')
+        entry.bind(on_press=self.new_group)
+        self.group_list.append(entry)
+
+        for name, group in self._model.groups.items():
+            entry = ListEntry.deletable(name)
+            entry.bind(on_press=lambda entry: self.load_group(name))
+            entry.bind(on_delete=lambda entry: self.delete_group(name))
+            self.group_list.append(entry)
 
     def new_group(self, button):
         dialog = Dialog.get_text('Enter new group name')
@@ -38,12 +81,83 @@ class GroupManager(UiState):
     def create_new_group(self, dialog):
         if not dialog.valid:
             return
-        self.entries.append(dialog.text)
-        self.build_entries()
 
-    def load_group(self, entry):
-        self.group_name = entry.data['name']
+        self._model.groups[dialog.text] = []
+        self.populate_group_list()
+        self.load_group()
 
-    def delete_group(self, entry):
-        self.entries.remove(entry.data['name'])
-        self.build_entries()
+    def load_group(self, name=''):
+        self._model.name = name
+        self._model.selected['selected'] = None
+        # Shallow copy of the list of templates
+        self._model.selected['contents'] = list(
+            self._model.groups.get(name, [])
+        )
+
+        self._model.available['selected'] = None
+        self._model.available['contents'] = [
+            name
+            for name in self._model.all_templates.keys()
+            if name not in self._model.selected['contents']
+        ]
+        self.update_ui()
+
+    def delete_group(self, name):
+        del self._model.groups[name]
+        self.populate_group_list()
+
+    def update_ui(self):
+        # Update the group name text input in the ui
+        self.group_name = self._model.name
+
+        lists = zip(
+            [self._model.selected, self._model.available],
+            [self.selected_list, self.available_list]
+        )
+        # Rebuild ui lists from model contents
+        for data, ui_list in lists:
+            ui_list.clear()
+            for template in data['contents']:
+                entry = ListEntry.togglable(template)
+                if data['selected'] == template:
+                    entry.state = 'down'
+                ui_list.append(entry)
+
+    def select_template(self, entry_list, selected_entry):
+        name = selected_entry.name if selected_entry.state == 'down' else None
+
+        if entry_list == self.selected_list:
+            self._model.selected['selected'] = name
+        else:
+            self._model.available['selected'] = name
+
+        self.update_ui()
+
+    def move_template(self, button, source, destination):
+        if source['selected'] is None:
+            return
+
+        source['contents'].remove(source['selected'])
+        destination['contents'].append(source['selected'])
+        source['selected'] = None
+        self.update_ui()
+        self.update_cost()
+
+    def update_cost(self):
+        self.biomass = str(sum(
+            self._model.all_templates[name].cost
+            for name in self._model.selected
+        ))
+
+    def save_group(self, button):
+        # Uncomment and further implement to have a renaming/update system
+        # if self._model.name:
+        #     del self._model.templates[self._model.name]
+
+        # TODO Warn the user when name already exists
+        self._model.name = self.group_text_input.text
+        # Shallow copy the list of mutations
+        self._model.templates[self._model.name] = list(
+            self._model.selected['contents']
+        )
+        self.populate_template_list()
