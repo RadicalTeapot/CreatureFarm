@@ -1,7 +1,7 @@
 #:kivy 1.10.0
 
-<CurrentMission>:
-    spinner: spinner
+<CurrentAdventure>:
+    creature_spinner: spinner
     description: label
     canvas:
         Color:
@@ -24,19 +24,19 @@
             height: 30
 
             Label:
-                text: 'Select mission'
-                size_hint: (None, 1.)
+                text: 'Select creature / group'
+                size_hint: (.3, 1.)
                 text_size: self.size
                 halign: 'left'
                 valign: 'center'
                 color: 0., 0., 0., 1.
 
             Widget:
-                size_hint: (.2, 1.)
+                size_hint: (.1, 1.)
 
             Spinner:
                 id: spinner
-                size_hint: (1., 1.)
+                size_hint: (.6, 1.)
 
         ScrollView:
             size_hint: (1., 1.)

@@ -7,7 +7,7 @@ from .screen.main_menu import MainMenu
 from .screen.template_editor import TemplateEditor
 from .screen.group_manager import GroupManager
 from .screen.adventure import Adventure
-from .screen.current_mission import CurrentMission
+from .screen.current_adventure import CurrentAdventure
 
 from kivy.properties import ObjectProperty
 from kivy.lang.builder import Builder
@@ -22,7 +22,7 @@ class State(Enum):
     TEMPLATE_EDITOR = 1
     GROUP_MANAGER = 2
     ADVENTURE = 3
-    CURRENT_MISSION = 4
+    CURRENT_ADVENTURE = 4
 
 
 class Ui(App):
@@ -35,10 +35,10 @@ class Ui(App):
             State.TEMPLATE_EDITOR: TemplateEditor(),
             State.GROUP_MANAGER: GroupManager(),
             State.ADVENTURE: Adventure(),
-            # State.CURRENT_MISSION: CurrentMission(),
+            State.CURRENT_ADVENTURE: CurrentAdventure(),
         }
 
-        self.set_state(State.ADVENTURE)
+        self.set_state(State.CURRENT_ADVENTURE)
 
     def build(self):
         return self.main_widget
@@ -67,8 +67,8 @@ class Ui(App):
     def open_adventure(self):
         self.set_state(State.ADVENTURE)
 
-    def open_current_mission(self):
-        self.set_state(State.CURRENT_MISSION)
+    def open_current_adventure(self):
+        self.set_state(State.CURRENT_ADVENTURE)
 
 
 class UiWidget(Widget):
