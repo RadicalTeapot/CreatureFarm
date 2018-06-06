@@ -10,6 +10,8 @@ from kivy.properties import ObjectProperty
 from collections import OrderedDict
 from functools import partial
 
+from types import SimpleNamespace
+
 
 class GroupManagerModel:
     def __init__(self):
@@ -55,11 +57,16 @@ class GroupManager(UiState):
         return self
 
     def update_templates(self):
-        # TODO Get template list and populate model dict with it
-        pass
+        # TODO Get template list from game and populate model dict with it
+        # instead of using dummy data
+        self._model.all_templates = {
+            'First': SimpleNamespace(cost=10),
+            'Second': SimpleNamespace(cost=20),
+            'Third': SimpleNamespace(cost=30)
+        }
 
     def update_group_name(self, text_input, focus):
-        self._model.name = self.template_text_input.text
+        self._model.name = self.group_text_input.text
 
     def populate_group_list(self):
         self.group_list.clear()
@@ -68,10 +75,10 @@ class GroupManager(UiState):
         entry.bind(on_press=self.new_group)
         self.group_list.append(entry)
 
-        for name, group in self._model.groups.items():
+        for name in self._model.groups.keys():
             entry = ListEntry.deletable(name)
-            entry.bind(on_press=lambda entry: self.load_group(name))
-            entry.bind(on_delete=lambda entry: self.delete_group(name))
+            entry.bind(on_press=lambda entry: self.load_group(entry.name))
+            entry.bind(on_delete=lambda entry: self.delete_group(entry.name))
             self.group_list.append(entry)
 
     def new_group(self, button):
@@ -146,18 +153,18 @@ class GroupManager(UiState):
     def update_cost(self):
         self.biomass = str(sum(
             self._model.all_templates[name].cost
-            for name in self._model.selected
+            for name in self._model.selected['contents']
         ))
 
     def save_group(self, button):
         # Uncomment and further implement to have a renaming/update system
         # if self._model.name:
-        #     del self._model.templates[self._model.name]
+        #     del self._model.groups[self._model.name]
 
         # TODO Warn the user when name already exists
         self._model.name = self.group_text_input.text
         # Shallow copy the list of mutations
-        self._model.templates[self._model.name] = list(
+        self._model.groups[self._model.name] = list(
             self._model.selected['contents']
         )
-        self.populate_template_list()
+        self.populate_group_list()

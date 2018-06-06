@@ -72,7 +72,7 @@ class TemplateEditor(UiState):
         entry.bind(on_press=self.new_template)
         self.template_list.append(entry)
 
-        for name, mutations in self._model.templates.items():
+        for name in self._model.templates.keys():
             entry = ListEntry.deletable(name)
             entry.bind(on_press=lambda entry: self.load_template(entry.name))
             entry.bind(on_delete=lambda entry: self.delete_template(entry.name))
