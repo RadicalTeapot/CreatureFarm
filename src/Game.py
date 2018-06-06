@@ -108,6 +108,10 @@ class Game(object):
         # TODO Check for knowledge and return only available mutation
         return GameModel.mutation_templates.values()
 
+    def available_adventures(self):
+        # TODO Return only available adventures
+        return GameModel.adventure_templates.values()
+
     def start_adventure(self):
         creature = ObjectManager.ui._state.selected_creature
         adventure_template = ObjectManager.ui._state.selected_adventure

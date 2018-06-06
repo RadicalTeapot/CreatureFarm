@@ -1,6 +1,6 @@
 {
     "forest_hunt": {
-        "title": "Forest hunt",
+        "name": "Forest hunt",
         "enemies": [
             {"enemy": "enemies.goblin", "chance": 0.1},
             {"enemy": "enemies.orc", "chance": 0.025}
@@ -13,7 +13,7 @@
     },
 
     "cave_exploration": {
-        "title": "Cave exploration",
+        "name": "Cave exploration",
         "enemies": [
             {"enemy": "enemies.goblin", "chance": 0.1},
             {"enemy": "enemies.orc", "chance": 0.1}

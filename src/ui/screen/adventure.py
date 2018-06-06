@@ -4,47 +4,79 @@
 from ui.screen import UiState
 from ui.widget.widgets import ListEntry
 
-from kivy.properties import ObjectProperty
+from ObjectManager import ObjectManager
 
 
-class Mission(UiState):
-    left_panel = ObjectProperty()
-    mission_label = ObjectProperty()
-    creature_spinner = ObjectProperty()
-    start_button = ObjectProperty()
+class AdventureModel:
+    def __init__(self):
+        self.adventures = {}
+        self.all_creatures = {}
+        self.selected_adventure = ''
+        self.selected_creature = ''
 
+
+class Adventure(UiState):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.selected_mission = None
-        self.selected_creature = None
+        self._model = AdventureModel()
 
-        for mission in ['Scout', 'Forage', 'Attack']:
-            entry = ListEntry.simple({'name': mission})
-            entry.bind(on_press=self.mission_selected)
-            self.left_panel.layout.add_widget(entry)
+        # ################################################################### #
+        #                            Ui bindings                              #
+        # ################################################################### #
+        self.creature_spinner.bind(
+            text=lambda spinner, value: self.creature_selected(value)
+        )
+        self.start_button.bind(on_press=self.start_adventure)
 
-        self.creature_spinner.bind(text=self.select_creature)
-        self.start_button.bind(on_press=self.start_mission)
+    def __enter__(self):
+        self.update_template_and_groups()
+        self.update_adventures()
+        self.populate_adventures_list()
+        self.update_ui()
+        return self
 
-    def mission_selected(self, entry):
-        print(f"selected mission {entry.data['name']}")
-        self.mission_label.text = entry.data['name']
-        self.selected_mission = entry
+    def update_template_and_groups(self):
+        # TODO Get template and group list from game and populate model dict
+        # with it instead of using dummy data
+        self._model.all_creatures = {
+            'A': None,
+            'B': None,
+            'C': None,
+        }
 
-        creatures = ['a', 'b', 'c']
-        self.creature_spinner.values = creatures
-        self.creature_spinner.text = ''
-        self.creature_spinner.text = creatures[0]
+    def update_adventures(self):
+        self._model.adventures = dict([
+            (adventure.name, adventure)
+            for adventure in ObjectManager.game.available_adventures()
+        ])
 
-    def select_creature(self, spinner, value):
-        if not value:
-            return
-        print(f'selected creature {value}')
-        self.selected_creature = value
+    def populate_adventures_list(self):
+        self.adventure_list.clear()
 
-    def start_mission(self, button):
+        for name in self._model.adventures.keys():
+            entry = ListEntry.simple(name)
+            entry.bind(
+                on_press=lambda entry: self.adventure_selected(entry.name)
+            )
+            self.adventure_list.append(entry)
+
+    def adventure_selected(self, name):
+        self._model.selected_adventure = name
+        self.creature_selected()
+        self.update_ui()
+
+    def creature_selected(self, name=''):
+        self._model.selected_creature = name
+
+    def update_ui(self):
+        self.adventure_label.text = self._model.selected_adventure
+
+        self.creature_spinner.values = self._model.all_creatures.keys()
+        self.creature_spinner.text = self._model.selected_creature
+
+    def start_adventure(self, button):
         print(
-            f'{self.selected_creature} started mission '
-            f'{self.selected_mission.data["name"]}'
+            f'{self._model.selected_creature} started adventure '
+            f'{self._model.selected_adventure}'
         )

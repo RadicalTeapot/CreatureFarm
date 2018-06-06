@@ -1,6 +1,6 @@
 #:kivy 1.10.0
 
-<MissionForm@Widget>:
+<AdventureForm@Widget>:
     label: label
     spinner: spinner
     button: button
@@ -25,14 +25,14 @@
             text_size: self.size
             halign: 'center'
             valign: 'center'
-            text: 'Mission name'
+            text: 'Adventure name'
             color: 0., 0., 0., 1.
 
         RelativeLayout:
             size_hint: (1., None)
             height: 30
             Label:
-                text: 'Creature / Group'
+                text: 'Template / Group'
                 size_hint_y: 1.
                 pos_hint: {'x': .0, 'center_y': .5}
                 text_size: self.size
@@ -58,11 +58,13 @@
                 text: 'Start'
 
 
-<Mission>:
-    left_panel: list
-    mission_label: form.label
+<Adventure>:
+    adventure_label: form.label
+    adventure_list: list
+
     creature_spinner: form.spinner
     start_button: form.button
+
     BoxLayout:
         orientation: 'horizontal'
         size: root.size
@@ -73,6 +75,6 @@
         ListWidget:
             id: list
             size_hint: (.2, 1.)
-        MissionForm:
+        AdventureForm:
             id: form
             size_hint: (.8, 1.)

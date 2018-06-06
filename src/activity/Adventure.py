@@ -14,7 +14,7 @@ from activity import Activity
 class AdventureTemplate:
     def __init__(self):
         self.id = None
-        self.title = None
+        self.name = None
         self.description = None
         self.enemies = {}
         self.rewards = {}
@@ -25,7 +25,7 @@ class AdventureTemplate:
 
         instance = cls()
         instance.id = 'adventures.{}'.format(id_)
-        instance.title = data['title']
+        instance.name = data['name']
         instance.description = data['description']
 
         for enemy in data.get('enemies', []):
@@ -39,7 +39,7 @@ class AdventureTemplate:
     @staticmethod
     def validate_data(data):
         attributes = [
-            "title", "enemies", "rewards", "description"
+            "name", "enemies", "rewards", "description"
         ]
         for attribute in attributes:
             if attribute not in data:
@@ -69,7 +69,7 @@ class Adventure(Activity):
         self.creature.logger.add_entry(
             ObjectManager.game.date,
             '{} started adventure {}'.format(
-                self.creature.name, self.template.title
+                self.creature.name, self.template.name
             ),
             self.activity_type,
             ENTRY_TYPE.INFO
@@ -98,7 +98,7 @@ class Adventure(Activity):
 
     def end(self):
         message = '{} just finished adventure {} !\n\nThey found:\n'.format(
-            self.reature.name, self.template.title
+            self.reature.name, self.template.name
         )
         for item_id, quantity in self.creature.inventory.items():
             message += '    {}: {}\n'.format(
