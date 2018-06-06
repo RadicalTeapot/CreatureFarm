@@ -1,0 +1,124 @@
+#:kivy 1.10.0
+
+<ListWidget>:
+    layout: list_layout
+    bg_color: (1., 1., 1.)
+    canvas:
+        Color:
+            rgb: root.bg_color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    ScrollView:
+        size: root.size
+        pos: root.pos
+        do_scroll_x: False
+        # on_scroll_start: root.scroll_start
+        # on_scroll_move: root.scroll_move
+        # on_scroll_end: root.scroll_end
+        GridLayout:
+            id: list_layout
+            size_hint: (1.0, None)
+            cols: 1
+            spacing: 5
+            padding: 5
+            height: self.minimum_height
+
+<SimpleListEntry, DeletableListEntry, TogglableListEntry>:
+    name: ''
+
+    size_hint: (1.0, None)
+    height: 60
+    canvas:
+        Color:
+            rgb: .25, .25, .25
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<SimpleListEntry>:
+    button: button
+    BoxLayout:
+        pos: root.pos
+        size: root.size
+        id: entry_layout
+        orientation: 'horizontal'
+
+        Button:
+            id: button
+            text: root.name
+
+<DeletableListEntry>:
+    button: button
+    delete_button: delete_button
+    BoxLayout:
+        pos: root.pos
+        size: root.size
+        id: entry_layout
+        orientation: 'horizontal'
+
+        Button:
+            id: button
+            size_hint: (.8, 1.)
+            text: root.name
+        IconButton:
+            id: delete_button
+            size_hint: (.2, 1.)
+            source: 'data/icons/trash.png'
+
+<TogglableListEntry>:
+    button: button
+    BoxLayout:
+        pos: root.pos
+        size: root.size
+        id: entry_layout
+        orientation: 'horizontal'
+
+        ToggleButton:
+            id: button
+            text: root.name
+
+<TopBarLabel@Label>:
+    size_hint_y: 1.
+    text_size: self.size
+    halign: 'center'
+    valign: 'center'
+
+<TopBar@Widget>:
+    biomass: '0'
+    running_missions: '0'
+    size_hint: (1.0, None)
+    height: 40
+    canvas:
+        Color:
+            rgb: 0.25, 0.25, 0.25
+        Rectangle:
+            pos: root.pos
+            size: root.size
+
+    BoxLayout:
+        orientation: 'horizontal'
+        pos: self.parent.pos
+        size: self.parent.size
+        padding: 5
+        spacing: 10
+
+        TopBarButton:
+            text: 'Templates'
+            on_press: app.open_template_editor()
+        TopBarButton:
+            text: 'Groups'
+            on_press: app.open_group_manager()
+        TopBarButton:
+            text: 'Adventures'
+            on_press: app.open_adventure()
+        TopBarButton:
+            text: 'Current'
+            on_press: app.open_current_adventure()
+        Widget:
+            size_hint: (1., 1.)
+        TopBarLabel:
+            text: root.biomass + ' biomass'
+        TopBarLabel:
+            text: root.running_missions + ' missions'

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from Logger import Logger
 from Constants import ACTIVITY_TYPE
-from Constants import BODY_PART
 from Constants import STATS
 from ObjectManager import ObjectManager
 
@@ -13,157 +11,34 @@ from activity.Fight import Fight
 import copy
 
 
-class Creature(object):
-    def __init__(self, name=None):
-        self._model = Model()
-        self.logger = Logger(name)
+class CreatureTemplate:
+    def __init__(self):
+        self.id = ''
+        self.name = ''
+        self.mutations = set()
 
-        self.name = name
-        self.hp = 10
-        self.max_hp = 10
+        self.stats = {}
+        for stat in STATS:
+            self.stats[stat] = 0.
 
-        self.strength = 1.0
-        self.melee = 1.0
-        self.marksmanship = 1.0
+        self.biomass = 0.
+        self.knowledge = {}
 
-        self.evasion = 1.0
-        self.armor = 0.0
+    def serialize(self):
+        pass
 
-        self.cooking = 1.0
-        self.building = 1.0
+    @classmethod
+    def deserialize(cls, data):
+        instance = cls()
+        return instance
 
-        self.inventory_size = 10
 
-    # ####################################################################### #
-    #                           Getters / Setters                             #
-    # ####################################################################### #
-
-    @property
-    def id(self):
-        return self._model.id
-
-    @id.setter
-    def id(self, value):
-        self._model.id = value
-
-    @property
-    def name(self):
-        if not self.busy:
-            return self._model.name
-        else:
-            return '{} (busy)'.format(self._model.name)
-
-    @name.setter
-    def name(self, value):
-        self._model.name = value
-
-    @property
-    def hp(self):
-        return self._get_stat(STATS.HP)
-
-    @hp.setter
-    def hp(self, value):
-        self._set_stat(STATS.HP, value)
-
-    @property
-    def max_hp(self):
-        return self._get_stat(STATS.MAX_HP)
-
-    @max_hp.setter
-    def max_hp(self, value):
-        self._set_stat(STATS.MAX_HP, value)
-
-    @property
-    def strength(self):
-        return self._get_stat(STATS.STRENGTH)
-
-    @strength.setter
-    def strength(self, value):
-        self._set_stat(STATS.STRENGTH, value)
-
-    @property
-    def melee(self):
-        return self._get_stat(STATS.MELEE)
-
-    @melee.setter
-    def melee(self, value):
-        self._set_stat(STATS.MELEE, value)
-
-    @property
-    def marksmanship(self):
-        return self._get_stat(STATS.MARKSMANSHIP)
-
-    @marksmanship.setter
-    def marksmanship(self, value):
-        self._set_stat(STATS.MARKSMANSHIP, value)
-
-    @property
-    def evasion(self):
-        return self._get_stat(STATS.EVASION)
-
-    @evasion.setter
-    def evasion(self, value):
-        self._set_stat(STATS.EVASION, value)
-
-    @property
-    def armor(self):
-        return self._get_stat(STATS.ARMOR)
-
-    @armor.setter
-    def armor(self, value):
-        self._set_stat(STATS.ARMOR, value)
-
-    @property
-    def cooking(self):
-        return self._get_stat(STATS.COOKING)
-
-    @cooking.setter
-    def cooking(self, value):
-        self._set_stat(STATS.COOKING, value)
-
-    @property
-    def building(self):
-        return self._get_stat(STATS.BUILDING)
-
-    @building.setter
-    def building(self, value):
-        self._set_stat(STATS.BUILDING, value)
-
-    @property
-    def inventory_size(self):
-        return self._get_stat(STATS.INVENTORY_SIZE)
-
-    @inventory_size.setter
-    def inventory_size(self, value):
-        self._set_stat(STATS.INVENTORY_SIZE, value)
-
-    @property
-    def busy(self):
-        return len(self._model.activity_stack) > 0
-
-    @property
-    def activity(self):
-        if not self.busy:
-            return None
-        return self._model.activity_stack[-1]
-
-    @property
-    def timer(self):
-        if not self.busy:
-            return 0
-        return self._model.activity_stack[-1].turn_count
-
-    @property
-    def inventory(self):
-        return self._model.inventory
-
-    @property
-    def equipment(self):
-        return self._model.equipment
-
-    # ####################################################################### #
-    #                                 Logic                                   #
-    # ####################################################################### #
+class Creature:
+    def __init__(self, template=None):
+        self.template = template
+        self.hp = None
+        if self.template:
+            self.hp = template.hp
 
     def _get_stat(self, stat):
         if stat not in self._model.stats:
@@ -182,12 +57,6 @@ class Creature(object):
             raise KeyError('Wrong stat type')
         self._model.stats[stat] = value
 
-    def gain_experience(self, stat, amount):
-        if stat not in self._model.stats:
-            raise KeyError('Wrong stat type')
-        self._model.stats[stat] += amount
-        # TODO: Add log message when creature gains a new level
-
     def add_to_inventory(self, loot):
         for item_id, quantity in loot.items():
             # TODO: Add message to log when inventory is full/quantity needs to
@@ -205,16 +74,6 @@ class Creature(object):
         return self.inventory_size - sum([
             quantity for quantity in self._model.inventory.values()
         ])
-
-    def remove_from_inventory(self, loot):
-        for item_id, quantity in loot.items():
-            if item_id not in self._model.inventory:
-                raise KeyError('Item {} not in inventory'.format(item_id))
-
-            self._model.inventory[item_id] -= quantity
-
-            if self._model.inventory[item_id] <= 0:
-                del self._model.inventory[item_id]
 
     def hit(self, quantity):
         self.hp -= quantity
@@ -316,21 +175,3 @@ class Creature(object):
             activity.deserialize(activity_data)
             self._model.activity_stack.append(activity)
         self.logger.deserialize(data['log'])
-
-
-class Model(object):
-    def __init__(self):
-        self.id = -1
-        self.name = ''
-
-        self.stats = {}
-        for stat in STATS:
-            self.stats[stat] = 0.
-
-        self.activity_stack = []
-
-        self.equipment = {}
-        for body_part in BODY_PART:
-            self.equipment[body_part] = None
-
-        self.inventory = {}

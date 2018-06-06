@@ -1,0 +1,37 @@
+#:kivy 1.10.0
+
+#:import main_buttons ui.screen.main_menu.MainMenuButtons
+
+<MainMenu>:
+    hide_top_bar: True
+    size_hint: (1.0, 1.0)
+    canvas:
+        Color:
+            rgb: .25, .25, .25
+        Rectangle:
+            pos: root.pos
+            size: root.size
+
+    RelativeLayout:
+        pos: root.pos
+        size: root.size
+
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 10
+            spacing: 10
+            pos_hint: {'center_x': .5, 'top': .5}
+            size_hint: (.33, .4)
+
+            Button:
+                text: 'New Game'
+                on_press: root.callback(main_buttons.NEW)
+            Button:
+                text: 'Load'
+                on_press: root.callback(main_buttons.LOAD)
+            Button:
+                text: 'Settings'
+                on_press: root.callback(main_buttons.SETTINGS)
+            Button:
+                text: 'Exit'
+                on_press: root.callback(main_buttons.EXIT)

@@ -1,0 +1,25 @@
+#:kivy 1.10.0
+
+#:include data/kv/widget/dialogs.kv
+#:include data/kv/widget/buttons.kv
+#:include data/kv/widget/widgets.kv
+
+#:include data/kv/screen/current_adventure.kv
+#:include data/kv/screen/group_manager.kv
+#:include data/kv/screen/main_menu.kv
+#:include data/kv/screen/adventure.kv
+#:include data/kv/screen/template_editor.kv
+
+<ui@Widget>:
+    layout: layout
+    canvas:
+        Color:
+            rgb: .25, .25, .25
+        Rectangle:
+            size: root.size
+            pos: root.pos
+    BoxLayout:
+        orientation: 'vertical'
+        id: layout
+        size: root.size
+        pos: root.pos

@@ -1,0 +1,44 @@
+#:kivy 1.10.0
+
+<TextDialog@ModalView>:
+    title: ''
+    text: text_input.text
+    valid: False
+    size_hint: (.33, .25)
+
+    Widget:
+        canvas:
+            Color:
+                rgb: .25, .25, .25
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            size: root.size
+            pos: root.pos
+            orientation: 'vertical'
+            padding: 10
+            spacing: 10
+
+            Label:
+                text: root.title
+                text_size: self.size
+                halign: 'left'
+                valign: 'center'
+
+            TextInput:
+                id: text_input
+                multiline: False
+
+            RelativeLayout:
+                BoxLayout:
+                    size_hint: (.75, 1.)
+                    pos_hint: {'right': 1., 'center_y': 0.5}
+                    spacing: 10
+                    Button:
+                        text: 'Ok'
+                        on_press: root.valid = True; root.dismiss()
+                    Button:
+                        text: 'Cancel'
+                        on_press: root.dismiss()

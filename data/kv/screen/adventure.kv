@@ -1,0 +1,80 @@
+#:kivy 1.10.0
+
+<AdventureForm@Widget>:
+    label: label
+    spinner: spinner
+    button: button
+    canvas:
+        Color:
+            rgb: 1., 1., 1.
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        spacing: 5
+        padding: 5
+        orientation: 'vertical'
+
+        Label:
+            id: label
+            size_hint: (1., None)
+            height: 30
+            text_size: self.size
+            halign: 'center'
+            valign: 'center'
+            text: 'Adventure name'
+            color: 0., 0., 0., 1.
+
+        RelativeLayout:
+            size_hint: (1., None)
+            height: 30
+            Label:
+                text: 'Creature / Group'
+                size_hint_y: 1.
+                pos_hint: {'x': .0, 'center_y': .5}
+                text_size: self.size
+                halign: 'left'
+                valign: 'center'
+                color: 0., 0., 0., 1.
+            Spinner:
+                id: spinner
+                size_hint: (.5, 1.)
+                pos_hint: {'right': 1., 'center_y': .5}
+
+        Widget:
+            size_hint: (1., 1.)
+
+        RelativeLayout:
+            size_hint: (1., None)
+            height: 30
+
+            Button:
+                id: button
+                size_hint: (.25, 1.)
+                pos_hint: {'right': 1., 'center_y': .5}
+                text: 'Start'
+
+
+<Adventure>:
+    adventure_label: form.label
+    adventure_list: list
+
+    creature_spinner: form.spinner
+    start_button: form.button
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size: root.size
+        pos: root.pos
+        padding: 5
+        spacing: 10
+
+        ListWidget:
+            id: list
+            size_hint: (.2, 1.)
+        AdventureForm:
+            id: form
+            size_hint: (.8, 1.)
