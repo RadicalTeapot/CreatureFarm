@@ -30,6 +30,9 @@ class GroupManager(UiState):
         super().__init__(**kwargs)
         self._model = GroupManagerModel()
 
+        # ################################################################### #
+        #                            Ui bindings                              #
+        # ################################################################### #
         self.add_button.bind(
             on_press=partial(
                 self.move_template,
@@ -91,7 +94,7 @@ class GroupManager(UiState):
 
         self._model.groups[dialog.text] = []
         self.populate_group_list()
-        self.load_group()
+        self.load_group(dialog.text)
 
     def load_group(self, name=''):
         self._model.name = name
