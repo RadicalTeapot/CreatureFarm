@@ -38,8 +38,7 @@ class Ui(App):
             # State.CURRENT_MISSION: CurrentMission(),
         }
 
-        # self.state = State.MAIN_MENU
-        self.state = State.TEMPLATE_EDITOR
+        self.set_state(State.TEMPLATE_EDITOR)
 
     def build(self):
         return self.main_widget
@@ -48,20 +47,16 @@ class Ui(App):
     def state(self):
         return self._state
 
-    @state.setter
-    def state(self, value):
-        if not isinstance(value, State):
+    def set_state(self, state_type):
+        if not isinstance(state_type, State):
             raise TypeError('Expected State, got {} instead'.format(
-                type(value).__name__
+                type(state_type).__name__
             ))
-        self._state = value
-        self.update()
-
-    def update(self):
-        self.main_widget.layout.clear_widgets()
-        if not self._states[self.state].hide_top_bar:
-            self.main_widget.layout.add_widget(self.main_widget.top_bar)
-        self.main_widget.layout.add_widget(self._states[self.state])
+        with self._states[state_type] as state:
+            self.main_widget.layout.clear_widgets()
+            if not state.hide_top_bar:
+                self.main_widget.layout.add_widget(self.main_widget.top_bar)
+            self.main_widget.layout.add_widget(state)
 
     def open_template_editor(self):
         self.state = State.TEMPLATE_EDITOR

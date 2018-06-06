@@ -10,3 +10,9 @@ class UiState(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        pass

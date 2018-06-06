@@ -51,14 +51,9 @@ class ListWidget(Widget):
         self._entries = []
         self.layout.clear_widgets()
 
-    def remove(self, value):
-        if value not in self:
-            return
-        index = 0
-        for i, v in enumerate(self):
-            if v == value:
-                index = i
-        del self[index]
+    def take(self, value):
+        self.selected_entry = None
+        return self._entries.pop(self._entries.index(value))
 
     def item_pressed(self, entry):
         self.dispatch('on_item_pressed', entry)
