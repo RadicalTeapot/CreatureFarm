@@ -15,8 +15,9 @@
 
 
 # TODO
-- __Finish load/save code and make a start menu__
+- __Finish load/save code__
 - __Attach the logger to Game__
+- Refactor screens to more tightly follow the MVC pattern (split ui and logic in two separate classes)
 - Add some mutation to increase biomass container size of creatures
 - Change way game is drawn (generate a static image for the panel borders and create a Panel.refresh method which redraws only the current tab texture. In Game.draw, draw first the panels textures and then the border overlay)
 

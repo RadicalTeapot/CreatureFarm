@@ -6,15 +6,20 @@ from ui.widget.widgets import ListEntry
 from ui.widget.dialog import Dialog
 
 from functools import partial
-from collections import OrderedDict
 
 from ObjectManager import ObjectManager
 
 
+class Template:
+    def __init__(self, mutations=[], cost=0):
+        self.mutations = mutations
+        self.cost = cost
+
+
 class TemplateEditorModel:
     def __init__(self):
-        self.templates = OrderedDict()
-        self.all_mutations = {}
+        self.templates = ObjectManager.game.get_creature_templates()
+        self.mutations = {}
 
         self.name = ''
         # The selected field stores the currently selected entry
@@ -57,9 +62,9 @@ class TemplateEditor(UiState):
         return self
 
     def update_mutations(self):
-        self._model.all_mutations = dict([
+        self._model.mutations = dict([
             (mutation.name, mutation)
-            for mutation in ObjectManager.game.available_mutations()
+            for mutation in ObjectManager.game.get_mutations()
         ])
 
     def update_template_name(self, text_input, focus):
@@ -86,7 +91,7 @@ class TemplateEditor(UiState):
         if not dialog.valid:
             return
 
-        self._model.templates[dialog.text] = []
+        self._model.templates[dialog.text] = Template()
         self.populate_template_list()
         self.load_template(dialog.text)
 
@@ -96,16 +101,17 @@ class TemplateEditor(UiState):
         self._model.selected['selected'] = None
         # Shallow copy the list of mutations
         self._model.selected['contents'] = list(
-            self._model.templates.get(name, [])
+            self._model.templates.get(name, Template()).mutations
         )
 
         self._model.available['selected'] = None
         self._model.available['contents'] = [
             name
-            for name in self._model.all_mutations
+            for name in self._model.mutations
             if name not in self._model.selected['contents']
         ]
 
+        self.update_cost()
         self.update_ui()
 
     def delete_template(self, name):
@@ -149,12 +155,18 @@ class TemplateEditor(UiState):
         self.update_ui()
         self.update_cost()
 
+    def get_biomass_cost(self, mutation_names):
+        return sum([
+            self._model.mutations[name].biomass_cost
+            for name in mutation_names
+        ])
+
     def update_cost(self):
-        # TODO: Do fancier computation in Game instead
-        self.biomass = str(sum([
-            self._model.all_mutations[name].biomass_cost
-            for name in self._model.selected['contents']
-        ]))
+        # TODO: Do fancier computation (have threshold where the cost of
+        # everything is multiplied)
+        self.biomass = str(
+            self.get_biomass_cost(self._model.selected['contents'])
+        )
 
     def save_template(self, button):
         # Uncomment and further implement to have a renaming/update system
@@ -163,8 +175,9 @@ class TemplateEditor(UiState):
 
         # TODO Warn the user when name already exists
         self._model.name = self.template_text_input.text
-        # Shallow copy the list of mutations
-        self._model.templates[self._model.name] = list(
-            self._model.selected['contents']
+        self._model.templates[self._model.name] = Template(
+            # Shallow copy the list of mutations
+            mutations=list(self._model.selected['contents']),
+            cost=self.get_biomass_cost(self._model.selected['contents'])
         )
         self.populate_template_list()

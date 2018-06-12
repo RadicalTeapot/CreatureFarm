@@ -5,6 +5,12 @@ from ui.screen import UiState
 from ui.widget.widgets import ListEntry
 
 from ObjectManager import ObjectManager
+import copy
+
+
+class AdventureData:
+    def __init__(self, creatures):
+        self.creatures = creatures
 
 
 class AdventureModel:
@@ -37,19 +43,22 @@ class Adventure(UiState):
         return self
 
     def update_template_and_groups(self):
-        # TODO Get template and group list from game and populate model dict
-        # with it instead of using dummy data
+        # Store the name of the templates in the all_creature dict
         self._model.all_creatures = {
-            'A': None,
-            'B': None,
-            'C': None,
+            key: [key]
+            for key, value in
+            ObjectManager.game.get_creature_templates().items()
         }
+        self._model.all_creatures.update({
+            key: value.templates
+            for key, value in ObjectManager.game.get_creature_groups().items()
+        })
 
     def update_adventures(self):
-        self._model.adventures = dict([
-            (adventure.name, adventure)
-            for adventure in ObjectManager.game.available_adventures()
-        ])
+        self._model.adventures = {
+            adventure.name: adventure
+            for adventure in ObjectManager.game.get_adventures()
+        }
 
     def populate_adventures_list(self):
         self.adventure_list.clear()
@@ -76,7 +85,22 @@ class Adventure(UiState):
         self.creature_spinner.text = self._model.selected_creature
 
     def start_adventure(self, button):
-        print(
-            f'{self._model.selected_creature} started adventure '
-            f'{self._model.selected_adventure}'
+        game = ObjectManager.game
+        templates = game.get_creature_templates()
+
+        selected = self._model.all_creatures[self._model.selected_creature]
+        cost = sum([templates[creature].cost for creature in selected])
+
+        if cost > game.biomass:
+            # TODO display error message
+            return
+        game.biomass -= cost
+
+        game.add_running_adventure(
+            self._model.selected_adventure,
+            AdventureData([
+                # Make a deep copy to make sure sent creature remains the same
+                # even if defining template changes after adventure is started
+                copy.deepcopy(templates[name]) for name in selected
+            ])
         )

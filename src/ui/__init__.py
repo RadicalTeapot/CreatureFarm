@@ -16,6 +16,8 @@ from kivy.uix.widget import Widget
 
 from kivy.app import App
 
+from ObjectManager import ObjectManager
+
 
 class State(Enum):
     MAIN_MENU = 0
@@ -38,7 +40,7 @@ class Ui(App):
             State.CURRENT_ADVENTURE: CurrentAdventure(),
         }
 
-        self.set_state(State.CURRENT_ADVENTURE)
+        self.set_state(State.TEMPLATE_EDITOR)
 
     def build(self):
         return self.main_widget
@@ -70,6 +72,12 @@ class Ui(App):
     def open_current_adventure(self):
         self.set_state(State.CURRENT_ADVENTURE)
 
+    def update_biomass(self):
+        self.main_widget.update_biomass()
+
+    def update_adventure_count(self, count):
+        self.main_widget.update_adventure_count(count)
+
 
 class UiWidget(Widget):
     layout = ObjectProperty()
@@ -81,3 +89,9 @@ class UiWidget(Widget):
         Builder.apply_rules(self, 'ui')
 
         self.top_bar = Factory.TopBar()
+
+    def update_biomass(self):
+        self.top_bar.biomass = str(ObjectManager.game.biomass)
+
+    def update_adventure_count(self, count):
+        self.top_bar.running_adventures = str(count)

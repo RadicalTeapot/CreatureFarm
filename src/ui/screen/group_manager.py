@@ -7,16 +7,21 @@ from ui.widget.dialog import Dialog
 
 from kivy.properties import ObjectProperty
 
-from collections import OrderedDict
 from functools import partial
 
-from types import SimpleNamespace
+from ObjectManager import ObjectManager
+
+
+class Group:
+    def __init__(self, templates=[], cost=0):
+        self.templates = templates
+        self.cost = 0
 
 
 class GroupManagerModel:
     def __init__(self):
-        self.groups = OrderedDict()
-        self.all_templates = {}
+        self.groups = ObjectManager.game.get_creature_groups()
+        self.templates = ObjectManager.game.get_creature_templates()
 
         self.name = ''
         self.selected = {'selected': None, 'contents': []}
@@ -54,19 +59,9 @@ class GroupManager(UiState):
         self.clear_button.bind(on_press=lambda button: self.load_group())
 
     def __enter__(self):
-        self.update_templates()
         self.populate_group_list()
         self.load_group()
         return self
-
-    def update_templates(self):
-        # TODO Get template list from game and populate model dict with it
-        # instead of using dummy data
-        self._model.all_templates = {
-            'First': SimpleNamespace(cost=10),
-            'Second': SimpleNamespace(cost=20),
-            'Third': SimpleNamespace(cost=30)
-        }
 
     def update_group_name(self, text_input, focus):
         self._model.name = self.group_text_input.text
@@ -92,7 +87,7 @@ class GroupManager(UiState):
         if not dialog.valid:
             return
 
-        self._model.groups[dialog.text] = []
+        self._model.groups[dialog.text] = Group()
         self.populate_group_list()
         self.load_group(dialog.text)
 
@@ -101,15 +96,16 @@ class GroupManager(UiState):
         self._model.selected['selected'] = None
         # Shallow copy of the list of templates
         self._model.selected['contents'] = list(
-            self._model.groups.get(name, [])
+            self._model.groups.get(name, Group()).templates
         )
 
         self._model.available['selected'] = None
         self._model.available['contents'] = [
             name
-            for name in self._model.all_templates.keys()
+            for name in self._model.templates.keys()
             if name not in self._model.selected['contents']
         ]
+        self.update_cost()
         self.update_ui()
 
     def delete_group(self, name):
@@ -150,14 +146,19 @@ class GroupManager(UiState):
         source['contents'].remove(source['selected'])
         destination['contents'].append(source['selected'])
         source['selected'] = None
-        self.update_ui()
         self.update_cost()
+        self.update_ui()
+
+    def get_biomass_cost(self, template_names):
+        return sum([
+            self._model.templates[name].cost
+            for name in template_names
+        ])
 
     def update_cost(self):
-        self.biomass = str(sum(
-            self._model.all_templates[name].cost
-            for name in self._model.selected['contents']
-        ))
+        self.biomass = str(
+            self.get_biomass_cost(self._model.selected['contents'])
+        )
 
     def save_group(self, button):
         # Uncomment and further implement to have a renaming/update system
@@ -167,7 +168,8 @@ class GroupManager(UiState):
         # TODO Warn the user when name already exists
         self._model.name = self.group_text_input.text
         # Shallow copy the list of mutations
-        self._model.groups[self._model.name] = list(
-            self._model.selected['contents']
+        self._model.groups[self._model.name] = Group(
+            templates=list(self._model.selected['contents']),
+            cost=self.get_biomass_cost(self._model.selected['contents'])
         )
         self.populate_group_list()

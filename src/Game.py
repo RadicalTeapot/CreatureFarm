@@ -7,34 +7,35 @@ from activity.Adventure import AdventureTemplate
 from Enemy import EnemyTemplate
 from Mutation import MutationTemplate
 
-from activity.Adventure import Adventure
-from activity.Cook import Cook
-from activity.Feed import Feed
-from activity.Fight import Fight
-
 from ObjectManager import ObjectManager
 from Settings import Settings
 
 import json
 import os
 
-from collections import namedtuple
+from typing import NamedTuple
+from collections import OrderedDict
 
-Knowledge = namedtuple('Knowledge', 'base_cost current_level')
+
+class Knowledge(NamedTuple):
+    base_cost: float
+    current_level: int
 
 
 class GameModel:
     """Store data of Game."""
 
-    genetic_material = 0
+    biomass = 0
 
-    creatures = {}
-    creature_templates = {}
+    creature_groups = OrderedDict()
+    creature_templates = OrderedDict()
 
     adventure_templates = {}
     enemy_templates = {}
     mutation_templates = {}
     knowledge = {}
+
+    running_adventures = {}
 
     date = 0
 
@@ -104,97 +105,43 @@ class Game(object):
             self.knowledge[knowledge_id].base_cost
         )
 
-    def available_mutations(self):
+    def get_mutations(self):
         # TODO Check for knowledge and return only available mutation
         return GameModel.mutation_templates.values()
 
-    def available_adventures(self):
+    def get_adventures(self):
         # TODO Return only available adventures
         return GameModel.adventure_templates.values()
 
-    def start_adventure(self):
-        creature = ObjectManager.ui._state.selected_creature
-        adventure_template = ObjectManager.ui._state.selected_adventure
+    def get_running_adventures(self):
+        return GameModel.running_adventures
 
-        if adventure_template is None:
-            ObjectManager.ui.display_dialog('No adventure selected')
-            return
+    def get_creature_templates(self):
+        return GameModel.creature_templates
 
-        if creature is None or creature.busy:
-            ObjectManager.ui.display_dialog('Invalid creature selection')
-            return
+    def get_creature_groups(self):
+        return GameModel.creature_groups
 
-        creature.add_activity(Adventure(creature, adventure_template))
-        ObjectManager.ui.refresh()
+    @property
+    def biomass(self):
+        return GameModel.biomass
 
-    def start_cooking(self):
-        creature = ObjectManager.ui._state.selected_creature
-        recipe = ObjectManager.ui._state.selected_recipe
+    @biomass.setter
+    def biomass(self, value):
+        GameModel.biomass = value
+        ObjectManager.ui.update_biomass()
 
-        if recipe is None:
-            ObjectManager.ui.display_dialog('No recipe selected.')
-            return
+    def add_running_adventure(self, name, new_adventure):
+        # Adventure instances are indexed by their name
+        running = GameModel.running_adventures.get(name, [])
+        running.append(new_adventure)
+        GameModel.running_adventures[name] = running
 
-        if creature is None or creature.busy:
-            ObjectManager.ui.display_dialog('Invalid creature selection.')
-            return
-
-        if creature.cooking - recipe.complexity < -1:
-            ObjectManager.ui.display_dialog(
-                'Cooking level too low for this recipe.'
-            )
-            return
-
-        if not self.inventory.has_items(recipe.ingredients):
-            ObjectManager.ui.display_dialog('Ingredients not available.')
-            return
-
-        creature.add_activity(Cook(creature, recipe))
-        ObjectManager.ui.refresh()
-
-    def start_feeding(self):
-        creature = ObjectManager.ui._state.selected_creature
-        item = ObjectManager.ui._state.selected_item
-
-        if item is None:
-            ObjectManager.ui.display_dialog('No food selected')
-            return
-
-        if creature is None or creature.busy:
-            ObjectManager.ui.display_dialog('Invalid creature selection')
-            return
-
-        if creature.hp == creature.max_hp:
-            ObjectManager.ui.display_dialog(
-                '{} is already at max health'.format(creature)
-            )
-            return
-
-        creature.add_activity(Feed(creature, item))
-        ObjectManager.ui.refresh()
-
-    def start_fight(self, creature, enemy_id):
-        creature.add_activity(Fight(self.enemies[enemy_id], creature))
-
-    def equip_item(self):
-        creature = ObjectManager.ui._state.selected_creature
-        item = ObjectManager.ui._state.selected_item
-
-        if item is None:
-            ObjectManager.ui.display_dialog('No item selected')
-            return
-
-        if creature is None or creature.busy:
-            ObjectManager.ui.display_dialog('Invalid creature selection')
-            return
-
-        # TODO: Handle two handed weapons and off hand weapons
-        equiped_item = creature.equipment[item.body_part]
-        if equiped_item:
-            equiped_item.equiped = None
-        creature.equipment[item.body_part] = item
-        item.equiped = creature
-        ObjectManager.ui.refresh()
+        count = sum([
+            len(adventures)
+            for adventures in GameModel.running_adventures.values()
+        ])
+        ObjectManager.ui.update_adventure_count(count)
 
     def load(self, path):
         with open(path, 'r') as save_file:

@@ -11,4 +11,6 @@ if __name__ == '__main__':
     object_manager.add_object('game', Game())
     object_manager.add_object('ui', Ui())
 
+    ObjectManager.game.biomass = 100
+
     ObjectManager.ui.run()
