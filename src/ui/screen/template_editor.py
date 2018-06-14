@@ -62,10 +62,10 @@ class TemplateEditor(UiState):
         return self
 
     def update_mutations(self):
-        self._model.mutations = dict([
-            (mutation.name, mutation)
+        self._model.mutations = {
+            mutation.name: mutation
             for mutation in ObjectManager.game.get_mutations()
-        ])
+        }
 
     def update_template_name(self, text_input, focus):
         self._model.name = self.template_text_input.text

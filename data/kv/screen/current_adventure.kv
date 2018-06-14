@@ -1,8 +1,32 @@
 #:kivy 1.10.0
 
+<LabelSpinner@Widget>:
+    label: ''
+    spinner: spinner
+    BoxLayout:
+        orientation: 'horizontal'
+        pos: root.pos
+        size: root.size
+
+        Label:
+            text: root.label
+            size_hint: (.3, 1.)
+            text_size: self.size
+            halign: 'left'
+            valign: 'center'
+            color: 0., 0., 0., 1.
+
+        Widget:
+            size_hint: (.1, 1.)
+
+        Spinner:
+            id: spinner
+            size_hint: (.6, 1.)
+
 <CurrentAdventure>:
-    creature_spinner: spinner
-    description: label
+    adventure_spinner: adventure_spinner.spinner
+    creature_spinner: creature_spinner.spinner
+    description: ''
     canvas:
         Color:
             rgb: 1., 1., 1.
@@ -18,25 +42,17 @@
         padding: 10
         orientation: 'vertical'
 
-        BoxLayout:
-            orientation: 'horizontal'
+        LabelSpinner:
+            label: 'Select adventure'
+            id: adventure_spinner
             size_hint: (1., None)
             height: 30
 
-            Label:
-                text: 'Select creature / group'
-                size_hint: (.3, 1.)
-                text_size: self.size
-                halign: 'left'
-                valign: 'center'
-                color: 0., 0., 0., 1.
-
-            Widget:
-                size_hint: (.1, 1.)
-
-            Spinner:
-                id: spinner
-                size_hint: (.6, 1.)
+        LabelSpinner:
+            label: 'Select creature / group'
+            id: creature_spinner
+            size_hint: (1., None)
+            height: 30
 
         ScrollView:
             size_hint: (1., 1.)
@@ -47,7 +63,7 @@
                 size_hint: (1., None)
                 text_size: (self.parent.width, None)
                 size: self.texture_size
-                text: 'Placeholder description'
+                text: root.description
                 color: 0., 0., 0., 1.
                 halign: 'justify'
                 valign: 'top'

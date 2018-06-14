@@ -9,8 +9,10 @@ import copy
 
 
 class AdventureData:
-    def __init__(self, creatures):
+    def __init__(self, creatures, creatures_name):
         self.creatures = creatures
+        self.creatures_name = creatures_name
+        self.log = 'Placeholder log'
 
 
 class AdventureModel:
@@ -98,9 +100,13 @@ class Adventure(UiState):
 
         game.add_running_adventure(
             self._model.selected_adventure,
-            AdventureData([
-                # Make a deep copy to make sure sent creature remains the same
-                # even if defining template changes after adventure is started
-                copy.deepcopy(templates[name]) for name in selected
-            ])
+            AdventureData(
+                [
+                    # Make a deep copy to make sure sent creature remains the
+                    # same even if defining template changes after adventure
+                    # is started
+                    copy.deepcopy(templates[name]) for name in selected
+                ],
+                self._model.selected_creature
+            )
         )
