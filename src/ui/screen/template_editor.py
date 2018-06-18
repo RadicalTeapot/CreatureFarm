@@ -8,12 +8,7 @@ from ui.widget.dialog import Dialog
 from functools import partial
 
 from ObjectManager import ObjectManager
-
-
-class Template:
-    def __init__(self, mutations=[], cost=0):
-        self.mutations = mutations
-        self.cost = cost
+from DataStructures import Template
 
 
 class TemplateEditorModel:

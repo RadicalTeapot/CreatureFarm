@@ -10,12 +10,7 @@ from kivy.properties import ObjectProperty
 from functools import partial
 
 from ObjectManager import ObjectManager
-
-
-class Group:
-    def __init__(self, templates=[], cost=0):
-        self.templates = templates
-        self.cost = 0
+from DataStructures import Group
 
 
 class GroupManagerModel:

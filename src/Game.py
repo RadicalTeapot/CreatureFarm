@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from Creature import Creature
-
 from activity.Adventure import AdventureTemplate
 from Enemy import EnemyTemplate
 from Mutation import MutationTemplate
 
 from ObjectManager import ObjectManager
 from Settings import Settings
+from DataStructures import Adventure
+from DataStructures import Group
+from DataStructures import Template
 
 import json
 import os
@@ -38,16 +39,6 @@ class GameModel:
     running_adventures = {}
 
     date = 0
-
-    @classmethod
-    def serialize(cls):
-        """Convert data to json compatible dict."""
-        raise NotImplementedError()
-
-    @classmethod
-    def deserialize(cls, data):
-        """Read input data to attributes."""
-        raise NotImplementedError()
 
 
 class Game(object):
@@ -149,7 +140,6 @@ class Game(object):
 
     def save(self):
         data = self.serialize()
-        # print(data)
         path = os.path.normpath(os.path.join(
             os.path.abspath(Settings.SAVE_FOLDER),
             'save'
@@ -159,20 +149,44 @@ class Game(object):
 
     def serialize(self):
         data = {}
-        data['inventory'] = self.inventory.serialize()
-        data['date'] = self.date
-        data['creatures'] = [
-            creature.serialize()
-            for creature in self.creatures
+
+        data['biomass'] = GameModel.biomass
+        data['date'] = GameModel.date
+
+        data['creature_templates'] = [
+            (name, template.serialize())
+            for name, template in GameModel.creature_templates.items()
         ]
+        data['creature_groups'] = [
+            (name, group.serialize())
+            for name, group in GameModel.creature_groups.items()
+        ]
+
+        data['running_adventures'] = [
+            (name, )
+            for name, adventure in GameModel.running_adventures.items()
+        ]
+
+        # data['knowledge'] = [
+        #     (name, )
+        #     for name, value in GameModel.knowledge.items()
+        # ]
         return data
 
     def deserialize(self, data):
-        self.date = data['date']
-        self.inventory.deserialize(data['inventory'])
-        self.creatures = [
-            Creature()
-            for __ in data['creatures']
-        ]
-        for creature, creature_data in zip(self.creatures, data['creatures']):
-            creature.deserialize(creature_data)
+        GameModel.biomass = data['biomass']
+        GameModel.date = data['date']
+
+        GameModel.creature_templates = OrderedDict([
+            (name, Template().deserialize(value))
+            for name, value in data['creature_templates']
+        ])
+        GameModel.creature_groups = OrderedDict([
+            (name, Group().deserialize(value))
+            for name, value in data['creature_groups']
+        ])
+        GameModel.running_adventures = {
+            name: Adventure().deserialize(value)
+            for name, value in data['running_adventures']
+        }
+        # Knowledge

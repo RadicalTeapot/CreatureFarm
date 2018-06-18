@@ -5,14 +5,9 @@ from ui.screen import UiState
 from ui.widget.widgets import ListEntry
 
 from ObjectManager import ObjectManager
+from DataStructures import Adventure as AdventureData
+
 import copy
-
-
-class AdventureData:
-    def __init__(self, creatures, creatures_name):
-        self.creatures = creatures
-        self.creatures_name = creatures_name
-        self.log = 'Placeholder log'
 
 
 class AdventureModel:
