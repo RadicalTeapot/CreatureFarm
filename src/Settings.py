@@ -8,4 +8,5 @@ class Settings(object):
 
     SCROLL_SPEED = 30
 
+    SAVE_FLAG = '--save'
     SAVE_FOLDER = 'saves'
