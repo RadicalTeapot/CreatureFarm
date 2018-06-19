@@ -13,9 +13,6 @@ from DataStructures import Template
 
 class TemplateEditorModel:
     def __init__(self):
-        self.templates = ObjectManager.game.get_creature_templates()
-        self.mutations = {}
-
         self.name = ''
         # The selected field stores the currently selected entry
         self.available = {'selected': None, 'contents': []}
@@ -51,16 +48,9 @@ class TemplateEditor(UiState):
         self.clear_button.bind(on_press=lambda button: self.load_template())
 
     def __enter__(self):
-        self.update_mutations()
         self.populate_template_list()
         self.load_template()
         return self
-
-    def update_mutations(self):
-        self._model.mutations = {
-            mutation.name: mutation
-            for mutation in ObjectManager.game.get_mutations()
-        }
 
     def update_template_name(self, text_input, focus):
         self._model.name = self.template_text_input.text
@@ -72,7 +62,7 @@ class TemplateEditor(UiState):
         entry.bind(on_press=self.new_template)
         self.template_list.append(entry)
 
-        for name in self._model.templates.keys():
+        for name in ObjectManager.game.creature_templates:
             entry = ListEntry.deletable(name)
             entry.bind(on_press=lambda entry: self.load_template(entry.name))
             entry.bind(on_delete=lambda entry: self.delete_template(entry.name))
@@ -86,7 +76,7 @@ class TemplateEditor(UiState):
         if not dialog.valid:
             return
 
-        self._model.templates[dialog.text] = Template()
+        ObjectManager.game.creature_templates[dialog.text] = Template()
         self.populate_template_list()
         self.load_template(dialog.text)
 
@@ -95,22 +85,23 @@ class TemplateEditor(UiState):
 
         self._model.selected['selected'] = None
         # Shallow copy the list of mutations
+        templates = ObjectManager.game.creature_templates
         self._model.selected['contents'] = list(
-            self._model.templates.get(name, Template()).mutations
+            templates.get(name, Template()).mutations
         )
 
         self._model.available['selected'] = None
         self._model.available['contents'] = [
-            name
-            for name in self._model.mutations
-            if name not in self._model.selected['contents']
+            mutation.name
+            for mutation in ObjectManager.game.get_mutations()
+            if mutation.name not in self._model.selected['contents']
         ]
 
         self.update_cost()
         self.update_ui()
 
     def delete_template(self, name):
-        del self._model.templates[name]
+        del ObjectManager.game.creature_templates[name]
         self.populate_template_list()
 
     def update_ui(self):
@@ -151,8 +142,12 @@ class TemplateEditor(UiState):
         self.update_cost()
 
     def get_biomass_cost(self, mutation_names):
+        mutations = {
+            mutation.name: mutation
+            for mutation in ObjectManager.game.get_mutations()
+        }
         return sum([
-            self._model.mutations[name].biomass_cost
+            mutations[name].biomass_cost
             for name in mutation_names
         ])
 
@@ -166,13 +161,16 @@ class TemplateEditor(UiState):
     def save_template(self, button):
         # Uncomment and further implement to have a renaming/update system
         # if self._model.name:
-        #     del self._model.templates[self._model.name]
+        #     del ObjectManager.game.creature_templates[self._model.name]
 
         # TODO Warn the user when name already exists
         self._model.name = self.template_text_input.text
-        self._model.templates[self._model.name] = Template(
+
+        templates = ObjectManager.game.creature_templates
+        templates[self._model.name] = Template(
             # Shallow copy the list of mutations
             mutations=list(self._model.selected['contents']),
             cost=self.get_biomass_cost(self._model.selected['contents'])
         )
+
         self.populate_template_list()

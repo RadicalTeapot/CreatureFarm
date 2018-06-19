@@ -4,7 +4,6 @@
 from kivy.factory import Factory
 from kivy.uix.modalview import ModalView
 from kivy.properties import ObjectProperty
-from kivy.core.window import Window
 
 from ObjectManager import ObjectManager
 
@@ -44,7 +43,6 @@ class EscapeMenu(ModalView):
         self.dismiss()
 
     def key_pressed(self, keyboard, keycode, text, modifiers):
-        # TODO fix open and close happen at the same time
         if keycode[1] == 'escape':
             self.dismiss()
 

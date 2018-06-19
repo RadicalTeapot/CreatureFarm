@@ -19,6 +19,8 @@ from kivy.app import App
 
 from ObjectManager import ObjectManager
 
+from functools import partial
+
 
 class State(Enum):
     MAIN_MENU = 0
@@ -43,12 +45,19 @@ class Ui(App):
 
         self.set_state(State.TEMPLATE_EDITOR)
 
+        self.main_widget.escape_menu.bind(on_dismiss=self.escape_action)
+
     def build(self):
         return self.main_widget
 
     @property
     def state(self):
         return self._state
+
+    def reload(self):
+        self.set_state(self.state)
+        self.update_biomass()
+        self.update_adventure_count()
 
     def set_state(self, state_type):
         if not isinstance(state_type, State):
@@ -60,6 +69,7 @@ class Ui(App):
             if not state.hide_top_bar:
                 self.main_widget.layout.add_widget(self.main_widget.top_bar)
             self.main_widget.layout.add_widget(state)
+        self._state = state_type
 
     def open_template_editor(self):
         self.set_state(State.TEMPLATE_EDITOR)
@@ -79,8 +89,16 @@ class Ui(App):
     def open_escape_menu(self):
         self.main_widget.escape_menu.open()
 
-    def update_adventure_count(self, count):
-        self.main_widget.update_adventure_count(count)
+    def update_adventure_count(self):
+        self.main_widget.update_adventure_count()
+
+    def escape_action(self, widget):
+        return {
+            widget.save_button: ObjectManager.game.save,
+            widget.load_button: ObjectManager.game.load,
+            widget.exit_to_menu: partial(self.set_state, State.MAIN_MENU),
+            widget.exit_to_desktop: lambda: App.get_running_app().stop(),
+        }.get(widget.pressed_button, lambda: None)()
 
 
 class UiWidget(Widget):
@@ -98,5 +116,9 @@ class UiWidget(Widget):
     def update_biomass(self):
         self.top_bar.biomass = str(ObjectManager.game.biomass)
 
-    def update_adventure_count(self, count):
+    def update_adventure_count(self):
+        count = sum([
+            len(adventures)
+            for adventures in ObjectManager.game.running_adventures.values()
+        ])
         self.top_bar.running_adventures = str(count)

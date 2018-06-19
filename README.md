@@ -15,7 +15,8 @@
 
 
 # TODO
-- __Finish load/save code__
+- __Change group code to allow for multiple time same creature in group__
+- __Switch template/group/adventure ui code to use template/group/Adventure ids instead of names for internal data representation__ or __Make data indexing for mutations,... by name instead of internal id__
 - __Attach the logger to Game__
 - Refactor screens to more tightly follow the MVC pattern (split ui and logic in two separate classes)
 - Add some mutation to increase biomass container size of creatures

@@ -7,9 +7,6 @@ from Mutation import MutationTemplate
 
 from ObjectManager import ObjectManager
 from Settings import Settings
-from DataStructures import Adventure
-from DataStructures import Group
-from DataStructures import Template
 from DataStructures import GameModel
 from DataStructures import Knowledge
 
@@ -21,6 +18,8 @@ from kivy.core.window import Window
 
 class Game(object):
     def __init__(self):
+        self._model = GameModel()
+
         self._parse_adventures()
         self._parse_enemies()
         self._parse_mutations()
@@ -44,7 +43,7 @@ class Game(object):
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
-            GameModel.adventure_templates[id_] = (
+            self._model.adventure_templates[id_] = (
                 AdventureTemplate.from_data(id_, data)
             )
 
@@ -53,7 +52,7 @@ class Game(object):
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
-            GameModel.enemy_templates[id_] = (
+            self._model.enemy_templates[id_] = (
                 EnemyTemplate.from_data(id_, data)
             )
 
@@ -62,7 +61,7 @@ class Game(object):
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
-            GameModel.mutation_templates[id_] = (
+            self._model.mutation_templates[id_] = (
                 MutationTemplate.from_data(id_, data)
             )
 
@@ -71,7 +70,7 @@ class Game(object):
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
-            GameModel.knowledge[id_] = Knowledge(data, 0.)
+            self._model.knowledge[id_] = Knowledge(data, 0.)
 
     def update(self):
         for creature in self.creatures:
@@ -89,95 +88,56 @@ class Game(object):
 
     def get_mutations(self):
         # TODO Check for knowledge and return only available mutation
-        return GameModel.mutation_templates.values()
+        return self._model.mutation_templates.values()
 
     def get_adventures(self):
         # TODO Return only available adventures
-        return GameModel.adventure_templates.values()
+        return self._model.adventure_templates.values()
 
-    def get_running_adventures(self):
-        return GameModel.running_adventures
+    @property
+    def running_adventures(self):
+        return self._model.running_adventures
 
-    def get_creature_templates(self):
-        return GameModel.creature_templates
+    @property
+    def creature_templates(self):
+        return self._model.creature_templates
 
-    def get_creature_groups(self):
-        return GameModel.creature_groups
+    @property
+    def creature_groups(self):
+        return self._model.creature_groups
 
     @property
     def biomass(self):
-        return GameModel.biomass
+        return self._model.biomass
 
     @biomass.setter
     def biomass(self, value):
-        GameModel.biomass = value
+        self._model.biomass = value
         ObjectManager.ui.update_biomass()
 
     def add_running_adventure(self, name, new_adventure):
         # Adventure instances are indexed by their name
-        running = GameModel.running_adventures.get(name, [])
+        running = self._model.running_adventures.get(name, [])
         running.append(new_adventure)
-        GameModel.running_adventures[name] = running
+        self._model.running_adventures[name] = running
 
-        count = sum([
-            len(adventures)
-            for adventures in GameModel.running_adventures.values()
-        ])
-        ObjectManager.ui.update_adventure_count(count)
+        ObjectManager.ui.update_adventure_count()
 
-    def load(self, path):
+    def load(self, path=None):
+        if path is None:
+            path = os.path.normpath(os.path.join(
+                os.path.abspath(Settings.SAVE_FOLDER),
+                'save'
+            ))
         with open(path, 'r') as save_file:
-            self.deserialize(json.loads(save_file.read()))
+            self._model.deserialize(json.loads(save_file.read()))
+        ObjectManager.ui.reload()
 
     def save(self):
-        data = self.serialize()
+        data = self._model.serialize()
         path = os.path.normpath(os.path.join(
             os.path.abspath(Settings.SAVE_FOLDER),
             'save'
         ))
         with open(path, 'w') as save_file:
             save_file.write(json.dumps(data))
-
-    def serialize(self):
-        data = {}
-
-        data['biomass'] = GameModel.biomass
-        data['date'] = GameModel.date
-
-        data['creature_templates'] = [
-            (name, template.serialize())
-            for name, template in GameModel.creature_templates.items()
-        ]
-        data['creature_groups'] = [
-            (name, group.serialize())
-            for name, group in GameModel.creature_groups.items()
-        ]
-
-        data['running_adventures'] = [
-            (name, )
-            for name, adventure in GameModel.running_adventures.items()
-        ]
-
-        # data['knowledge'] = [
-        #     (name, )
-        #     for name, value in GameModel.knowledge.items()
-        # ]
-        return data
-
-    def deserialize(self, data):
-        GameModel.biomass = data['biomass']
-        GameModel.date = data['date']
-
-        GameModel.creature_templates = OrderedDict([
-            (name, Template().deserialize(value))
-            for name, value in data['creature_templates']
-        ])
-        GameModel.creature_groups = OrderedDict([
-            (name, Group().deserialize(value))
-            for name, value in data['creature_groups']
-        ])
-        GameModel.running_adventures = {
-            name: Adventure().deserialize(value)
-            for name, value in data['running_adventures']
-        }
-        # Knowledge

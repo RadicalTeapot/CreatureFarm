@@ -15,9 +15,6 @@ from DataStructures import Group
 
 class GroupManagerModel:
     def __init__(self):
-        self.groups = ObjectManager.game.get_creature_groups()
-        self.templates = ObjectManager.game.get_creature_templates()
-
         self.name = ''
         self.selected = {'selected': None, 'contents': []}
         self.available = {'selected': None, 'contents': []}
@@ -68,7 +65,7 @@ class GroupManager(UiState):
         entry.bind(on_press=self.new_group)
         self.group_list.append(entry)
 
-        for name in self._model.groups.keys():
+        for name in ObjectManager.game.creature_groups.keys():
             entry = ListEntry.deletable(name)
             entry.bind(on_press=lambda entry: self.load_group(entry.name))
             entry.bind(on_delete=lambda entry: self.delete_group(entry.name))
@@ -82,7 +79,7 @@ class GroupManager(UiState):
         if not dialog.valid:
             return
 
-        self._model.groups[dialog.text] = Group()
+        ObjectManager.game.creature_groups[dialog.text] = Group()
         self.populate_group_list()
         self.load_group(dialog.text)
 
@@ -91,20 +88,20 @@ class GroupManager(UiState):
         self._model.selected['selected'] = None
         # Shallow copy of the list of templates
         self._model.selected['contents'] = list(
-            self._model.groups.get(name, Group()).templates
+            ObjectManager.game.creature_groups.get(name, Group()).templates
         )
 
         self._model.available['selected'] = None
         self._model.available['contents'] = [
             name
-            for name in self._model.templates.keys()
+            for name in ObjectManager.game.creature_templates.keys()
             if name not in self._model.selected['contents']
         ]
         self.update_cost()
         self.update_ui()
 
     def delete_group(self, name):
-        del self._model.groups[name]
+        del ObjectManager.game.creature_groups[name]
         self.populate_group_list()
 
     def update_ui(self):
@@ -146,7 +143,7 @@ class GroupManager(UiState):
 
     def get_biomass_cost(self, template_names):
         return sum([
-            self._model.templates[name].cost
+            ObjectManager.game.creature_templates[name].cost
             for name in template_names
         ])
 
@@ -158,12 +155,12 @@ class GroupManager(UiState):
     def save_group(self, button):
         # Uncomment and further implement to have a renaming/update system
         # if self._model.name:
-        #     del self._model.groups[self._model.name]
+        #     del ObjectManager.game.creature_groups[self._model.name]
 
         # TODO Warn the user when name already exists
         self._model.name = self.group_text_input.text
         # Shallow copy the list of mutations
-        self._model.groups[self._model.name] = Group(
+        ObjectManager.game.creature_groups[self._model.name] = Group(
             templates=list(self._model.selected['contents']),
             cost=self.get_biomass_cost(self._model.selected['contents'])
         )

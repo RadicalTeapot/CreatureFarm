@@ -34,7 +34,6 @@ class Adventure(UiState):
 
     def __enter__(self):
         self.update_template_and_groups()
-        self.update_adventures()
         self.populate_adventures_list()
         self.update_ui()
         return self
@@ -44,23 +43,20 @@ class Adventure(UiState):
         self._model.all_creatures = {
             key: [key]
             for key, value in
-            ObjectManager.game.get_creature_templates().items()
+            ObjectManager.game.creature_templates.items()
         }
         self._model.all_creatures.update({
             key: value.templates
-            for key, value in ObjectManager.game.get_creature_groups().items()
+            for key, value in ObjectManager.game.creature_groups.items()
         })
-
-    def update_adventures(self):
-        self._model.adventures = {
-            adventure.name: adventure
-            for adventure in ObjectManager.game.get_adventures()
-        }
 
     def populate_adventures_list(self):
         self.adventure_list.clear()
 
-        for name in self._model.adventures.keys():
+        adventures = [
+            adventure.name for adventure in ObjectManager.game.get_adventures()
+        ]
+        for name in adventures:
             entry = ListEntry.simple(name)
             entry.bind(
                 on_press=lambda entry: self.adventure_selected(entry.name)
@@ -83,7 +79,7 @@ class Adventure(UiState):
 
     def start_adventure(self, button):
         game = ObjectManager.game
-        templates = game.get_creature_templates()
+        templates = game.creature_templates
 
         selected = self._model.all_creatures[self._model.selected_creature]
         cost = sum([templates[creature].cost for creature in selected])
