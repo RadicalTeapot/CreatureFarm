@@ -10,35 +10,13 @@ from Settings import Settings
 from DataStructures import Adventure
 from DataStructures import Group
 from DataStructures import Template
+from DataStructures import GameModel
+from DataStructures import Knowledge
 
 import json
 import os
 
-from typing import NamedTuple
-from collections import OrderedDict
-
-
-class Knowledge(NamedTuple):
-    base_cost: float
-    current_level: int
-
-
-class GameModel:
-    """Store data of Game."""
-
-    biomass = 0
-
-    creature_groups = OrderedDict()
-    creature_templates = OrderedDict()
-
-    adventure_templates = {}
-    enemy_templates = {}
-    mutation_templates = {}
-    knowledge = {}
-
-    running_adventures = {}
-
-    date = 0
+from kivy.core.window import Window
 
 
 class Game(object):
@@ -47,6 +25,19 @@ class Game(object):
         self._parse_enemies()
         self._parse_mutations()
         self._parse_knowledge()
+
+        self.keyboard = Window.request_keyboard(
+            None,
+            None,
+            'text'
+        )
+        self.keyboard.bind(on_key_down=self.key_press)
+
+    def key_press(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'escape':
+            ObjectManager.ui.open_escape_menu()
+
+        return True
 
     def _parse_adventures(self):
         with open("data/json/adventures.json", 'r') as json_data:

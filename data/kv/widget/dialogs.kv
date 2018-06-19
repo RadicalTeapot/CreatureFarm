@@ -42,3 +42,38 @@
                     Button:
                         text: 'Cancel'
                         on_press: root.dismiss()
+
+<EscapeMenu>:
+    save_button: save
+    load_button: load
+    exit_to_menu: exit_to_menu
+    exit_to_desktop: exit_to_desktop
+    size_hint: (.25, .33)
+
+    Widget:
+        canvas:
+            Color:
+                rgb: .25, .25, .25
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            size: root.size
+            pos: root.pos
+            orientation: 'vertical'
+            padding: 10
+            spacing: 10
+
+            Button:
+                id: save
+                text: 'Save'
+            Button:
+                id: load
+                text: 'Load'
+            Button:
+                id: exit_to_menu
+                text: 'Exit to menu'
+            Button:
+                id: exit_to_desktop
+                text: 'Exit to desktop'

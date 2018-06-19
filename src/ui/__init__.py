@@ -8,6 +8,7 @@ from .screen.template_editor import TemplateEditor
 from .screen.group_manager import GroupManager
 from .screen.adventure import Adventure
 from .screen.current_adventure import CurrentAdventure
+from .widget.dialog import EscapeMenu
 
 from kivy.properties import ObjectProperty
 from kivy.lang.builder import Builder
@@ -75,6 +76,9 @@ class Ui(App):
     def update_biomass(self):
         self.main_widget.update_biomass()
 
+    def open_escape_menu(self):
+        self.main_widget.escape_menu.open()
+
     def update_adventure_count(self, count):
         self.main_widget.update_adventure_count(count)
 
@@ -89,6 +93,7 @@ class UiWidget(Widget):
         Builder.apply_rules(self, 'ui')
 
         self.top_bar = Factory.TopBar()
+        self.escape_menu = EscapeMenu()
 
     def update_biomass(self):
         self.top_bar.biomass = str(ObjectManager.game.biomass)

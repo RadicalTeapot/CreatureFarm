@@ -1,6 +1,32 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
+from typing import NamedTuple
+from collections import OrderedDict
+
+
+class Knowledge(NamedTuple):
+    base_cost: float
+    current_level: int
+
+
+class GameModel:
+    """Store data of Game."""
+
+    biomass = 0
+
+    creature_groups = OrderedDict()
+    creature_templates = OrderedDict()
+
+    adventure_templates = {}
+    enemy_templates = {}
+    mutation_templates = {}
+    knowledge = {}
+
+    running_adventures = {}
+
+    date = 0
+
 
 class Template:
     def __init__(self, mutations=[], cost=0):
