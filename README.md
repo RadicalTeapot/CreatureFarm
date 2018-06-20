@@ -15,14 +15,13 @@
 
 
 # TODO
-- __Change group code to allow for multiple time same creature in group__
-- __Switch template/group/adventure ui code to use template/group/Adventure ids instead of names for internal data representation__ or __Make data indexing for mutations,... by name instead of internal id__
-- __Attach the logger to Game__
+- __Finish implementing adventures__
+- __Add a recall button on running adventures screen__
+- __Attach the logger to running adventure__
+- Switch template/group/adventure ui code to use template/group/Adventure ids instead of names for internal data representation__ or __Make data indexing for mutations,... by name instead of internal id
 - Refactor screens to more tightly follow the MVC pattern (split ui and logic in two separate classes)
 - Add some mutation to increase biomass container size of creatures
-- Change way game is drawn (generate a static image for the panel borders and create a Panel.refresh method which redraws only the current tab texture. In Game.draw, draw first the panels textures and then the border overlay)
 
-- Reimplement tabs in UI
 - Display available adventures/mutation first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
 - Improve fight system
 

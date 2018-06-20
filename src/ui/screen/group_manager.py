@@ -92,11 +92,9 @@ class GroupManager(UiState):
         )
 
         self._model.available['selected'] = None
-        self._model.available['contents'] = [
-            name
-            for name in ObjectManager.game.creature_templates.keys()
-            if name not in self._model.selected['contents']
-        ]
+        self._model.available['contents'] = list(
+            ObjectManager.game.creature_templates.keys()
+        )
         self.update_cost()
         self.update_ui()
 
@@ -135,7 +133,7 @@ class GroupManager(UiState):
         if source['selected'] is None:
             return
 
-        source['contents'].remove(source['selected'])
+        # source['contents'].remove(source['selected'])
         destination['contents'].append(source['selected'])
         source['selected'] = None
         self.update_cost()

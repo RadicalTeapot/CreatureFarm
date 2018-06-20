@@ -12,6 +12,7 @@ from DataStructures import Knowledge
 
 import json
 import os
+import random
 
 from kivy.core.window import Window
 
@@ -72,12 +73,6 @@ class Game(object):
         for id_, data in items:
             self._model.knowledge[id_] = Knowledge(data, 0.)
 
-    def update(self):
-        for creature in self.creatures:
-            creature.update()
-        self.date += 1
-        ObjectManager.ui.refresh()
-
     def has_knowledge(self, knowledge_id):
         if knowledge_id not in self.knowledge:
             raise KeyError('Knowledge {} not found'.format(knowledge_id))
@@ -122,6 +117,24 @@ class Game(object):
         self._model.running_adventures[name] = running
 
         ObjectManager.ui.update_adventure_count()
+
+    def update(self):
+        for name, adventures in self._model.running_adventures.items():
+            template = self._model.adventure_templates[name]
+            for adventure in adventures:
+                for enemy_id, chance in template.enemies.items():
+                    if random.random() < chance:
+                        self.fight(adventure.creatures, enemy_id)
+                        break
+                else:
+                    # Take from adventure and add it to creatures container
+                    pass
+            # TODO Check if all creatures dead -> stop adventure
+            # TODO Check if all creature biomass containers full -> stop adventure
+
+    def fight(self, creatures, enenmy_id):
+        # TODO Implement fight
+        pass
 
     def load(self, path=None):
         if path is None:

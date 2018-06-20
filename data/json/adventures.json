@@ -5,10 +5,8 @@
             {"enemy": "enemies.goblin", "chance": 0.1},
             {"enemy": "enemies.orc", "chance": 0.025}
         ],
-        "rewards": [
-            {"item": "items.food.raw_meat", "chance": 0.025},
-            {"item": "items.food.raw_vegetables", "chance": 0.1}
-        ],
+        "biomass_pool": 1000.0,
+        "biomass_regen_speed": 1.0,
         "description": "Placeholder adventure description"
     },
 
@@ -18,10 +16,8 @@
             {"enemy": "enemies.goblin", "chance": 0.1},
             {"enemy": "enemies.orc", "chance": 0.1}
         ],
-        "rewards": [
-            {"item": "items.weapon.sword", "chance": 0.005},
-            {"item": "items.armor.chestplate", "chance": 0.005}
-        ],
+        "biomass_pool": 5000.0,
+        "biomass_regen_speed": 0.25,
         "description": "Placeholder adventure description"
     }
 }
