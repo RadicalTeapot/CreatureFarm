@@ -5,7 +5,10 @@ from ObjectManager import ObjectManager
 
 
 class Creature:
-    def __init__(self, mutation_names=[]):
+    def __init__(self, template_name, mutation_names):
+        self.template_name = template_name
+        self.mutation_names = mutation_names
+
         self.stats = {
             'hp': 0.,
             'agility': 0.,
@@ -13,8 +16,8 @@ class Creature:
             'held_biomass': 0.,
             'max_biomass': 0.,
             'knowledge': [],
+            'size': 0.,
         }
-        self.mutations = []
         self.build_stats(mutation_names)
 
     def get_stat_modifier(self, stat):
@@ -23,42 +26,43 @@ class Creature:
         )
 
     def build_stats(self, mutation_names):
-        self.mutations = [
-            mutation
-            for mutation in ObjectManager.game.get_mutations()
-            if mutation.name in mutation_names
-        ]
-
-        size = sum([mutation.size for mutation in self.mutations])
-
-        self.stats['hp'] = size * 10.0 + self.get_stat_modifier('hp')
-        self.stats['agility'] = size * -1 + self.get_stat_modifier('agility')
+        game_mutations = ObjectManager.game.get_mutations()
+        mutations = [game_mutations[name] for name in self.mutation_names]
+        self.stats['size'] = sum([mutation.size for mutation in mutations])
+        self.stats['hp'] = (
+            self.stats['size'] * 10.0 + self.get_stat_modifier('hp')
+        )
+        self.stats['agility'] = (
+            self.stats['size'] * -1 + self.get_stat_modifier('agility')
+        )
         self.stats['attack'] = self.get_stat_modifier('attack')
-        self.stat['max_biomass'] = size * 10.
+        self.stats['max_biomass'] = self.stats['size'] * 10.
 
     def hit(self, amount):
-        self.stat['hp'] -= amount
+        self.stats['hp'] -= amount
 
     def add_biomass(self, amount):
-        self.stat['held_biomass'] = max(
-            self.stat['held_biomass'] + amount, self.stat['max_biomass']
+        self.stats['held_biomass'] = max(
+            self.stats['held_biomass'] + amount, self.stats['max_biomass']
         )
 
     def is_dead(self):
         return self.hp <= 0
 
     def is_full(self):
-        return self.stat['held_biomass'] >= self.stat['max_biomass']
+        return self.stats['held_biomass'] >= self.stats['max_biomass']
 
     def serialize(self):
         data = {}
-        data['mutations'] = [mutation.name for mutation in self.mutations]
+        data['template_name'] = self.name
+        data['mutation_names'] = self.mutation_names
         data['stats'] = dict(self.stats)
         return data
 
     @classmethod
     def deserialize(cls, data):
-        instance = cls()
-        instance.build_stats(data['mutations'])
+        instance = cls('', [])
+        instance.template_name = data['template_name']
+        instance.mutation_names = data['mutation_names']
         instance.stats = dict(data['stats'])
         return instance

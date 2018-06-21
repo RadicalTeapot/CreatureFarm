@@ -5,19 +5,20 @@
 class MutationTemplate:
     def __init__(self):
         self.name = ''
-        self.knowledge = set()
+        self.require = set()
+        self.exclude = set()
         self.size = 0.
         self.effects = {}
         self.biomass_cost = 0.
         self.description = ''
 
     @classmethod
-    def from_data(cls, id_, data):
+    def from_data(cls, data):
         cls.validate_data(data)
         instance = cls()
-        instance.id = 'recipes.{}'.format(id_)
         instance.name = data['name']
-        instance.knowledge = set(data['knowledge'])
+        instance.require = set(data['require'])
+        instance.exclude = set(data['exclude'])
         instance.size = data['size']
         instance.effects.update(data['effects'])
         instance.biomass_cost = data['biomass_cost']
@@ -28,7 +29,7 @@ class MutationTemplate:
     @staticmethod
     def validate_data(data):
         attributes = [
-            "name", "knowledge", "size", "effects",
+            "name", "require", "exclude", "size", "effects",
             "biomass_cost", "description"
         ]
         for attribute in attributes:

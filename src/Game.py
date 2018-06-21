@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from activity.Adventure import AdventureTemplate
+from Adventure import AdventureTemplate
 from Enemy import EnemyTemplate
 from Mutation import MutationTemplate
 
@@ -9,7 +9,7 @@ from Creature import Creature
 
 from ObjectManager import ObjectManager
 from Settings import Settings
-from DataStructures import Adventure
+from Adventure import Adventure
 from DataStructures import GameModel
 from DataStructures import Knowledge
 
@@ -44,12 +44,17 @@ class Game(object):
 
     def _parse_adventures(self):
         with open("data/json/adventures.json", 'r') as json_data:
-            items = json.loads(json_data.read()).items()
+            items = json.loads(json_data.read())
 
-        for id_, data in items:
-            self._model.adventure_templates[id_] = (
-                AdventureTemplate.from_data(id_, data)
-            )
+        for data in items:
+            adventure = AdventureTemplate.from_data(data)
+            if adventure in self._model.adventure_templates:
+                raise RuntimeError(
+                    'Duplicate adventure {} not allowed'.format(
+                        adventure.name
+                    )
+                )
+            self._model.adventure_templates[adventure.name] = adventure
 
     def _parse_enemies(self):
         with open("data/json/enemies.json", 'r') as json_data:
@@ -62,12 +67,17 @@ class Game(object):
 
     def _parse_mutations(self):
         with open("data/json/mutations.json", 'r') as json_data:
-            items = json.loads(json_data.read()).items()
+            items = json.loads(json_data.read())
 
-        for id_, data in items:
-            self._model.mutation_templates[id_] = (
-                MutationTemplate.from_data(id_, data)
-            )
+        for data in items:
+            mutation = MutationTemplate.from_data(data)
+            if mutation in self._model.mutation_templates:
+                raise RuntimeError(
+                    'Duplicate mutation {} not allowed'.format(
+                        mutation.name
+                    )
+                )
+            self._model.mutation_templates[mutation.name] = mutation
 
     def _parse_knowledge(self):
         with open("data/json/knowledge.json", 'r') as json_data:
@@ -86,11 +96,11 @@ class Game(object):
 
     def get_mutations(self):
         # TODO Check for knowledge and return only available mutation
-        return self._model.mutation_templates.values()
+        return self._model.mutation_templates
 
     def get_adventures(self):
         # TODO Return only available adventures
-        return self._model.adventure_templates.values()
+        return self._model.adventure_templates
 
     @property
     def running_adventures(self):
@@ -123,30 +133,26 @@ class Game(object):
         # Adventure instances are indexed by their name
         running = self._model.running_adventures.get(adventure_name, [])
         new_adventure = Adventure(
-            [
-                Creature(self.creature_templates[template_name].mutations)
+            creatures=[
+                Creature(
+                    template_name,
+                    self.creature_templates[template_name].mutations
+                )
                 for template_name in template_names
             ],
-            group_name
+            creature_name=group_name,
+            template_name=adventure_name
         )
         running.append(new_adventure)
+        new_adventure.start()
         self._model.running_adventures[adventure_name] = running
 
         ObjectManager.ui.update_adventure_count()
 
     def update(self):
-        for name, adventures in self._model.running_adventures.items():
-            template = self._model.adventure_templates[name]
+        for adventures in self._model.running_adventures.values():
             for adventure in adventures:
-                for enemy_id, chance in template.enemies.items():
-                    if random.random() < chance:
-                        self.fight(adventure.creatures, enemy_id)
-                        break
-                else:
-                    # Take from adventure and add it to creatures container
-                    pass
-            # TODO Check if all creatures dead -> stop adventure
-            # TODO Check if all creature biomass containers full -> stop adventure
+                adventure.update()
 
     def fight(self, creatures, enenmy_id):
         # TODO Implement fight

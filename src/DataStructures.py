@@ -4,6 +4,8 @@
 from typing import NamedTuple
 from collections import OrderedDict
 
+from Adventure import Adventure
+
 
 class Knowledge(NamedTuple):
     base_cost: float
@@ -56,15 +58,15 @@ class GameModel:
         self.date = data['date']
 
         self.creature_templates = OrderedDict([
-            (name, Template().deserialize(value))
+            (name, Template.deserialize(value))
             for name, value in data['creature_templates']
         ])
         self.creature_groups = OrderedDict([
-            (name, Group().deserialize(value))
+            (name, Group.deserialize(value))
             for name, value in data['creature_groups']
         ])
         self.running_adventures = {
-            name: [Adventure().deserialize(value) for value in values]
+            name: [Adventure.deserialize(value) for value in values]
             for name, values in data['running_adventures']
         }
         # Knowledge
@@ -105,28 +107,4 @@ class Group:
         instance = cls()
         instance.templates = data['templates']
         instance.cost = data['cost']
-        return instance
-
-
-class Adventure:
-    def __init__(self, creatures=[], creatures_name=''):
-        self.creatures = creatures
-        self.creatures_name = creatures_name
-        self.log = 'Placeholder log'
-
-    def serialize(self):
-        return {
-            'creatures': [creature.serialize() for creature in self.creatures],
-            'creatures_name': self.creatures_name,
-            'log': self.log
-        }
-
-    @classmethod
-    def deserialize(cls, data):
-        instance = cls()
-        instance.creatures = [
-            Template(value) for value in data['creatures']
-        ]
-        instance.creatures_name = data['creatures_name']
-        instance.log = data['log']
         return instance

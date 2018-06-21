@@ -5,9 +5,6 @@ from ui.screen import UiState
 from ui.widget.widgets import ListEntry
 
 from ObjectManager import ObjectManager
-from DataStructures import Adventure as AdventureData
-
-import copy
 
 
 class AdventureModel:
@@ -53,10 +50,7 @@ class Adventure(UiState):
     def populate_adventures_list(self):
         self.adventure_list.clear()
 
-        adventures = [
-            adventure.name for adventure in ObjectManager.game.get_adventures()
-        ]
-        for name in adventures:
+        for name in ObjectManager.game.get_adventures().keys():
             entry = ListEntry.simple(name)
             entry.bind(
                 on_press=lambda entry: self.adventure_selected(entry.name)

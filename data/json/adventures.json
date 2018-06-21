@@ -1,5 +1,5 @@
-{
-    "forest_hunt": {
+[
+    {
         "name": "Forest hunt",
         "enemies": [
             {"enemy": "enemies.goblin", "chance": 0.1},
@@ -10,7 +10,7 @@
         "description": "Placeholder adventure description"
     },
 
-    "cave_exploration": {
+    {
         "name": "Cave exploration",
         "enemies": [
             {"enemy": "enemies.goblin", "chance": 0.1},
@@ -20,4 +20,4 @@
         "biomass_regen_speed": 0.25,
         "description": "Placeholder adventure description"
     }
-}
+]

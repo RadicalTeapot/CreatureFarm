@@ -92,9 +92,9 @@ class TemplateEditor(UiState):
 
         self._model.available['selected'] = None
         self._model.available['contents'] = [
-            mutation.name
-            for mutation in ObjectManager.game.get_mutations()
-            if mutation.name not in self._model.selected['contents']
+            name
+            for name in ObjectManager.game.get_mutations().keys()
+            if name not in self._model.selected['contents']
         ]
 
         self.update_cost()
@@ -142,10 +142,7 @@ class TemplateEditor(UiState):
         self.update_cost()
 
     def get_biomass_cost(self, mutation_names):
-        mutations = {
-            mutation.name: mutation
-            for mutation in ObjectManager.game.get_mutations()
-        }
+        mutations = ObjectManager.game.get_mutations()
         return sum([
             mutations[name].biomass_cost
             for name in mutation_names
