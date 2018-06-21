@@ -5,8 +5,11 @@ from activity.Adventure import AdventureTemplate
 from Enemy import EnemyTemplate
 from Mutation import MutationTemplate
 
+from Creature import Creature
+
 from ObjectManager import ObjectManager
 from Settings import Settings
+from DataStructures import Adventure
 from DataStructures import GameModel
 from DataStructures import Knowledge
 
@@ -110,11 +113,24 @@ class Game(object):
         self._model.biomass = value
         ObjectManager.ui.update_biomass()
 
-    def add_running_adventure(self, name, new_adventure):
+    def add_running_adventure(self, adventure_name, template_names, group_name):
+        cost = sum([
+            self.creature_templates[template_name].cost
+            for template_name in template_names
+        ])
+        self.biomass -= cost
+
         # Adventure instances are indexed by their name
-        running = self._model.running_adventures.get(name, [])
+        running = self._model.running_adventures.get(adventure_name, [])
+        new_adventure = Adventure(
+            [
+                Creature(self.creature_templates[template_name].mutations)
+                for template_name in template_names
+            ],
+            group_name
+        )
         running.append(new_adventure)
-        self._model.running_adventures[name] = running
+        self._model.running_adventures[adventure_name] = running
 
         ObjectManager.ui.update_adventure_count()
 

@@ -116,7 +116,7 @@ class Adventure:
 
     def serialize(self):
         return {
-            'creatures': [template.serialize() for template in self.creatures],
+            'creatures': [creature.serialize() for creature in self.creatures],
             'creatures_name': self.creatures_name,
             'log': self.log
         }

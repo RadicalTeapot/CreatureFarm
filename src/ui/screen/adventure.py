@@ -78,26 +78,8 @@ class Adventure(UiState):
         self.creature_spinner.text = self._model.selected_creature
 
     def start_adventure(self, button):
-        game = ObjectManager.game
-        templates = game.creature_templates
-
-        selected = self._model.all_creatures[self._model.selected_creature]
-        cost = sum([templates[creature].cost for creature in selected])
-
-        if cost > game.biomass:
-            # TODO display error message
-            return
-        game.biomass -= cost
-
-        game.add_running_adventure(
+        ObjectManager.game.add_running_adventure(
             self._model.selected_adventure,
-            AdventureData(
-                [
-                    # Make a deep copy to make sure sent creature remains the
-                    # same even if defining template changes after adventure
-                    # is started
-                    copy.deepcopy(templates[name]) for name in selected
-                ],
-                self._model.selected_creature
-            )
+            self._model.all_creatures[self._model.selected_creature],
+            self._model.selected_creature
         )

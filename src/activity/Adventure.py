@@ -60,7 +60,7 @@ class AdventureTemplate:
         return 'Adventure description placeholder'
 
 
-class Adventure:
+class Adventure(Activity):
     def __init__(self, creature=None, template=None):
         super().__init__(ACTIVITY_TYPE.ADVENTURE, creature, -1)
         self.template = template

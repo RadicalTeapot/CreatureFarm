@@ -6,6 +6,8 @@ class MutationTemplate:
     def __init__(self):
         self.name = ''
         self.knowledge = set()
+        self.size = 0.
+        self.effects = {}
         self.biomass_cost = 0.
         self.description = ''
 
@@ -16,6 +18,8 @@ class MutationTemplate:
         instance.id = 'recipes.{}'.format(id_)
         instance.name = data['name']
         instance.knowledge = set(data['knowledge'])
+        instance.size = data['size']
+        instance.effects.update(data['effects'])
         instance.biomass_cost = data['biomass_cost']
         instance.description = data['description']
 
@@ -24,7 +28,8 @@ class MutationTemplate:
     @staticmethod
     def validate_data(data):
         attributes = [
-            "name", "knowledge", "biomass_cost", "description"
+            "name", "knowledge", "size", "effects",
+            "biomass_cost", "description"
         ]
         for attribute in attributes:
             if attribute not in data:

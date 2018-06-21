@@ -18,6 +18,7 @@
 - __Finish implementing adventures__
 - __Add a recall button on running adventures screen__
 - __Attach the logger to running adventure__
+- Maybe simplify adventure data to directly state available knowledges and damage range instead of enemies
 - Switch template/group/adventure ui code to use template/group/Adventure ids instead of names for internal data representation__ or __Make data indexing for mutations,... by name instead of internal id
 - Refactor screens to more tightly follow the MVC pattern (split ui and logic in two separate classes)
 - Add some mutation to increase biomass container size of creatures
