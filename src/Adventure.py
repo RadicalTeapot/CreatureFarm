@@ -5,6 +5,7 @@ import random
 
 from ObjectManager import ObjectManager
 from Creature import Creature
+from Enemy import Enemy
 from Logger import Logger
 
 
@@ -68,6 +69,10 @@ class Adventure:
         # times
         self.log = Logger(f'{self.template_name}_{self.group_name}')
 
+        self.update = self.update_regular
+        self.enemies = []
+        self._in_fight = False
+
     def start(self):
         self.logger.add_entry(
             ObjectManager.game.date,
@@ -78,21 +83,75 @@ class Adventure:
             'info'
         )
 
-    def update(self):
+    def update_regular(self):
         template = ObjectManager.game.get_adventures[self.template_name]
 
         for enemy_id, chance in template.enemies.items():
             if random.random() < chance:
-                ObjectManager.game.fight(self.creatures, enemy_id)
-                return
+                self.enemies.append(Enemy(enemy_id))
+        if self.enemies:
+            self.in_fight = True
+            return
 
-        # Take from adventure and add it to creatures container
+        # Extract some biomass from the adventure pool
+        size = sum(creature.stats['size'] for creature in self.creatures)
+        # Use the group size to get the amount of biomass extracted
+        extracted_biomass = min(size * .1, template.biomass_pool)
+        total_biomass = extracted_biomass
+        # Fill each creature in order
+        for creature in self.creatures:
+            if not creature.is_full():
+                extracted_biomass -= creature.add_biomass(extracted_biomass)
+        # Remove the extracted biomass from the adventure pool
+        template.biomass_pool -= (total_biomass - extracted_biomass)
 
-        # TODO Check if all creatures dead -> stop adventure
-        # TODO Check if all creature biomass containers full -> stop adventure
+        if all(creature.is_full() for creature in self.creatures):
+            return ObjectManager.game.end_adventure(self)
 
-    def end(self):
-        pass
+    @property
+    def in_fight(self):
+        return self._in_fight
+
+    @in_fight.setter
+    def in_fight(self, value):
+        if not isinstance(value, bool):
+            raise TypeError('Expected bool, got {} instead'.format(
+                type(value).__name__
+            ))
+        self._in_fight = value
+
+        self.update = (
+            self.update_regular
+            if self._in_fight
+            else self.update_fight
+        )
+
+    def update_fight(self):
+        if all(creature.is_dead() for creature in self.creatures):
+            return ObjectManager.game.end_adventure(self)
+
+        # TODO Improve fight system
+        for enemy in self.enemies:
+            # Get live creatures
+            creatures = [
+                creature
+                for creature in self.creatures
+                if not creature.is_dead()
+            ]
+            attack = sum(creature.stat['attack'] for creature in creatures)
+
+            enemy.hp -= attack
+            if enemy.hp <= 0:
+                # TODO Add knowledge of dead enemy to creatures
+                continue
+
+            creature = random.choice(creatures)
+            creature.stat['hp'] -= creature.strength
+        # Clear dead enemies from the list
+        self.enemies = [enemy for enemy in self.enemies if enemy.hp > 0]
+
+        if not self.enemies:
+            self.in_fight = False
 
     def serialize(self):
         data = {}
@@ -102,6 +161,9 @@ class Adventure:
         ]
         data['group_name'] = self.group_name
         data['log'] = self.log.serialize()
+        data['in_fight'] = self.in_fight
+        # TODO Serialize enemies
+        data['enemies'] = []
 
         return data
 
@@ -114,5 +176,6 @@ class Adventure:
             Creature.deserialize(creature_data)
             for creature_data in data['creatures']
         ]
-        instance.logger = Logger.deserialize(data.['log'])
+        instance.logger = Logger.deserialize(data['log'])
+        instance.in_fight = data['in_fight']
         return instance

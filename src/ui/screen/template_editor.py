@@ -141,18 +141,13 @@ class TemplateEditor(UiState):
         self.update_ui()
         self.update_cost()
 
-    def get_biomass_cost(self, mutation_names):
-        mutations = ObjectManager.game.get_mutations()
-        return sum([
-            mutations[name].biomass_cost
-            for name in mutation_names
-        ])
-
     def update_cost(self):
         # TODO: Do fancier computation (have threshold where the cost of
         # everything is multiplied)
         self.biomass = str(
-            self.get_biomass_cost(self._model.selected['contents'])
+            ObjectManager.game.get_biomass_cost(
+                self._model.selected['contents']
+            )
         )
 
     def save_template(self, button):
@@ -167,7 +162,9 @@ class TemplateEditor(UiState):
         templates[self._model.name] = Template(
             # Shallow copy the list of mutations
             mutations=list(self._model.selected['contents']),
-            cost=self.get_biomass_cost(self._model.selected['contents'])
+            cost=ObjectManager.game.get_biomass_cost(
+                self._model.selected['contents']
+            )
         )
 
         self.populate_template_list()

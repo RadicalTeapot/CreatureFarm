@@ -17,6 +17,7 @@ class Creature:
             'max_biomass': 0.,
             'knowledge': [],
             'size': 0.,
+            'biomass_cost': 0.,
         }
         self.build_stats(mutation_names)
 
@@ -29,6 +30,9 @@ class Creature:
         game_mutations = ObjectManager.game.get_mutations()
         mutations = [game_mutations[name] for name in self.mutation_names]
         self.stats['size'] = sum([mutation.size for mutation in mutations])
+        self.stats['biomass_cost'] = ObjectManager.game.get_biomass_cost(
+            self.mutation_names
+        )
         self.stats['hp'] = (
             self.stats['size'] * 10.0 + self.get_stat_modifier('hp')
         )
@@ -42,9 +46,9 @@ class Creature:
         self.stats['hp'] -= amount
 
     def add_biomass(self, amount):
-        self.stats['held_biomass'] = max(
-            self.stats['held_biomass'] + amount, self.stats['max_biomass']
-        )
+        diff = max(self.stats['max_biomass'] - self.stats['held_biomass'], 0.)
+        self.stats['held_biomass'] += min(amount, diff)
+        return min(amount, diff)
 
     def is_dead(self):
         return self.hp <= 0

@@ -118,10 +118,20 @@ class Game(object):
     def biomass(self):
         return self._model.biomass
 
+    @property
+    def enemies(self):
+        return self._model.enemy_templates
+
     @biomass.setter
     def biomass(self, value):
         self._model.biomass = value
         ObjectManager.ui.update_biomass()
+
+    def get_biomass_cost(self, mutation_names):
+        return sum(
+            self._model.mutation_templates[mutation].biomass_cost
+            for mutation in mutation_names
+        )
 
     def add_running_adventure(self, adventure_name, template_names, group_name):
         cost = sum([
@@ -149,14 +159,37 @@ class Game(object):
 
         ObjectManager.ui.update_adventure_count()
 
+    def end_adventure(self, adventure):
+        # Each dead creature held biomass and its cost are returned
+        # to the adventure pool
+        returned_biomass = sum(
+            creature.stat['held_biomass'] + creature.cost
+            for creature in adventure.creatures
+            if creature.is_dead()
+        )
+        self._model.adventure_templates[adventure.template_name].biomass_pool += \
+            returned_biomass
+
+        # Each alive creature held biomass and its cost are returned
+        # to the game pool
+        extracted_biomass = sum(
+            creature.stat['held_biomass'] + creature.cost
+            for creature in adventure.creatures
+            if not creature.is_dead()
+        )
+        self.biomass += extracted_biomass
+
+        self._model.running_adventures[adventure.template_name].remove(
+            adventure
+        )
+
+        # TODO Knowledge
+
     def update(self):
         for adventures in self._model.running_adventures.values():
             for adventure in adventures:
                 adventure.update()
-
-    def fight(self, creatures, enenmy_id):
-        # TODO Implement fight
-        pass
+        # TODO Refill each adventure template biomass (using regen speed)
 
     def load(self, path=None):
         if path is None:
