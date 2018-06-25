@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-import math
-import random
 import copy
 
 from ObjectManager import ObjectManager
@@ -50,44 +48,26 @@ class EnemyTemplate:
 
 
 class Enemy:
-    def __init__(self, template=None):
-        self.template = None
+    def __init__(self, template_id=None):
+        self.template_id = template_id
         self.hp = None
-        if self.template:
-            self.hp = template.hp
-
-    def get_loot(self):
-        rewards = {}
-        for item_id, data in self.loot.items():
-            # TODO: use creature stats to modify curve value
-            quantity_range, curve = data
-            # Remap curve for [0, 1] to [1.5, -0.5]
-            curve = min(max(curve, 0.), 1.0)
-            curve = (1 - curve) * 2 - 0.5
-            # Sigmoid curve
-            # for curve = 0.5 -> .1: .008, .5: .5, 1.: 0.998
-            quantity = 1 / (1 + math.exp(-12 * (random.random() - curve)))
-            # Remap quantity from [0, 1] to quantity range
-            quantity *= (quantity_range[1] - quantity_range[0])
-            quantity += quantity_range[0]
-            quantity = round(quantity)
-
-            if quantity > 0:
-                rewards[item_id] = int(quantity)
-
-        return rewards
+        if self.template_id:
+            self.hp = ObjectManager.game.enemies[self.template_id]
 
     def serialize(self):
-        return {'hp': self.hp, 'template': self.template.id}
+        return {'hp': self.hp, 'template': self.template_id}
 
     @classmethod
     def deserialize(cls, data):
-        instance = cls.from_template(
-            ObjectManager.game.enemy_templates.data['template']
-        )
+        instance = cls(data['template_id'])
         instance.hp = data['hp']
 
         return instance
+
+    @property
+    def name(self):
+        assert self.template_id is not None
+        return ObjectManager.game.enemies[self.template_id].name
 
     @property
     def hp(self):
@@ -103,15 +83,20 @@ class Enemy:
 
     @property
     def strength(self):
-        assert self.template is not None
-        return self.template.strength
+        assert self.template_id is not None
+        return ObjectManager.game.enemies[self.template_id].strength
 
     @property
     def armor(self):
-        assert self.template is not None
-        return self.template.armor
+        assert self.template_id is not None
+        return ObjectManager.game.enemies[self.template_id].armor
 
     @property
     def agility(self):
-        assert self.template is not None
-        return self.template.agility
+        assert self.template_id is not None
+        return ObjectManager.game.enemies[self.template_id].agility
+
+    @property
+    def biomass(self):
+        assert self.template_id is not None
+        return ObjectManager.game.enemies[self.template_id].biomass

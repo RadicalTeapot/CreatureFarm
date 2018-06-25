@@ -15,7 +15,6 @@ from DataStructures import Knowledge
 
 import json
 import os
-import random
 
 from kivy.core.window import Window
 
@@ -84,7 +83,7 @@ class Game(object):
             items = json.loads(json_data.read()).items()
 
         for id_, data in items:
-            self._model.knowledge[id_] = Knowledge(data, 0.)
+            self._model.knowledge_templates[id_] = data
 
     def has_knowledge(self, knowledge_id):
         if knowledge_id not in self.knowledge:
@@ -121,6 +120,10 @@ class Game(object):
     @property
     def enemies(self):
         return self._model.enemy_templates
+
+    @property
+    def knowledge(self):
+        return self._model.knowledge
 
     @biomass.setter
     def biomass(self, value):
@@ -160,30 +163,43 @@ class Game(object):
         ObjectManager.ui.update_adventure_count()
 
     def end_adventure(self, adventure):
-        # Each dead creature held biomass and its cost are returned
-        # to the adventure pool
+        # Filter creatures
+        dead, live = [], []
+        for creature in adventure.creatures:
+            (dead if creature.is_dead() else live).append(creature)
+
+        # Sum each dead creature held biomass and its cost
         returned_biomass = sum(
             creature.stat['held_biomass'] + creature.cost
-            for creature in adventure.creatures
-            if creature.is_dead()
+            for creature in dead
         )
+        # Fill the other creatures with what's available (simulated creatures
+        # eating each other)
+        for creature in live:
+            if not creature.is_full():
+                returned_biomass -= creature.add_biomass(returned_biomass)
+
+        # Return leftovers to adventure biomass pool
         self._model.adventure_templates[adventure.template_name].biomass_pool += \
             returned_biomass
 
         # Each alive creature held biomass and its cost are returned
         # to the game pool
-        extracted_biomass = sum(
+        self.biomass += sum(
             creature.stat['held_biomass'] + creature.cost
-            for creature in adventure.creatures
-            if not creature.is_dead()
+            for creature in live
         )
-        self.biomass += extracted_biomass
+
+        # If some creatures are alive, add the gathered knowledge to the
+        # knowledge pool
+        if len(live):
+            for name, amount in adventure.knowledge:
+                previous_amount = self._model.knowledge.get(name, 0.)
+                self._model.knowledge[name] = amount + previous_amount
 
         self._model.running_adventures[adventure.template_name].remove(
             adventure
         )
-
-        # TODO Knowledge
 
     def update(self):
         for adventures in self._model.running_adventures.values():

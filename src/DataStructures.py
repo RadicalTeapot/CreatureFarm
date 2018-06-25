@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
-from typing import NamedTuple
+import copy
 from collections import OrderedDict
 
 from Adventure import Adventure
-
-
-class Knowledge(NamedTuple):
-    base_cost: float
-    current_level: int
 
 
 class GameModel:
@@ -24,9 +19,10 @@ class GameModel:
         self.adventure_templates = {}
         self.enemy_templates = {}
         self.mutation_templates = {}
-        self.knowledge = {}
+        self.knowledge_templates = {}
 
         self.running_adventures = {}
+        self.knowledge = {}
 
         self.date = 0
 
@@ -50,7 +46,7 @@ class GameModel:
             for name, adventures in self.running_adventures.items()
         ]
 
-        # Knowledge
+        data['knowledge'] = self.knowledge
         return data
 
     def deserialize(self, data):
@@ -69,7 +65,7 @@ class GameModel:
             name: [Adventure.deserialize(value) for value in values]
             for name, values in data['running_adventures']
         }
-        # Knowledge
+        self.knowledge = copy.deepcopy(data['knowledge'])
 
 
 class Template:

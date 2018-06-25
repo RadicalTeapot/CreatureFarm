@@ -42,9 +42,6 @@ class Creature:
         self.stats['attack'] = self.get_stat_modifier('attack')
         self.stats['max_biomass'] = self.stats['size'] * 10.
 
-    def hit(self, amount):
-        self.stats['hp'] -= amount
-
     def add_biomass(self, amount):
         diff = max(self.stats['max_biomass'] - self.stats['held_biomass'], 0.)
         self.stats['held_biomass'] += min(amount, diff)
