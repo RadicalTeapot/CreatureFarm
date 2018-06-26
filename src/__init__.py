@@ -14,7 +14,10 @@ import sys
 
 if __name__ == '__main__':
     object_manager = ObjectManager()
+
     object_manager.add_object('game', Game())
+    ObjectManager.game._model.biomass = 100
+
     object_manager.add_object('ui', Ui())
 
     save_file = None

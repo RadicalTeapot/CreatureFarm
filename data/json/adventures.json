@@ -2,8 +2,8 @@
     {
         "name": "Forest hunt",
         "enemies": [
-            {"enemy": "enemies.goblin", "chance": 0.1},
-            {"enemy": "enemies.orc", "chance": 0.025}
+            {"enemy": "humanoid.goblin", "chance": 0.1},
+            {"enemy": "humanoid.orc", "chance": 0.025}
         ],
         "biomass_pool": 1000.0,
         "biomass_regen_speed": 1.0,
@@ -13,8 +13,8 @@
     {
         "name": "Cave exploration",
         "enemies": [
-            {"enemy": "enemies.goblin", "chance": 0.1},
-            {"enemy": "enemies.orc", "chance": 0.1}
+            {"enemy": "humanoid.goblin", "chance": 0.1},
+            {"enemy": "humanoid.orc", "chance": 0.1}
         ],
         "biomass_pool": 5000.0,
         "biomass_regen_speed": 0.25,

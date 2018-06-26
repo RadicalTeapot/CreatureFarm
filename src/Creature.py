@@ -22,8 +22,10 @@ class Creature:
         self.build_stats(mutation_names)
 
     def get_stat_modifier(self, stat):
+        game_mutations = ObjectManager.game.get_mutations()
+        mutations = [game_mutations[name] for name in self.mutation_names]
         return sum(
-            [mutation.effects.get(stat, 0.) for mutation in self.mutations]
+            [mutation.effects.get(stat, 0.) for mutation in mutations]
         )
 
     def build_stats(self, mutation_names):
@@ -48,14 +50,14 @@ class Creature:
         return min(amount, diff)
 
     def is_dead(self):
-        return self.hp <= 0
+        return self.stats['hp'] <= 0
 
     def is_full(self):
         return self.stats['held_biomass'] >= self.stats['max_biomass']
 
     def serialize(self):
         data = {}
-        data['template_name'] = self.name
+        data['template_name'] = self.template_name
         data['mutation_names'] = self.mutation_names
         data['stats'] = dict(self.stats)
         return data

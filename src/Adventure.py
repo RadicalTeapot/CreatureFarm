@@ -75,9 +75,11 @@ class Adventure:
         self._in_fight = False
         self.knowledge = {}
 
+        self.turn_count = 0
+
     def start(self):
-        self.logger.add_entry(
-            ObjectManager.game.date,
+        self.log.add_entry(
+            self.turn_count,
             '{} started adventure {}'.format(
                 self.group_name, self.template_name
             ),
@@ -98,20 +100,23 @@ class Adventure:
         self._in_fight = value
 
         self.update = (
-            self.update_regular
+            self.update_fight
             if self._in_fight
-            else self.update_fight
+            else self.update_regular
         )
 
     def update_regular(self):
-        template = ObjectManager.game.get_adventures[self.template_name]
+        self.turn_count += 1
+
+        template = ObjectManager.game.get_adventures()[self.template_name]
 
         for enemy_id, chance in template.enemies.items():
             if random.random() < chance:
                 self.enemies.append(Enemy(enemy_id))
+
         if self.enemies:
-            self.logger.add_entry(
-                ObjectManager.game.date,
+            self.log.add_entry(
+                self.turn_count,
                 '{} started fighting with {}'.format(
                     self.group_name,
                     ', '.join(enemy.name for enemy in self.enemies),
@@ -135,8 +140,8 @@ class Adventure:
         template.biomass_pool -= (total_biomass - extracted_biomass)
 
         if all(creature.is_full() for creature in self.creatures):
-            self.logger.add_entry(
-                ObjectManager.game.date,
+            self.log.add_entry(
+                self.turn_count,
                 '{} came back from adventure {}'.format(
                     self.group_name, self.template_name
                 ),
@@ -146,9 +151,11 @@ class Adventure:
             return ObjectManager.game.end_adventure(self)
 
     def update_fight(self):
+        self.turn_count += 1
+
         if all(creature.is_dead() for creature in self.creatures):
-            self.logger.add_entry(
-                ObjectManager.game.date,
+            self.log.add_entry(
+                self.turn_count,
                 'All creatures died',
                 'fight',
                 'important'
@@ -163,7 +170,7 @@ class Adventure:
                 for creature in self.creatures
                 if not creature.is_dead()
             ]
-            attack = sum(creature.stat['attack'] for creature in creatures)
+            attack = sum(creature.stats['attack'] for creature in creatures)
 
             # Hit the enemy
             enemy.hp -= attack
@@ -178,8 +185,8 @@ class Adventure:
                         extracted_biomass -= creature.add_biomass(
                             extracted_biomass
                         )
-                self.logger.add_entry(
-                    ObjectManager.game.date,
+                self.log.add_entry(
+                    self.turn_count,
                     'The enemy {} died'.format(
                         enemy.name,
                     ),
@@ -190,10 +197,10 @@ class Adventure:
 
             # Hit one of the creature at random
             creature = random.choice(creatures)
-            creature.stat['hp'] -= creature.strength
+            creature.stats['hp'] -= creature.strength
             if creature.hp <= 0:
-                self.logger.add_entry(
-                    ObjectManager.game.date,
+                self.log.add_entry(
+                    self.turn_count,
                     'The creature {} died'.format(
                         creature.template_name,
                     ),
@@ -204,8 +211,8 @@ class Adventure:
         self.enemies = [enemy for enemy in self.enemies if enemy.hp > 0]
 
         if not self.enemies:
-            self.logger.add_entry(
-                ObjectManager.game.date,
+            self.log.add_entry(
+                self.turn_count,
                 'Creatures won the fight',
                 'fight',
                 'info'

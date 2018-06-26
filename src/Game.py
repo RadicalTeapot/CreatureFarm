@@ -11,12 +11,12 @@ from ObjectManager import ObjectManager
 from Settings import Settings
 from Adventure import Adventure
 from DataStructures import GameModel
-from DataStructures import Knowledge
 
 import json
 import os
 
 from kivy.core.window import Window
+from kivy.clock import Clock
 
 
 class Game(object):
@@ -34,6 +34,7 @@ class Game(object):
             'text'
         )
         self.keyboard.bind(on_key_down=self.key_press)
+        Clock.schedule_interval(self.update, 1.)
 
     def key_press(self, keyboard, keycode, text, modifiers):
         if keycode[1] == 'escape':
@@ -153,7 +154,7 @@ class Game(object):
                 )
                 for template_name in template_names
             ],
-            creature_name=group_name,
+            group_name=group_name,
             template_name=adventure_name
         )
         running.append(new_adventure)
@@ -201,7 +202,7 @@ class Game(object):
             adventure
         )
 
-    def update(self):
+    def update(self, dt):
         for adventures in self._model.running_adventures.values():
             for adventure in adventures:
                 adventure.update()

@@ -3,6 +3,7 @@
 
 import logging
 import os
+from collections import OrderedDict
 
 
 class LogEntry(object):
@@ -12,9 +13,16 @@ class LogEntry(object):
         self.entry_type = entry_type
         self.activity_type = activity_type
 
+    def __str__(self):
+        return (
+            f'{self.date} - {self.activity_type} - '
+            f'{self.entry_type} - {self.message}'
+        )
+
 
 class Logger(object):
     def __init__(self, name):
+        self.name = name
         self.entries = []
 
         # Create a logger
@@ -37,17 +45,30 @@ class Logger(object):
         self.logger.addHandler(file_handler)
         self.logger.addHandler(console_handler)
 
+        self.callbacks = OrderedDict()
+
+    def register_callback(self, name, func):
+        if name in self.callbacks:
+            raise KeyError(f'Callback {name} already exists.')
+        if not callable(func):
+            raise TypeError(f'Callback {name} not callable')
+        self.callbacks[name] = func
+
+    def deregister_callback(self, name):
+        if name not in self.callbacks:
+            raise KeyError(f'Callback {name} not registered')
+        del self.callbacks[name]
+
     def add_entry(
         self, date, message, activity_type, entry_type
     ):
-        self.entries.append(LogEntry(date, message, activity_type, entry_type))
+        entry = LogEntry(date, message, activity_type, entry_type)
+        self.entries.append(entry)
 
-        self.logger.info('{date} - {activity} - {level} - {message}'.format(
-            date=date,
-            activity=activity_type.name,
-            level=entry_type.name,
-            message=message
-        ))
+        self.logger.info(f'{date} - {activity_type} - {entry_type} - {message}')
+
+        for callback in self.callbacks.values():
+            callback(entry)
 
     def get_log(self, date_range=None, activity_type=None, entry_type=None):
         log = [entry for entry in self.entries]
@@ -73,7 +94,9 @@ class Logger(object):
         return log
 
     def serialize(self):
-        data = [
+        data = {}
+        data['name'] = self.name
+        data['entries'] = [
             {
                 'date': entry.date,
                 'message': entry.message,
@@ -85,11 +108,14 @@ class Logger(object):
 
         return data
 
-    def deserialize(self, data):
-        for entry in data:
-            self.add_entry(
+    @classmethod
+    def deserialize(data):
+        instance = cls(data['name'])
+        for entry in data['entry']:
+            instance.add_entry(
                 entry['date'],
                 entry['message'],
                 entry['activity_type'],
                 entry['entry_type']
             )
+        return instance

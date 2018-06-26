@@ -50,7 +50,7 @@ class EnemyTemplate:
 class Enemy:
     def __init__(self, template_id=None):
         self.template_id = template_id
-        self.hp = None
+        self._hp = None
         if self.template_id:
             self.hp = ObjectManager.game.enemies[self.template_id]
 
@@ -71,15 +71,11 @@ class Enemy:
 
     @property
     def hp(self):
-        return self.hp
+        return self._hp
 
     @hp.setter
     def hp(self, value):
-        if not isinstance(value, float):
-            raise TypeError('Expected float, got {} instead'.format(
-                type(value).__name__
-            ))
-        self.hp = value
+        self._hp = value
 
     @property
     def strength(self):

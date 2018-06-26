@@ -11,7 +11,7 @@ class CurrentAdventureModel:
         self.creatures = {}
         self.selected_adventure = ''
         self.selected_creature = ''
-        self.log = ''
+        self.log = None
 
 
 class CurrentAdventure(UiState):
@@ -41,7 +41,7 @@ class CurrentAdventure(UiState):
             self._model.selected_adventure, []
         )
         self._model.creatures = {
-            adventure.creatures_name: adventure
+            adventure.group_name: adventure
             for adventure in adventures
         }
         self.update_ui()
@@ -57,7 +57,12 @@ class CurrentAdventure(UiState):
             None
         )
         if adventure:
-            self._model.log = f'{self._model.selected_creature} {adventure.log}'
+            if self._model.log:
+                self._model.log.deregister_callback('current_adventure')
+            self._model.log = adventure.log
+            self._model.log.register_callback(
+                'current_adventure', self.update_log
+            )
 
     def update_ui(self):
         self.adventure_spinner.values = (
@@ -66,5 +71,12 @@ class CurrentAdventure(UiState):
         self.adventure_spinner.text = self._model.selected_adventure
         self.creature_spinner.values = self._model.creatures.keys()
         self.creature_spinner.text = self._model.selected_creature
+        self.update_log()
 
-        self.description = self._model.log
+    def update_log(self, entry=None):
+        if self._model.log is not None:
+            self.description = '\n'.join([
+                str(entry) for entry in self._model.log.get_log()
+            ])
+        else:
+            self.description = ''

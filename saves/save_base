@@ -1,1 +1,1 @@
-{"biomass": 100, "date": 0, "creature_templates": [], "creature_groups": [], "running_adventures": []}
+{"biomass": 100, "date": 0, "creature_templates": [["small", {"mutations": ["Crawl"], "cost": 1.0}]], "creature_groups": [], "running_adventures": [], "knowledge": {}}
