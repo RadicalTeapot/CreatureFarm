@@ -171,7 +171,7 @@ class Game(object):
 
         # Sum each dead creature held biomass and its cost
         returned_biomass = sum(
-            creature.stat['held_biomass'] + creature.cost
+            creature.stats['held_biomass'] + creature.stats['biomass_cost']
             for creature in dead
         )
         # Fill the other creatures with what's available (simulated creatures
@@ -187,14 +187,14 @@ class Game(object):
         # Each alive creature held biomass and its cost are returned
         # to the game pool
         self.biomass += sum(
-            creature.stat['held_biomass'] + creature.cost
+            creature.stats['held_biomass'] + creature.stats['biomass_cost']
             for creature in live
         )
 
         # If some creatures are alive, add the gathered knowledge to the
         # knowledge pool
         if len(live):
-            for name, amount in adventure.knowledge:
+            for name, amount in adventure.knowledge.items():
                 previous_amount = self._model.knowledge.get(name, 0.)
                 self._model.knowledge[name] = amount + previous_amount
 

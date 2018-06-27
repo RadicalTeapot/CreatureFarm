@@ -52,7 +52,7 @@ class Enemy:
         self.template_id = template_id
         self._hp = None
         if self.template_id:
-            self.hp = ObjectManager.game.enemies[self.template_id]
+            self.hp = ObjectManager.game.enemies[self.template_id].hp
 
     def serialize(self):
         return {'hp': self.hp, 'template': self.template_id}
@@ -96,3 +96,8 @@ class Enemy:
     def biomass(self):
         assert self.template_id is not None
         return ObjectManager.game.enemies[self.template_id].biomass
+
+    @property
+    def knowledge(self):
+        assert self.template_id is not None
+        return ObjectManager.game.enemies[self.template_id].knowledge.items()

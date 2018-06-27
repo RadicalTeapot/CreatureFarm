@@ -109,9 +109,9 @@ class Logger(object):
         return data
 
     @classmethod
-    def deserialize(data):
+    def deserialize(cls, data):
         instance = cls(data['name'])
-        for entry in data['entry']:
+        for entry in data['entries']:
             instance.add_entry(
                 entry['date'],
                 entry['message'],

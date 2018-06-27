@@ -68,7 +68,7 @@ class Adventure:
         # template_name + group_name is not enough as the player
         # may send the same creature/group to the same adventure multiple
         # times
-        self.log = Logger(f'{self.template_name}_{self.group_name}')
+        self.log = Logger(f'{self.template_name} - {self.group_name}')
 
         self.update = self.update_regular
         self.enemies = []
@@ -139,7 +139,11 @@ class Adventure:
         # Remove the extracted biomass from the adventure pool
         template.biomass_pool -= (total_biomass - extracted_biomass)
 
-        if all(creature.is_full() for creature in self.creatures):
+        if all(
+            creature.is_full()
+            for creature in self.creatures
+            if not creature.is_dead()
+        ):
             self.log.add_entry(
                 self.turn_count,
                 '{} came back from adventure {}'.format(
@@ -197,8 +201,8 @@ class Adventure:
 
             # Hit one of the creature at random
             creature = random.choice(creatures)
-            creature.stats['hp'] -= creature.strength
-            if creature.hp <= 0:
+            creature.stats['hp'] -= enemy.strength
+            if creature.stats['hp'] <= 0:
                 self.log.add_entry(
                     self.turn_count,
                     'The creature {} died'.format(
@@ -215,7 +219,7 @@ class Adventure:
                 self.turn_count,
                 'Creatures won the fight',
                 'fight',
-                'info'
+                'important'
             )
             self.in_fight = False
 
@@ -231,14 +235,13 @@ class Adventure:
         # TODO Serialize enemies
         data['enemies'] = [enemy.serialize() for enemy in self.enemies]
         data['knowledge'] = self.knowledge
+        data['turn_count'] = self.turn_count
 
         return data
 
     @classmethod
     def deserialize(cls, data):
-        instance = cls([], '', '')
-        instance.template_name = data['template_name']
-        instance.group_name = data['group_name']
+        instance = cls([], data['group_name'], data['template_name'])
         instance.creatures = [
             Creature.deserialize(creature_data)
             for creature_data in data['creatures']
@@ -250,4 +253,5 @@ class Adventure:
             for enemy_data in data['enemies']
         ]
         instance.knowledge = copy.deepcopy(data['knowledge'])
+        instance.turn_count = data['turn_count']
         return instance
