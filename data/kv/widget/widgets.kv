@@ -116,9 +116,27 @@
         TopBarButton:
             text: 'Current'
             on_press: app.open_current_adventure()
-        Widget:
-            size_hint: (1., 1.)
+
         TopBarLabel:
             text: root.biomass + ' biomass'
         TopBarLabel:
             text: root.running_adventures + ' missions'
+
+        BoxLayout:
+            size_hint: (None, 1.)
+            width: self.minimum_width
+            spacing: 3
+            padding: 0
+            TopBarIconButton:
+                source: 'data/icons/pause.png'
+                state: 'down'
+                on_press: self.state = 'down'; app.pause()
+            TopBarIconButton:
+                source: 'data/icons/play.png'
+                on_press: self.state = 'down'; app.play()
+            TopBarIconButton:
+                source: 'data/icons/fast.png'
+                on_press: self.state = 'down'; app.fast()
+            TopBarIconButton:
+                source: 'data/icons/faster.png'
+                on_press: self.state = 'down'; app.faster()

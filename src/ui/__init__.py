@@ -30,6 +30,13 @@ class State(Enum):
     CURRENT_ADVENTURE = 4
 
 
+class TimeMode(Enum):
+    PAUSE = 0
+    NORMAL = 1
+    FAST = 2
+    FASTER = 3
+
+
 class Ui(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -91,6 +98,18 @@ class Ui(App):
 
     def update_adventure_count(self):
         self.main_widget.update_adventure_count()
+
+    def pause(self):
+        ObjectManager.game.set_time_mode(TimeMode.PAUSE)
+
+    def play(self):
+        ObjectManager.game.set_time_mode(TimeMode.NORMAL)
+
+    def fast(self):
+        ObjectManager.game.set_time_mode(TimeMode.FAST)
+
+    def faster(self):
+        ObjectManager.game.set_time_mode(TimeMode.FASTER)
 
     def escape_action(self, widget):
         return {

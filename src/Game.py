@@ -11,6 +11,7 @@ from ObjectManager import ObjectManager
 from Settings import Settings
 from Adventure import Adventure
 from DataStructures import GameModel
+from ui import TimeMode
 
 import json
 import os
@@ -34,7 +35,7 @@ class Game(object):
             'text'
         )
         self.keyboard.bind(on_key_down=self.key_press)
-        Clock.schedule_interval(self.update, 1.)
+        self.clock_event = None
 
     def key_press(self, keyboard, keycode, text, modifiers):
         if keycode[1] == 'escape':
@@ -218,6 +219,24 @@ class Game(object):
         self._model.running_adventures[adventure.template_name].remove(
             adventure
         )
+
+    def set_time_mode(self, time_mode):
+        if self.clock_event is not None:
+            self.clock_event.cancel()
+            self.clock_event = None
+
+        if time_mode == TimeMode.NORMAL:
+            self.clock_event = Clock.schedule_interval(
+                self.update, Settings.NORMAL_SPEED
+            )
+        elif time_mode == TimeMode.FAST:
+            self.clock_event = Clock.schedule_interval(
+                self.update, Settings.FAST_SPEED
+            )
+        elif time_mode == TimeMode.FASTER:
+            self.clock_event = Clock.schedule_interval(
+                self.update, Settings.FASTER_SPEED
+            )
 
     def update(self, dt):
         for adventures in self._model.running_adventures.values():

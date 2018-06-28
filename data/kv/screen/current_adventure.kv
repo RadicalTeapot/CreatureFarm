@@ -27,9 +27,11 @@
     adventure_spinner: adventure_spinner.spinner
     creature_spinner: creature_spinner.spinner
     description: ''
+    creature_list: list
+    recall: recall
     canvas:
         Color:
-            rgb: 1., 1., 1.
+            rgb: 0.25, 0.25, 0.25
         Rectangle:
             size: (self.width - 10., self.height - 10.)
             pos: (5., 5.)
@@ -42,28 +44,76 @@
         padding: 10
         orientation: 'vertical'
 
-        LabelSpinner:
-            label: 'Select adventure'
-            id: adventure_spinner
+        BoxLayout:
             size_hint: (1., None)
-            height: 30
+            height: 50
 
-        LabelSpinner:
-            label: 'Select creature / group'
-            id: creature_spinner
-            size_hint: (1., None)
-            height: 30
+            padding: 5
+            spacing: 10
+            orientation: 'horizontal'
 
-        ScrollView:
+            canvas:
+                Color:
+                    rgb: 1., 1., 1.
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+
+            LabelSpinner:
+                label: 'Select adventure'
+                id: adventure_spinner
+                size_hint: (1., 1.)
+
+            LabelSpinner:
+                label: 'Select creature / group'
+                id: creature_spinner
+                size_hint: (1., 1.)
+
+        BoxLayout:
             size_hint: (1., 1.)
-            do_scroll_x: False
+            orientation: 'horizontal'
+            spacing: 10
 
-            Label:
-                id: label
-                size_hint: (1., None)
-                text_size: (self.parent.width, None)
-                size: self.texture_size
-                text: root.description
-                color: 0., 0., 0., 1.
-                halign: 'justify'
-                valign: 'top'
+            ListWidget:
+                id: list
+                size_hint: (0.3, 1.)
+                do_scroll_x: False
+
+            BoxLayout:
+                size_hint: (0.7, 1.)
+                orientation: 'vertical'
+                spacing: 10
+                padding: 5
+
+                canvas:
+                    Color:
+                        rgb: 1., 1., 1.
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
+                ScrollView:
+                    size_hint: (1., 1.)
+                    do_scroll_x: False
+
+                    Label:
+                        id: label
+                        size_hint: (1., None)
+                        text_size: (self.parent.width, None)
+                        size: self.texture_size
+                        text: root.description
+                        color: 0., 0., 0., 1.
+                        halign: 'justify'
+                        valign: 'top'
+
+                AnchorLayout:
+                    size_hint: (1., None)
+                    height: 30
+                    anchor_x: 'right'
+                    anchor_y: 'center'
+
+                    Button:
+                        id: recall
+                        size_hint: (None, 1.)
+                        width: 100
+                        text: 'Recall'

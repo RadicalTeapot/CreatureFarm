@@ -246,7 +246,7 @@ class Adventure:
             Creature.deserialize(creature_data)
             for creature_data in data['creatures']
         ]
-        instance.logger = Logger.deserialize(data['log'])
+        instance.log = Logger.deserialize(data['log'])
         instance.in_fight = data['in_fight']
         instance.enemies = [
             Enemy.deserialize(enemy_data)

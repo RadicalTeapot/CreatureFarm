@@ -112,10 +112,10 @@ class Logger(object):
     def deserialize(cls, data):
         instance = cls(data['name'])
         for entry in data['entries']:
-            instance.add_entry(
+            instance.entries.append(LogEntry(
                 entry['date'],
                 entry['message'],
                 entry['activity_type'],
                 entry['entry_type']
-            )
+            ))
         return instance

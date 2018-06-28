@@ -6,7 +6,9 @@ class Settings(object):
     WIDTH = 800
     HEIGHT = 600
 
-    SCROLL_SPEED = 30
-
     SAVE_FLAG = '--save'
     SAVE_FOLDER = 'saves'
+
+    NORMAL_SPEED = 1.
+    FAST_SPEED = 0.33
+    FASTER_SPEED = 0.1
