@@ -94,9 +94,26 @@ class Game(object):
             self.knowledge[knowledge_id].base_cost
         )
 
-    def get_mutations(self):
-        # TODO Check for knowledge and return only available mutation
-        return self._model.mutation_templates
+    def is_valid_mutation(self, mutation, exclude=()):
+        required = mutation.require
+        for name in required:
+            # Check if any excluded item name is part of the required names
+            if any(excluded in name for excluded in exclude):
+                return False
+
+        templates = self._model.knowledge_templates
+        return all(
+            self.knowledge.get(name, 0.) >= templates[name]
+            for name in required
+        )
+
+    def get_mutations(self, exclude=()):
+        # Return valid mutations given an exclude set and current knowledge
+        return {
+            name: mutation
+            for name, mutation in self._model.mutation_templates.items()
+            if self.is_valid_mutation(mutation, exclude)
+        }
 
     def get_adventures(self):
         # TODO Return only available adventures

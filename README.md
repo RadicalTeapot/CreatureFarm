@@ -15,15 +15,15 @@
 
 
 # TODO
-- __Finish implementing adventures__
 - __Add a recall button on running adventures screen__
-- __Attach the logger to running adventure__
-- Maybe simplify adventure data to directly state available knowledges and damage range instead of enemies
+- __Add tooltips for further info display__
+- __Grey out non available mutations instead of hiding them and display why un-available in tooltip__
 - Switch template/group/adventure ui code to use template/group/Adventure ids instead of names for internal data representation__ or __Make data indexing for mutations,... by name instead of internal id
+- Improve fight system
+- Display available adventures/mutation first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
+- Maybe simplify adventure data to directly state available knowledges and damage range instead of enemies
 - Refactor screens to more tightly follow the MVC pattern (split ui and logic in two separate classes)
 - Add some mutation to increase biomass container size of creatures
 
-- Display available adventures/mutation first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
-- Improve fight system
 
 # Playtest

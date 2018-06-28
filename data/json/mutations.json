@@ -1,8 +1,8 @@
 [
     {
         "name": "Crawl",
-        "require": ["knowledge.movement.crawl"],
-        "exclude": ["knowledge.arms", "knowledge.legs", "knowledge.movement"],
+        "require": ["movement.crawl"],
+        "exclude": ["arms", "legs", "movement"],
         "size": 1.0,
         "effects": {"agility": 1.0},
         "biomass_cost": 1.0,
@@ -11,8 +11,8 @@
 
     {
         "name": "Quadruped",
-        "require": ["knowledge.movement.quadruped"],
-        "exclude": ["knowledge.movement"],
+        "require": ["movement.quadruped"],
+        "exclude": ["movement"],
         "size": 10.0,
         "effects": {"agility": 100.0},
         "biomass_cost": 66.0,
@@ -21,8 +21,8 @@
 
     {
         "name": "Biped",
-        "require": ["knowledge.movement.biped"],
-        "exclude": ["knowledge.movement"],
+        "require": ["movement.biped"],
+        "exclude": ["movement"],
         "size": 10.0,
         "effects": {"agility": 200.0},
         "biomass_cost": 100.0,
@@ -31,8 +31,8 @@
 
     {
         "name": "Sharp teeth",
-        "require": ["knowledge.teeth.sharp"],
-        "exclude": ["knowledge.teeth"],
+        "require": ["teeth.sharp"],
+        "exclude": ["teeth"],
         "size": 0.1,
         "effects": {"attack": 1.0},
         "biomass_cost": 1.0,
@@ -41,8 +41,8 @@
 
     {
         "name": "Venomous bite",
-        "require": ["knowledge.teeth.sharp", "knowledge.glands.venom"],
-        "exclude": ["knowledge.teeth"],
+        "require": ["teeth.sharp", "glands.venom"],
+        "exclude": ["teeth"],
         "size": 0.5,
         "effects": {"attack": 10.0},
         "biomass_cost": 25.0,
