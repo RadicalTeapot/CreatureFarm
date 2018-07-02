@@ -59,7 +59,7 @@ class Enemy:
 
     @classmethod
     def deserialize(cls, data):
-        instance = cls(data['template_id'])
+        instance = cls(data['template'])
         instance.hp = data['hp']
 
         return instance

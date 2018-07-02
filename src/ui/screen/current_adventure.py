@@ -69,12 +69,20 @@ class CurrentAdventure(UiState):
             entry = ListEntry.simple(creature.template_name)
             entry.set_tool_tip(creature.template_name)
             entry.bind(on_tool_tip=partial(
-                self.update_tool_tip, creature.template_name
+                self.update_tool_tip, creature
             ))
             self.creature_list.append(entry)
 
-    def update_tool_tip(self, entry_name, entry):
-        # TODO update tool tip contents here
+    def update_tool_tip(self, creature, entry):
+        alive = '[color=#55FF55]Alive[/color]'
+        if creature.is_dead():
+            alive = '[color=#FF2222]Dead[/color]'
+        entry.set_tool_tip(
+            f'Name: {creature.template_name} ({alive})\n'
+            f'HP: {creature.stats["hp"]:.1f}/{creature.stats["max_hp"]:.1f}\n'
+            f'Biomass: {creature.stats["held_biomass"]:.1f}/'
+            f'{creature.stats["max_biomass"]:.1f}'
+        )
         pass
 
     def load_log(self):

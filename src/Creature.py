@@ -10,6 +10,7 @@ class Creature:
         self.mutation_names = mutation_names
 
         self.stats = {
+            'max_hp': 0.,
             'hp': 0.,
             'agility': 0.,
             'attack': 0.,
@@ -38,6 +39,7 @@ class Creature:
         self.stats['hp'] = (
             self.stats['size'] * 10.0 + self.get_stat_modifier('hp')
         )
+        self.stats['max_hp'] = self.stats['hp']
         self.stats['agility'] = (
             self.stats['size'] * -1 + self.get_stat_modifier('agility')
         )

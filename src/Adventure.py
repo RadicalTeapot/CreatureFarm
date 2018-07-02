@@ -203,6 +203,7 @@ class Adventure:
             creature = random.choice(creatures)
             creature.stats['hp'] -= enemy.strength
             if creature.stats['hp'] <= 0:
+                creature.stats['hp'] = 0
                 self.log.add_entry(
                     self.turn_count,
                     'The creature {} died'.format(
