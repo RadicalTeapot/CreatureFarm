@@ -5,6 +5,7 @@ from ui.screen import UiState
 from ui.widget.widgets import ListEntry
 
 from ObjectManager import ObjectManager
+from functools import partial
 
 
 class CurrentAdventureModel:
@@ -56,6 +57,7 @@ class CurrentAdventure(UiState):
         self.update_ui()
 
     def load_creatures(self):
+        # TODO unbind on_tool_tip from buttons before clearing the list
         self.creature_list.clear()
         adventure = self._model.running_adventures.get(
             self._model.selected_creature,
@@ -65,7 +67,15 @@ class CurrentAdventure(UiState):
             return
         for creature in adventure.creatures:
             entry = ListEntry.simple(creature.template_name)
+            entry.set_tool_tip(creature.template_name)
+            entry.bind(on_tool_tip=partial(
+                self.update_tool_tip, creature.template_name
+            ))
             self.creature_list.append(entry)
+
+    def update_tool_tip(self, entry_name, entry):
+        # TODO update tool tip contents here
+        pass
 
     def load_log(self):
         adventure = self._model.running_adventures.get(

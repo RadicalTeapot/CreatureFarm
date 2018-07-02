@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """DOCSTRING."""
 
+from kivy.factory import Factory
+from kivy.core.window import Window
+from kivy.clock import Clock
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 
@@ -77,8 +80,48 @@ class ListEntry(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        self.tool_tip = None
+
+        Window.bind(mouse_pos=self.on_mouse_pos)
+        self.clock_event = None
+
         self.register_event_type('on_press')
+        self.register_event_type('on_tool_tip')
         self.button.bind(on_press=self.button_pressed)
+
+    def set_tool_tip(self, message):
+        if self.tool_tip is None:
+            self.tool_tip = Factory.ToolTip()
+        self.tool_tip.text = message
+
+    def _open_tool_tip(self, *args):
+        self.dispatch('on_tool_tip')
+        Window.add_widget(self.tool_tip)
+
+    def on_tool_tip(self):
+        pass
+
+    def _close_tool_tip(self):
+        Window.remove_widget(self.tool_tip)
+
+    def remove_tool_tip(self):
+        self.tool_tip = None
+
+    def on_mouse_pos(self, *args):
+        if self.tool_tip is None:
+            return
+
+        pos = args[1]
+        self.tool_tip.pos = pos
+
+        inside = self.collide_point(*self.to_widget(*pos))
+        if inside and self.clock_event is None:
+                self.clock_event = Clock.schedule_once(self._open_tool_tip, 1)
+        elif not inside and self.clock_event is not None:
+            Clock.unschedule(self.clock_event)
+            self._close_tool_tip()
+            self.clock_event = None
 
     def button_pressed(self, button):
         self.dispatch('on_press')
