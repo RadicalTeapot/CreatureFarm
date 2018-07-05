@@ -17,10 +17,9 @@ Have "fleet" manager like Stellaris for creature groups.
 
 
 # TODO
-- __Grey out non available mutations instead of hiding them and display why un-available in tooltip__
 - __Split off mutation combinations into synergies (have their own data and code)__
 - Build enemies the same way creatures are built (specifying mutations and earing knowledge based on those when killed)
-- Switch template/group/adventure ui code to use template/group/Adventure ids instead of names for internal data representation__ or __Make data indexing for mutations,... by name instead of internal id
+- Switch group/adventure ui code to use group/Adventure ids instead of names for internal data representation
 - Change mutations to behave like siralim 3 traits
 - Improve fight system
 - Display available adventures/mutation first then rest greyed out based (availability is determined by creature skills and/or inventory contents)

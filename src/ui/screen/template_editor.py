@@ -108,11 +108,7 @@ class TemplateEditor(UiState):
         # Update the template name text input in the ui
         self.template_name = self._model.name
 
-        lists = zip(
-            [self._model.selected, self._model.available],
-            [self.selected_list, self.available_list]
-        )
-
+        # Sort list based on mutation names
         self._model.selected['contents'] = sorted(
             self._model.selected['contents'],
             key=lambda id_: ObjectManager.game.mutations[id_].name
@@ -135,13 +131,20 @@ class TemplateEditor(UiState):
             invalid, key=lambda id_: ObjectManager.game.mutations[id_].name
         ))
 
+        lists = (
+            (self._model.selected, self.selected_list),
+            (self._model.available, self.available_list),
+        )
+
         # Rebuild ui lists from model contents
         for data, ui_list in lists:
             ui_list.clear()
             for mutation_id in data['contents']:
                 mutation = ObjectManager.game.mutations[mutation_id]
                 entry = ListEntry.togglable(mutation.name, data=mutation_id)
-                entry.set_tool_tip(mutation.get_description())
+                entry.set_tool_tip(
+                    mutation.get_description(self._model.selected['contents'])
+                )
                 if data['selected'] == mutation_id:
                     entry.state = 'down'
                 if (

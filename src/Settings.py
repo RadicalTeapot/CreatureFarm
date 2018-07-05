@@ -12,3 +12,6 @@ class Settings(object):
     NORMAL_SPEED = 1.
     FAST_SPEED = 0.33
     FASTER_SPEED = 0.1
+
+    RED = '#FF2222'
+    GREEN = '#55FF55'

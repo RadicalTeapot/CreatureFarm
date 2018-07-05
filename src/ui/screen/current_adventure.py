@@ -7,6 +7,8 @@ from ui.widget.widgets import ListEntry
 from ObjectManager import ObjectManager
 from functools import partial
 
+from Settings import Settings
+
 
 class CurrentAdventureModel:
     def __init__(self):
@@ -74,9 +76,9 @@ class CurrentAdventure(UiState):
             self.creature_list.append(entry)
 
     def update_tool_tip(self, creature, entry):
-        alive = '[color=#55FF55]Alive[/color]'
+        alive = '[color=#{}]Alive[/color]'.format(Settings.GREEN)
         if creature.is_dead():
-            alive = '[color=#FF2222]Dead[/color]'
+            alive = '[color=#{}]Dead[/color]'.format(Settings.RED)
         entry.set_tool_tip(
             f'Name: {creature.template_name} ({alive})\n'
             f'HP: {creature.stats["hp"]:.1f}/{creature.stats["max_hp"]:.1f}\n'
