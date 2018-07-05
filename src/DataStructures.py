@@ -19,10 +19,9 @@ class GameModel:
         self.adventure_templates = {}
         self.enemy_templates = {}
         self.mutation_templates = {}
-        self.knowledge_templates = {}
+        self.mutation_knowledge = {}
 
         self.running_adventures = {}
-        self.knowledge = {}
 
         self.date = 0
 
@@ -45,8 +44,8 @@ class GameModel:
             (name, [adventure.serialize() for adventure in adventures])
             for name, adventures in self.running_adventures.items()
         ]
+        data['mutation_knowledge'] = self.mutation_knowledge
 
-        data['knowledge'] = self.knowledge
         return data
 
     def deserialize(self, data):
@@ -65,7 +64,8 @@ class GameModel:
             name: [Adventure.deserialize(value) for value in values]
             for name, values in data['running_adventures']
         }
-        self.knowledge = copy.deepcopy(data['knowledge'])
+
+        self.mutation_knowledge = copy.deepcopy(data['mutation_knowledge'])
 
 
 class Template:

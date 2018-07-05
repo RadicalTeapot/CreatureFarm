@@ -78,9 +78,10 @@ class ListEntry(Widget):
 
     button = ObjectProperty()
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, data=None):
+        super().__init__()
 
+        self.data = data
         self.tool_tip = None
 
         Window.bind(mouse_pos=self.on_mouse_pos)
@@ -130,28 +131,28 @@ class ListEntry(Widget):
         pass
 
     @classmethod
-    def entry(cls, entry_type, name):
+    def entry(cls, entry_type, name, data):
         instance = None
         if entry_type == cls.entry_type['SIMPLE']:
-            instance = SimpleListEntry()
+            instance = SimpleListEntry(data)
         elif entry_type == cls.entry_type['DELETABLE']:
-            instance = DeletableListEntry()
+            instance = DeletableListEntry(data)
         elif entry_type == cls.entry_type['TOGGLABLE']:
-            instance = TogglableListEntry()
+            instance = TogglableListEntry(data)
         instance.name = name
         return instance
 
     @classmethod
-    def simple(cls, name):
-        return cls.entry(cls.entry_type['SIMPLE'], name)
+    def simple(cls, name, data=None):
+        return cls.entry(cls.entry_type['SIMPLE'], name, data)
 
     @classmethod
-    def deletable(cls, name):
-        return cls.entry(cls.entry_type['DELETABLE'], name)
+    def deletable(cls, name, data=None):
+        return cls.entry(cls.entry_type['DELETABLE'], name, data)
 
     @classmethod
-    def togglable(cls, name):
-        return cls.entry(cls.entry_type['TOGGLABLE'], name)
+    def togglable(cls, name, data=None):
+        return cls.entry(cls.entry_type['TOGGLABLE'], name, data)
 
 
 class SimpleListEntry(ListEntry):
@@ -161,8 +162,8 @@ class SimpleListEntry(ListEntry):
 class DeletableListEntry(ListEntry):
     delete_button = ObjectProperty()
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, data=None):
+        super().__init__(data)
         self.register_event_type('on_delete')
         self.delete_button.bind(on_press=self.delete_button_pressed)
 
@@ -176,8 +177,8 @@ class DeletableListEntry(ListEntry):
 class TogglableListEntry(ListEntry):
     _states = ['normal', 'down']
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, data=None):
+        super().__init__(data)
 
     @property
     def state(self):
@@ -195,3 +196,12 @@ class TogglableListEntry(ListEntry):
                 f'are valid.'
             )
         self.button.state = value
+
+    def _set_active(self, state):
+        self.button.disabled = state
+
+    def activate(self):
+        self._set_active(False)
+
+    def deactivate(self):
+        self._set_active(True)

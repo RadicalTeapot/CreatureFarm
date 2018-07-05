@@ -27,7 +27,6 @@ class Game(object):
         self._parse_adventures()
         self._parse_enemies()
         self._parse_mutations()
-        self._parse_knowledge()
 
         self.keyboard = Window.request_keyboard(
             None,
@@ -68,52 +67,40 @@ class Game(object):
 
     def _parse_mutations(self):
         with open("data/json/mutations.json", 'r') as json_data:
-            items = json.loads(json_data.read())
+            items = json.loads(json_data.read()).items()
 
-        for data in items:
-            mutation = MutationTemplate.from_data(data)
-            if mutation in self._model.mutation_templates:
+        for mutation_id, data in items:
+            mutation = MutationTemplate.from_data(mutation_id, data)
+            if mutation_id in self._model.mutation_templates:
                 raise RuntimeError(
                     'Duplicate mutation {} not allowed'.format(
                         mutation.name
                     )
                 )
-            self._model.mutation_templates[mutation.name] = mutation
+            self._model.mutation_templates[mutation_id] = mutation
+            self._model.mutation_knowledge[mutation_id] = 0.
 
-    def _parse_knowledge(self):
-        with open("data/json/knowledge.json", 'r') as json_data:
-            items = json.loads(json_data.read()).items()
+    @property
+    def mutations(self):
+        return self._model.mutation_templates
 
-        for id_, data in items:
-            self._model.knowledge_templates[id_] = data
+    @property
+    def knowledge(self):
+        return self._model.mutation_knowledge
 
-    def has_knowledge(self, knowledge_id):
-        if knowledge_id not in self.knowledge:
-            raise KeyError('Knowledge {} not found'.format(knowledge_id))
-        return (
-            self.knowledge[knowledge_id].current_level >=
-            self.knowledge[knowledge_id].base_cost
-        )
-
-    def is_valid_mutation(self, mutation, exclude=()):
-        required = mutation.require
-        for name in required:
-            # Check if any excluded item name is part of the required names
-            if any(excluded in name for excluded in exclude):
-                return False
-
-        templates = self._model.knowledge_templates
-        return all(
-            self.knowledge.get(name, 0.) >= templates[name]
-            for name in required
-        )
-
-    def get_mutations(self, exclude=()):
+    def get_valid_mutation_ids(self, mutation_ids=()):
         # Return valid mutations given an exclude set and current knowledge
+        return [
+            mutation_id
+            for mutation_id, mutation in self.mutations.items()
+            if mutation.is_valid(mutation_ids)
+        ]
+
+    def get_invalid_mutations(self, exclude=()):
         return {
-            name: mutation
-            for name, mutation in self._model.mutation_templates.items()
-            if self.is_valid_mutation(mutation, exclude)
+            name: self.get_mutation_requirements()
+            for name, mutation in self.mutations.items()
+            if not self.is_valid_mutation(mutation, exclude)
         }
 
     def get_adventures(self):
@@ -139,10 +126,6 @@ class Game(object):
     @property
     def enemies(self):
         return self._model.enemy_templates
-
-    @property
-    def knowledge(self):
-        return self._model.knowledge
 
     @biomass.setter
     def biomass(self, value):
@@ -213,6 +196,7 @@ class Game(object):
         # knowledge pool
         if len(live):
             for name, amount in adventure.knowledge.items():
+                # TODO Fix to use new knowledge model
                 previous_amount = self._model.knowledge.get(name, 0.)
                 self._model.knowledge[name] = amount + previous_amount
 

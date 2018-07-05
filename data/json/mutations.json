@@ -1,7 +1,7 @@
-[
-    {
+{
+    "movement.crawl": {
         "name": "Crawl",
-        "require": ["movement.crawl"],
+        "required_level": 0.0,
         "exclude": ["arms", "legs", "movement"],
         "size": 1.0,
         "effects": {"agility": 1.0},
@@ -9,9 +9,9 @@
         "description": "Crawl around."
     },
 
-    {
+    "movement.quadriped": {
         "name": "Quadruped",
-        "require": ["movement.quadruped"],
+        "required_level": 30.0,
         "exclude": ["movement"],
         "size": 10.0,
         "effects": {"agility": 100.0},
@@ -19,9 +19,9 @@
         "description": "Four limbs to run on."
     },
 
-    {
+    "movement.biped": {
         "name": "Biped",
-        "require": ["movement.biped"],
+        "required_level": 50.0,
         "exclude": ["movement"],
         "size": 10.0,
         "effects": {"agility": 200.0},
@@ -29,23 +29,13 @@
         "description": "Stand up."
     },
 
-    {
+    "teeth.sharp": {
         "name": "Sharp teeth",
-        "require": ["teeth.sharp"],
+        "required_level": 0.0,
         "exclude": ["teeth"],
         "size": 0.1,
         "effects": {"attack": 1.0},
         "biomass_cost": 1.0,
         "description": "Pointy teeth."
-    },
-
-    {
-        "name": "Venomous bite",
-        "require": ["teeth.sharp", "glands.venom"],
-        "exclude": ["teeth"],
-        "size": 0.5,
-        "effects": {"attack": 10.0},
-        "biomass_cost": 25.0,
-        "description": "Hollow tubes through the teeth deliver a potent neurotoxic venom on each bite."
     }
-]
+}

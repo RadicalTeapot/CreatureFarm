@@ -23,14 +23,13 @@ class Creature:
         self.build_stats(mutation_names)
 
     def get_stat_modifier(self, stat):
-        game_mutations = ObjectManager.game.get_mutations()
-        mutations = [game_mutations[name] for name in self.mutation_names]
-        return sum(
-            [mutation.effects.get(stat, 0.) for mutation in mutations]
-        )
+        return sum([
+            ObjectManager.game.mutations[name].effects.get(stat, 0.)
+            for name in self.mutation_names
+        ])
 
     def build_stats(self, mutation_names):
-        game_mutations = ObjectManager.game.get_mutations()
+        game_mutations = ObjectManager.game.mutations
         mutations = [game_mutations[name] for name in self.mutation_names]
         self.stats['size'] = sum([mutation.size for mutation in mutations])
         self.stats['biomass_cost'] = ObjectManager.game.get_biomass_cost(

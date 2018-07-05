@@ -92,9 +92,9 @@ class TemplateEditor(UiState):
 
         self._model.available['selected'] = None
         self._model.available['contents'] = [
-            name
-            for name in ObjectManager.game.get_mutations().keys()
-            if name not in self._model.selected['contents']
+            mutation_id
+            for mutation_id in sorted(ObjectManager.game.mutations.keys())
+            if mutation_id not in self._model.selected['contents']
         ]
 
         self.update_cost()
@@ -112,22 +112,53 @@ class TemplateEditor(UiState):
             [self._model.selected, self._model.available],
             [self.selected_list, self.available_list]
         )
+
+        self._model.selected['contents'] = sorted(
+            self._model.selected['contents'],
+            key=lambda id_: ObjectManager.game.mutations[id_].name
+        )
+
+        # Reorder list base on validity and mutation name
+        valid, invalid = [], []
+        for mutation_id in self._model.available['contents']:
+            (
+                valid
+                if ObjectManager.game.mutations[mutation_id].is_valid(
+                    self._model.selected['contents']
+                )
+                else invalid
+            ).append(mutation_id)
+        self._model.available['contents'] = sorted(
+            valid, key=lambda id_: ObjectManager.game.mutations[id_].name
+        )
+        self._model.available['contents'].extend(sorted(
+            invalid, key=lambda id_: ObjectManager.game.mutations[id_].name
+        ))
+
         # Rebuild ui lists from model contents
         for data, ui_list in lists:
             ui_list.clear()
-            for mutation in data['contents']:
-                entry = ListEntry.togglable(mutation)
-                if data['selected'] == mutation:
+            for mutation_id in data['contents']:
+                mutation = ObjectManager.game.mutations[mutation_id]
+                entry = ListEntry.togglable(mutation.name, data=mutation_id)
+                entry.set_tool_tip(mutation.get_description())
+                if data['selected'] == mutation_id:
                     entry.state = 'down'
+                if (
+                    data == self._model.available and
+                    not mutation.is_valid(self._model.selected['contents'])
+                ):
+                    entry.state = 'normal'
+                    entry.deactivate()
                 ui_list.append(entry)
 
     def select_mutation(self, entry_list, selected_entry):
-        name = selected_entry.name if selected_entry.state == 'down' else None
+        id_ = selected_entry.data if selected_entry.state == 'down' else None
 
         if entry_list == self.selected_list:
-            self._model.selected['selected'] = name
+            self._model.selected['selected'] = id_
         else:
-            self._model.available['selected'] = name
+            self._model.available['selected'] = id_
 
         self.update_ui()
 
