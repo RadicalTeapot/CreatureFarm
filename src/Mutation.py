@@ -10,6 +10,7 @@ class MutationTemplate:
         self.mutation_id = ''
         self.name = ''
         self.required_level = 0.
+        self.required_mutations = set()
         self.exclude = set()
         self.size = 0.
         self.effects = {}
@@ -23,6 +24,7 @@ class MutationTemplate:
         instance.mutation_id = mutation_id
         instance.name = data['name']
         instance.required_level = data['required_level']
+        instance.required_mutations = set(data['required_mutations'])
         instance.exclude = set(data['exclude'])
         instance.size = data['size']
         instance.effects.update(data['effects'])
@@ -34,8 +36,8 @@ class MutationTemplate:
     @staticmethod
     def validate_data(data):
         attributes = [
-            "name", "required_level", "exclude", "size", "effects",
-            "biomass_cost", "description"
+            "name", "required_level", "required_mutations", "exclude", "size",
+            "effects", "biomass_cost", "description"
         ]
         for attribute in attributes:
             if attribute not in data:
@@ -62,16 +64,28 @@ class MutationTemplate:
                 )
             )
 
+        for mutation_id in self.required_mutations:
+            if mutation_id not in mutation_ids:
+                mutation = ObjectManager.game.mutations[mutation_id]
+                description.append(
+                    '[color={}]Missing {} mutation.[/color]'.format(
+                        Settings.RED, mutation.name.lower()
+                    )
+                )
+
         for mutation in self._get_excluding_mutations(mutation_ids):
             description.append(
                 '[color={}]Incompatible with the {} mutation.[/color]'.format(
-                    Settings.RED, mutation.name
+                    Settings.RED, mutation.name.lower()
                 )
             )
         return '\n'.join(description)
 
     def is_valid(self, mutation_ids=()):
         if ObjectManager.game.knowledge[self.mutation_id] < self.required_level:
+            return False
+
+        if any(id_ not in mutation_ids for id_ in self.required_mutations):
             return False
 
         if self._get_excluding_mutations(mutation_ids):

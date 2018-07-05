@@ -2,6 +2,7 @@
     "movement.crawl": {
         "name": "Crawl",
         "required_level": 0.0,
+        "required_mutations": [],
         "exclude": ["arms", "legs", "movement"],
         "size": 1.0,
         "effects": {"agility": 1.0},
@@ -12,6 +13,7 @@
     "movement.quadriped": {
         "name": "Quadruped",
         "required_level": 30.0,
+        "required_mutations": [],
         "exclude": ["movement"],
         "size": 10.0,
         "effects": {"agility": 100.0},
@@ -22,6 +24,7 @@
     "movement.biped": {
         "name": "Biped",
         "required_level": 50.0,
+        "required_mutations": [],
         "exclude": ["movement"],
         "size": 10.0,
         "effects": {"agility": 200.0},
@@ -32,10 +35,22 @@
     "teeth.sharp": {
         "name": "Sharp teeth",
         "required_level": 0.0,
+        "required_mutations": [],
         "exclude": ["teeth"],
         "size": 0.1,
         "effects": {"attack": 1.0},
         "biomass_cost": 1.0,
         "description": "Pointy teeth."
+    },
+
+    "arms.claws": {
+        "name": "Claws",
+        "required_level": 0.0,
+        "required_mutations": ["movement.biped"],
+        "exclude": [],
+        "size": 3.0,
+        "effects": {"agility": 25.0, "attack": 5.0},
+        "biomass_cost": 10.0,
+        "description": "Powerful claws."
     }
 }
