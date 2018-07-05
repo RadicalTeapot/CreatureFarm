@@ -56,7 +56,12 @@ class MutationTemplate:
         return mutations
 
     def get_description(self, mutation_ids=()):
-        description = [self.description]
+        description = [
+            self.description,
+            'Knowledge: {}'.format(
+                ObjectManager.game.knowledge[self.mutation_id]
+            )
+        ]
         if ObjectManager.game.knowledge[self.mutation_id] < self.required_level:
             description.append(
                 '[color={}]Required knowledge is missing.[/color]'.format(

@@ -18,7 +18,7 @@ Have "fleet" manager like Stellaris for creature groups.
 
 # TODO
 - __Split off mutation combinations into synergies (have their own data and code)__
-- Build enemies the same way creatures are built (specifying mutations and earing knowledge based on those when killed)
+- __Add size multiplier to Creature and use the Enemy one__
 - Switch group/adventure ui code to use group/Adventure ids instead of names for internal data representation
 - Change mutations to behave like siralim 3 traits
 - Improve fight system

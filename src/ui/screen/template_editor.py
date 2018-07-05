@@ -176,8 +176,6 @@ class TemplateEditor(UiState):
         self.update_cost()
 
     def update_cost(self):
-        # TODO: Do fancier computation (have threshold where the cost of
-        # everything is multiplied)
         self.biomass = str(
             ObjectManager.game.get_biomass_cost(
                 self._model.selected['contents']

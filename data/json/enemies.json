@@ -1,23 +1,19 @@
 {
     "humanoid.goblin" : {
         "name": "Goblin",
-        "hp": 5.0,
-        "strength" : 2.0,
-        "armor": 1.0,
-        "agility": 0.5,
-        "knowledge": {"knowledge.hands.claws": 1.0},
-        "biomass": 0.5,
+        "mutations": [
+            "movement.biped", "arms.claws", "teeth.sharp"
+        ],
+        "scale": 1.0,
         "description": "Enemy placeholder description"
     },
 
     "humanoid.orc" : {
         "name": "Orc",
-        "hp": 10.0,
-        "strength": 5.0,
-        "armor": 10.0,
-        "agility": 0.1,
-        "knowledge": {},
-        "biomass": 2.0,
+        "mutations": [
+            "movement.biped", "arms.claws", "teeth.sharp"
+        ],
+        "scale": 5.0,
         "description": "Enemy placeholder description"
     }
 }

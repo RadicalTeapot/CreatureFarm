@@ -133,6 +133,8 @@ class Game(object):
         ObjectManager.ui.update_biomass()
 
     def get_biomass_cost(self, mutation_names):
+        # TODO: Do fancier computation (have threshold where the cost of
+        # everything is multiplied)
         return sum(
             self._model.mutation_templates[mutation].biomass_cost
             for mutation in mutation_names
@@ -196,9 +198,8 @@ class Game(object):
         # knowledge pool
         if len(live):
             for name, amount in adventure.knowledge.items():
-                # TODO Fix to use new knowledge model
-                previous_amount = self._model.knowledge.get(name, 0.)
-                self._model.knowledge[name] = amount + previous_amount
+                previous_amount = self.knowledge.get(name, 0.)
+                self.knowledge[name] = amount + previous_amount
 
         self._model.running_adventures[adventure.template_name].remove(
             adventure

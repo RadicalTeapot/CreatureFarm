@@ -6,7 +6,6 @@ import copy
 
 from ObjectManager import ObjectManager
 from Creature import Creature
-from Enemy import Enemy
 from Logger import Logger
 
 
@@ -112,14 +111,18 @@ class Adventure:
 
         for enemy_id, chance in template.enemies.items():
             if random.random() < chance:
-                self.enemies.append(Enemy(enemy_id))
+                template = ObjectManager.game.enemies[enemy_id]
+                self.enemies.append(Creature(
+                    template.name,
+                    template.mutation_ids
+                ))
 
         if self.enemies:
             self.log.add_entry(
                 self.turn_count,
                 '{} started fighting with {}'.format(
                     self.group_name,
-                    ', '.join(enemy.name for enemy in self.enemies),
+                    ', '.join(enemy.template_name for enemy in self.enemies),
                 ),
                 'fight',
                 'info'
@@ -177,12 +180,14 @@ class Adventure:
             attack = sum(creature.stats['attack'] for creature in creatures)
 
             # Hit the enemy
-            enemy.hp -= attack
-            if enemy.hp <= 0:
-                for name, amount in enemy.knowledge:
-                    previous_amount = self.knowledge.get(name, 0.)
-                    self.knowledge[name] = amount + previous_amount
-                extracted_biomass = enemy.biomass
+            enemy.stats['hp'] -= attack
+            if enemy.is_dead():
+                for mutation_id in enemy.mutation_ids:
+                    previous_amount = self.knowledge.get(mutation_id, 0.)
+                    self.knowledge[mutation_id] = (
+                        1.0 * enemy.stats['size'] + previous_amount
+                    )
+                extracted_biomass = enemy.stats['biomass_cost']
                 # Fill each creature in order
                 for creature in self.creatures:
                     if not creature.is_full():
@@ -192,7 +197,7 @@ class Adventure:
                 self.log.add_entry(
                     self.turn_count,
                     'The enemy {} died'.format(
-                        enemy.name,
+                        enemy.template_name,
                     ),
                     'fight',
                     'info'
@@ -201,8 +206,8 @@ class Adventure:
 
             # Hit one of the creature at random
             creature = random.choice(creatures)
-            creature.stats['hp'] -= enemy.strength
-            if creature.stats['hp'] <= 0:
+            creature.stats['hp'] -= enemy.stats['attack']
+            if creature.is_dead():
                 creature.stats['hp'] = 0
                 self.log.add_entry(
                     self.turn_count,
@@ -213,7 +218,7 @@ class Adventure:
                     'warning'
                 )
         # Clear dead enemies from the list
-        self.enemies = [enemy for enemy in self.enemies if enemy.hp > 0]
+        self.enemies = [enemy for enemy in self.enemies if not enemy.is_dead()]
 
         if not self.enemies:
             self.log.add_entry(
@@ -250,7 +255,7 @@ class Adventure:
         instance.log = Logger.deserialize(data['log'])
         instance.in_fight = data['in_fight']
         instance.enemies = [
-            Enemy.deserialize(enemy_data)
+            Creature.deserialize(enemy_data)
             for enemy_data in data['enemies']
         ]
         instance.knowledge = copy.deepcopy(data['knowledge'])

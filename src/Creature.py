@@ -5,9 +5,9 @@ from ObjectManager import ObjectManager
 
 
 class Creature:
-    def __init__(self, template_name, mutation_names):
+    def __init__(self, template_name, mutation_ids):
         self.template_name = template_name
-        self.mutation_names = mutation_names
+        self.mutation_ids = mutation_ids
 
         self.stats = {
             'max_hp': 0.,
@@ -20,20 +20,20 @@ class Creature:
             'size': 0.,
             'biomass_cost': 0.,
         }
-        self.build_stats(mutation_names)
+        self.build_stats(mutation_ids)
 
     def get_stat_modifier(self, stat):
         return sum([
-            ObjectManager.game.mutations[name].effects.get(stat, 0.)
-            for name in self.mutation_names
+            ObjectManager.game.mutations[id_].effects.get(stat, 0.)
+            for id_ in self.mutation_ids
         ])
 
-    def build_stats(self, mutation_names):
+    def build_stats(self, mutation_ids):
         game_mutations = ObjectManager.game.mutations
-        mutations = [game_mutations[name] for name in self.mutation_names]
+        mutations = [game_mutations[id_] for id_ in self.mutation_ids]
         self.stats['size'] = sum([mutation.size for mutation in mutations])
         self.stats['biomass_cost'] = ObjectManager.game.get_biomass_cost(
-            self.mutation_names
+            self.mutation_ids
         )
         self.stats['hp'] = (
             self.stats['size'] * 10.0 + self.get_stat_modifier('hp')
@@ -59,7 +59,7 @@ class Creature:
     def serialize(self):
         data = {}
         data['template_name'] = self.template_name
-        data['mutation_names'] = self.mutation_names
+        data['mutation_ids'] = self.mutation_ids
         data['stats'] = dict(self.stats)
         return data
 
@@ -67,6 +67,6 @@ class Creature:
     def deserialize(cls, data):
         instance = cls('', [])
         instance.template_name = data['template_name']
-        instance.mutation_names = data['mutation_names']
+        instance.mutation_ids = data['mutation_ids']
         instance.stats = dict(data['stats'])
         return instance
