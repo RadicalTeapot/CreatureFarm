@@ -153,7 +153,8 @@ class Game(object):
             creatures=[
                 Creature(
                     template_name,
-                    self.creature_templates[template_name].mutations
+                    self.creature_templates[template_name].mutations,
+                    self.creature_templates[template_name].size,
                 )
                 for template_name in template_names
             ],

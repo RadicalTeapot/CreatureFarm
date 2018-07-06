@@ -2,6 +2,7 @@
 
 <TemplateForm@Widget>:
     template_name: ''
+    template_size: 1.
 
     available_list: available_list
     selected_list: selected_list
@@ -12,6 +13,7 @@
     clear_button: clear
 
     text_input: text_input
+    slider: slider
 
     biomass: '0'
 
@@ -46,6 +48,32 @@
                 pos_hint: {'right': 1., 'center_y': .5}
                 text: root.template_name
                 id: text_input
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint:(1., None)
+            height: 30
+            Label:
+                text: 'Size'
+                size_hint:(.1, 1.0)
+                pos_hint: {'x': 0., 'center_y': .5}
+                color: 0., 0., 0., 1.
+                halign: 'left'
+                valign: 'center'
+                text_size: self.size
+            Slider:
+                id: slider
+                size_hint: (.85, 1.)
+                min: 1.
+                max: 10.
+                value: root.template_size
+            Label:
+                text: '{:.1f}'.format(slider.value)
+                size_hint:(.05, 1.0)
+                pos_hint: {'x': 0., 'center_y': .5}
+                color: 0., 0., 0., 1.
+                halign: 'right'
+                valign: 'center'
+                text_size: self.size
         BoxLayout:
             size_hint: (1.0, 1.0)
             orientation: 'horizontal'
@@ -128,6 +156,8 @@
 
     available_list: form.available_list
     selected_list: form.selected_list
+    template_size: 1.
+    size_slider: form.slider
 
     add_button: form.add_button
     remove_button: form.remove_button
@@ -158,3 +188,4 @@
             biomass: root.biomass
             size_hint: (.8, 1.)
             template_name: root.template_name
+            template_size: root.template_size

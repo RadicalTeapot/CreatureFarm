@@ -69,14 +69,16 @@ class GameModel:
 
 
 class Template:
-    def __init__(self, mutations=[], cost=0):
+    def __init__(self, mutations=[], size=1., cost=0):
         self.mutations = mutations
         self.cost = cost
+        self.size = size
 
     def serialize(self):
         return {
             'mutations': self.mutations,
-            'cost': self.cost
+            'cost': self.cost,
+            'size': self.size,
         }
 
     @classmethod
@@ -84,6 +86,7 @@ class Template:
         instance = cls()
         instance.mutations = data['mutations']
         instance.cost = data['cost']
+        instance.size = data['size']
         return instance
 
 

@@ -5,8 +5,11 @@ from ObjectManager import ObjectManager
 
 
 class Creature:
-    def __init__(self, template_name, mutation_ids):
+    def __init__(self, template_name, mutation_ids, size_multiplier):
         self.template_name = template_name
+        self.size_multiplier = size_multiplier
+        # Store mutations ids so if the template is changed after the creature
+        # has been created, the creature won't be changed as well
         self.mutation_ids = mutation_ids
 
         self.stats = {

@@ -7,7 +7,7 @@ class EnemyTemplate:
         self.id = None
         self.name = None
         self.mutation_ids = []
-        self.scale = 1.0
+        self.size = 1.0
         self.description = None
 
     @classmethod
@@ -17,14 +17,14 @@ class EnemyTemplate:
         instance.id = 'enemies.{}'.format(id_)
         instance.name = data['name']
         instance.mutation_ids = data['mutations']
-        instance.scale = data['scale']
+        instance.size = data['size']
         instance.description = data['description']
 
         return instance
 
     @staticmethod
     def validate_data(data):
-        attributes = ["name", "description", "mutations", "scale"]
+        attributes = ["name", "description", "mutations", "size"]
         for attribute in attributes:
             if attribute not in data:
                 raise KeyError('Missing {} attribute'.format(attribute))

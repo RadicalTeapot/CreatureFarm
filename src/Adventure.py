@@ -114,7 +114,8 @@ class Adventure:
                 template = ObjectManager.game.enemies[enemy_id]
                 self.enemies.append(Creature(
                     template.name,
-                    template.mutation_ids
+                    template.mutation_ids,
+                    template.size
                 ))
 
         if self.enemies:

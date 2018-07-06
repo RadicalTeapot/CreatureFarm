@@ -4,7 +4,7 @@
         "mutations": [
             "movement.biped", "arms.claws", "teeth.sharp"
         ],
-        "scale": 1.0,
+        "size": 1.0,
         "description": "Enemy placeholder description"
     },
 
@@ -13,7 +13,7 @@
         "mutations": [
             "movement.biped", "arms.claws", "teeth.sharp"
         ],
-        "scale": 5.0,
+        "size": 5.0,
         "description": "Enemy placeholder description"
     }
 }

@@ -14,6 +14,7 @@ from DataStructures import Template
 class TemplateEditorModel:
     def __init__(self):
         self.name = ''
+        self.size = 1.
         # The selected field stores the currently selected entry
         self.available = {'selected': None, 'contents': []}
         self.selected = {'selected': None, 'contents': []}
@@ -46,6 +47,7 @@ class TemplateEditor(UiState):
         self.selected_list.bind(on_item_pressed=self.select_mutation)
         self.save_button.bind(on_press=self.save_template)
         self.clear_button.bind(on_press=lambda button: self.load_template())
+        self.size_slider.bind(value=self.update_template_size)
 
     def __enter__(self):
         self.populate_template_list()
@@ -54,6 +56,9 @@ class TemplateEditor(UiState):
 
     def update_template_name(self, text_input, focus):
         self._model.name = self.template_text_input.text
+
+    def update_template_size(self, slider, value):
+        self._model.size = value
 
     def populate_template_list(self):
         self.template_list.clear()
@@ -82,13 +87,12 @@ class TemplateEditor(UiState):
 
     def load_template(self, name=''):
         self._model.name = name
+        template = ObjectManager.game.creature_templatesget(name, Template())
+        self._model.size = template.size
 
         self._model.selected['selected'] = None
         # Shallow copy the list of mutations
-        templates = ObjectManager.game.creature_templates
-        self._model.selected['contents'] = list(
-            templates.get(name, Template()).mutations
-        )
+        self._model.selected['contents'] = list(template.mutations)
 
         self._model.available['selected'] = None
         self._model.available['contents'] = [
@@ -107,6 +111,8 @@ class TemplateEditor(UiState):
     def update_ui(self):
         # Update the template name text input in the ui
         self.template_name = self._model.name
+        # Update the template size text input in the ui
+        self.template_size = self._model.size
 
         # Sort list based on mutation names
         self._model.selected['contents'] = sorted(
@@ -194,6 +200,7 @@ class TemplateEditor(UiState):
         templates[self._model.name] = Template(
             # Shallow copy the list of mutations
             mutations=list(self._model.selected['contents']),
+            size=self._model.size,
             cost=ObjectManager.game.get_biomass_cost(
                 self._model.selected['contents']
             )
