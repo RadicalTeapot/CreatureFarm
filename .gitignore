@@ -99,3 +99,6 @@ ENV/
 .mypy_cache/
 src/test_curve.py
 saves/save
+
+# vscode
+.vscode
