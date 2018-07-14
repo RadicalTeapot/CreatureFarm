@@ -36,7 +36,7 @@ class Creature:
         mutations = [game_mutations[id_] for id_ in self.mutation_ids]
         self.stats['size'] = sum([mutation.size for mutation in mutations])
         self.stats['biomass_cost'] = ObjectManager.game.get_biomass_cost(
-            self.mutation_ids
+            self.mutation_ids, self.size_multiplier
         )
         self.stats['hp'] = (
             self.stats['size'] * 10.0 + self.get_stat_modifier('hp')

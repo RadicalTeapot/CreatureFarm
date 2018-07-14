@@ -59,6 +59,7 @@ class TemplateEditor(UiState):
 
     def update_template_size(self, slider, value):
         self._model.size = value
+        self.update_cost()
 
     def populate_template_list(self):
         self.template_list.clear()
@@ -87,7 +88,7 @@ class TemplateEditor(UiState):
 
     def load_template(self, name=''):
         self._model.name = name
-        template = ObjectManager.game.creature_templatesget(name, Template())
+        template = ObjectManager.game.creature_templates.get(name, Template())
         self._model.size = template.size
 
         self._model.selected['selected'] = None
@@ -182,10 +183,9 @@ class TemplateEditor(UiState):
         self.update_cost()
 
     def update_cost(self):
-        self.biomass = str(
-            ObjectManager.game.get_biomass_cost(
-                self._model.selected['contents']
-            )
+        self.biomass = ObjectManager.game.get_biomass_cost(
+            self._model.selected['contents'],
+            self._model.size
         )
 
     def save_template(self, button):

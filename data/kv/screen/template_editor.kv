@@ -15,7 +15,7 @@
     text_input: text_input
     slider: slider
 
-    biomass: '0'
+    biomass: 0.0
 
     canvas:
         Color:
@@ -134,7 +134,7 @@
                 halign: 'left'
                 valign: 'center'
                 text_size: self.size
-                text: 'Cost: ' + root.biomass + ' biomass'
+                text: 'Cost: ' + '{:.1f}'.format(root.biomass) + ' biomass'
                 color: 0., 0., 0., 1.
             BoxLayout:
                 size_hint: (.3, 1.0)
@@ -164,7 +164,7 @@
     save_button: form.save_button
     clear_button: form.clear_button
 
-    biomass: '0'
+    biomass: 0.0
 
     canvas:
         Color:

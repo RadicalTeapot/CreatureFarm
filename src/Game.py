@@ -132,13 +132,13 @@ class Game(object):
         self._model.biomass = value
         ObjectManager.ui.update_biomass()
 
-    def get_biomass_cost(self, mutation_names):
+    def get_biomass_cost(self, mutation_names, size_multiplier):
         # TODO: Do fancier computation (have threshold where the cost of
         # everything is multiplied)
         return sum(
             self._model.mutation_templates[mutation].biomass_cost
             for mutation in mutation_names
-        )
+        ) * size_multiplier
 
     def add_running_adventure(self, adventure_name, template_names, group_name):
         cost = sum([
