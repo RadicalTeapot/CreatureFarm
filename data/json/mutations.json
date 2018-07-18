@@ -1,11 +1,23 @@
 {
     "movement.crawl": {
         "name": "Crawl",
-        "required_level": 0.0,
-        "required_mutations": [],
+        "required": {
+            "knowledge": 0.0,
+            "mutations": [],
+            "size": 0.0
+        },
         "exclude": ["arms", "legs", "movement"],
         "size": 1.0,
-        "effects": {"agility": 1.0},
+        "effects": [
+            {
+                "target": "self",
+                "activation": "always",
+                "chance": 1.0,
+                "stats": {
+                    "agility": 1.0
+                }
+            }
+        ],
         "biomass_cost": 1.0,
         "description": "Crawl around."
     },
@@ -16,7 +28,16 @@
         "required_mutations": [],
         "exclude": ["movement"],
         "size": 10.0,
-        "effects": {"agility": 100.0},
+        "effects": [
+            {
+                "target": "self",
+                "activation": "always",
+                "chance": 1.0,
+                "stats": {
+                    "agility": 10.0
+                }
+            }
+        ],
         "biomass_cost": 66.0,
         "description": "Four limbs to run on."
     },
@@ -27,7 +48,16 @@
         "required_mutations": [],
         "exclude": ["movement"],
         "size": 10.0,
-        "effects": {"agility": 200.0},
+        "effects": [
+            {
+                "target": "self",
+                "activation": "always",
+                "chance": 1.0,
+                "stats": {
+                    "agility": 20.0
+                }
+            }
+        ],
         "biomass_cost": 100.0,
         "description": "Stand up."
     },
@@ -38,7 +68,16 @@
         "required_mutations": [],
         "exclude": ["teeth"],
         "size": 0.1,
-        "effects": {"attack": 1.0},
+        "effects": [
+            {
+                "target": "self",
+                "activation": "always",
+                "chance": 1.0,
+                "stats": {
+                    "attack": 1.0
+                }
+            }
+        ],
         "biomass_cost": 1.0,
         "description": "Pointy teeth."
     },
@@ -49,7 +88,17 @@
         "required_mutations": ["movement.biped"],
         "exclude": [],
         "size": 3.0,
-        "effects": {"agility": 25.0, "attack": 5.0},
+        "effects": [
+            {
+                "target": "self",
+                "activation": "always",
+                "chance": 1.0,
+                "stats": {
+                    "agility": 25.0,
+                    "attack": 5.0
+                }
+            }
+        ],
         "biomass_cost": 10.0,
         "description": "Powerful claws."
     }
