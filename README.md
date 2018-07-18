@@ -18,13 +18,12 @@ Have "fleet" manager like Stellaris for creature groups.
 
 # TODO
 - __Split off mutation combinations into synergies (have their own data and code)__
-- __Use creature size for stats mutliplier__
-- Switch group/adventure ui code to use group/Adventure ids instead of names for internal data representation
 - Change mutations to behave like siralim 3 traits
 - Improve fight system
+- Add some mutation to increase biomass container size of creatures
+- Switch group/adventure ui code to use group/Adventure ids instead of names for internal data representation
 - Display available adventures/mutation first then rest greyed out based (availability is determined by creature skills and/or inventory contents)
 - Refactor screens to more tightly follow the MVC pattern (split ui and logic in two separate classes)
-- Add some mutation to increase biomass container size of creatures
 
 
 # Playtest

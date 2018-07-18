@@ -202,7 +202,8 @@ class TemplateEditor(UiState):
             mutations=list(self._model.selected['contents']),
             size=self._model.size,
             cost=ObjectManager.game.get_biomass_cost(
-                self._model.selected['contents']
+                self._model.selected['contents'],
+                self._model.size
             )
         )
 

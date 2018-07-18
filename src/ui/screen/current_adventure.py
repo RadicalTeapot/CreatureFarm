@@ -76,9 +76,9 @@ class CurrentAdventure(UiState):
             self.creature_list.append(entry)
 
     def update_tool_tip(self, creature, entry):
-        alive = '[color=#{}]Alive[/color]'.format(Settings.GREEN)
+        alive = '[color={}]Alive[/color]'.format(Settings.GREEN)
         if creature.is_dead():
-            alive = '[color=#{}]Dead[/color]'.format(Settings.RED)
+            alive = '[color={}]Dead[/color]'.format(Settings.RED)
         entry.set_tool_tip(
             f'Name: {creature.template_name} ({alive})\n'
             f'HP: {creature.stats["hp"]:.1f}/{creature.stats["max_hp"]:.1f}\n'

@@ -34,7 +34,10 @@ class Creature:
     def build_stats(self, mutation_ids):
         game_mutations = ObjectManager.game.mutations
         mutations = [game_mutations[id_] for id_ in self.mutation_ids]
-        self.stats['size'] = sum([mutation.size for mutation in mutations])
+        self.stats['size'] = (
+            sum([mutation.size for mutation in mutations]) *
+            self.size_multiplier
+        )
         self.stats['biomass_cost'] = ObjectManager.game.get_biomass_cost(
             self.mutation_ids, self.size_multiplier
         )
@@ -45,7 +48,10 @@ class Creature:
         self.stats['agility'] = (
             self.stats['size'] * -1 + self.get_stat_modifier('agility')
         )
-        self.stats['attack'] = self.get_stat_modifier('attack')
+        self.stats['attack'] = (
+            self.get_stat_modifier('attack') *
+            (3. + self.stats['size']) * .25
+        )
         self.stats['max_biomass'] = self.stats['size'] * 10.
 
     def add_biomass(self, amount):
@@ -63,13 +69,15 @@ class Creature:
         data = {}
         data['template_name'] = self.template_name
         data['mutation_ids'] = self.mutation_ids
+        data['size_multiplier'] = self.size_multiplier
         data['stats'] = dict(self.stats)
         return data
 
     @classmethod
     def deserialize(cls, data):
-        instance = cls('', [])
+        instance = cls('', [], 1.)
         instance.template_name = data['template_name']
         instance.mutation_ids = data['mutation_ids']
+        instance.size_multiplier = data['size_multiplier']
         instance.stats = dict(data['stats'])
         return instance
